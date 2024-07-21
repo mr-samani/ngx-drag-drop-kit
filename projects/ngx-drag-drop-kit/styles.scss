@@ -1,0 +1,63 @@
+.widget-corner-resize {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  margin: 0px;
+  visibility: visible;
+  transition: margin 300ms;
+  &.topLeft {
+    top: 0px;
+    left: 0px;
+    cursor: nw-resize;
+    border: 2px #005aff solid;
+    border-radius: 50px;
+  }
+  &.topRight {
+    top: 0px;
+    right: 0px;
+    cursor: nesw-resize;
+    border: 2px #005aff solid;
+    border-radius: 50px;
+  }
+  &.bottomLeft {
+    bottom: 0px;
+    left: 0px;
+    cursor: nesw-resize;
+    border: 2px #005aff solid;
+    border-radius: 50px;
+  }
+  &.bottomRight {
+    bottom: 0px;
+    right: 0px;
+    cursor: nwse-resize;
+    border: 2px #005aff solid;
+    border-radius: 50px;
+  }
+  &.top {
+    top: 0;
+    height: 10px;
+    width: 100%;
+    cursor: row-resize;
+  }
+  &.right {
+    top: 0;
+    right: 0;
+    width: 10px;
+    height: 100%;
+    cursor: col-resize;
+  }
+
+  &.left {
+    top: 0;
+    left: 0;
+    width: 10px;
+    height: 100%;
+    cursor: col-resize;
+  }
+  &.bottom {
+    bottom: 0;
+    height: 10px;
+    width: 100%;
+    cursor: row-resize;
+  }
+}

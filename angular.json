@@ -12,8 +12,7 @@
         "build": {
           "builder": "@angular-devkit/build-angular:ng-packagr",
           "options": {
-            "project": "projects/ngx-drag-drop-kit/ng-package.json",
-            "styles": ["src/style.scss"]
+            "project": "projects/ngx-drag-drop-kit/ng-package.json"
           },
           "configurations": {
             "production": {

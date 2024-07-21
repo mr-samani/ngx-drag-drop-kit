@@ -1,4 +1,5 @@
-/* You can add global styles to this file, and also import other style files */
-*{
-    box-sizing: border-box;
+// @import "../../../dist/ngx-drag-drop-kit/assets/styles.css";
+@import "../../ngx-drag-drop-kit/styles.scss";
+* {
+  box-sizing: border-box;
 }

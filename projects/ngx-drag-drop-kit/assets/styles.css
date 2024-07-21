@@ -1,0 +1,58 @@
+.widget-corner-resize {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border: 2px #005aff solid;
+  border-radius: 50px;
+  margin: 0px;
+  visibility: visible;
+  transition: margin 300ms;
+}
+.widget-corner-resize.topLeft {
+  top: 0px;
+  left: 0px;
+  cursor: nw-resize;
+}
+.widget-corner-resize.topRight {
+  top: 0px;
+  right: 0px;
+  cursor: nesw-resize;
+}
+.widget-corner-resize.bottomLeft {
+  bottom: 0px;
+  left: 0px;
+  cursor: nesw-resize;
+}
+.widget-corner-resize.bottomRight {
+  bottom: 0px;
+  right: 0px;
+  cursor: nwse-resize;
+}
+.widget-corner-resize.top {
+  top: 0;
+  height: 10px;
+  width: 100%;
+  cursor: row-resize;
+}
+.widget-corner-resize.right {
+  top: 0;
+  right: 0;
+  width: 10px;
+  height: 100%;
+  cursor: col-resize;
+}
+.widget-corner-resize.left {
+  top: 0;
+  left: 0;
+  width: 10px;
+  height: 100%;
+  cursor: col-resize;
+}
+.widget-corner-resize.bottom {
+  bottom: 0;
+  height: 10px;
+  width: 100%;
+  cursor: row-resize;
+}
+
+/*# sourceMappingURL=styles.css.map */

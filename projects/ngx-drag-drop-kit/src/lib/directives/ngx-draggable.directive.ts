@@ -8,8 +8,8 @@ import {
   Renderer2,
 } from '@angular/core';
 import { Subscription, fromEvent } from 'rxjs';
-import { getPointerPosition } from '../../helper/get-position';
-import { checkBoundX, checkBoundY } from '../../helper/check-boundary';
+import { getPointerPosition } from '../../utils/get-position';
+import { checkBoundX, checkBoundY } from '../../utils/check-boundary';
 
 export interface IPosition {
   x: number;
@@ -17,7 +17,7 @@ export interface IPosition {
 }
 
 @Directive({
-  selector: '[NgxDraggable]',
+  selector: '[ngxDraggable]',
   host: {
     '[style.transition-property]': 'dragging ? "none" : ""',
     '[style.user-select]': 'dragging ? "none" : ""',

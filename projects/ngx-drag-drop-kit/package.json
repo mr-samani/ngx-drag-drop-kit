@@ -8,5 +8,13 @@
   "dependencies": {
     "tslib": "^2.3.0"
   },
-  "sideEffects": false
+  "sideEffects": false,
+  "scripts": {
+    "build:sass": "sass styles/styles.scss assets/styles.css"
+  },
+  "exports": {
+    "./styles": {
+      "default": "./styles.scss"
+    }
+  }
 }

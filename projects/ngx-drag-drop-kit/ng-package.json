@@ -3,5 +3,6 @@
   "dest": "../../dist/ngx-drag-drop-kit",
   "lib": {
     "entryFile": "src/public-api.ts"
-  }
+  },
+  "assets": ["./styles/*.*","./assets/**/*.*"]
 }
