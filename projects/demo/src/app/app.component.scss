@@ -6,3 +6,11 @@
   border-radius: 10px;
   transition: all 500ms;
 }
+
+.boundary {
+  border: 1px dashed red;
+  border-radius: 10px;
+  height: 50vh;
+  width: 80vh;
+  margin: 0 auto;
+}

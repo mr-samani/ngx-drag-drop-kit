@@ -2,12 +2,14 @@ import {
   Directive,
   ElementRef,
   HostListener,
+  Input,
   OnDestroy,
   OnInit,
   Renderer2,
 } from '@angular/core';
 import { Subscription, fromEvent } from 'rxjs';
 import { getPointerPosition } from '../../helper/get-position';
+import { checkBoundX, checkBoundY } from '../../helper/check-boundary';
 
 export interface IPosition {
   x: number;
@@ -20,15 +22,17 @@ export interface IPosition {
     '[style.transition-property]': 'dragging ? "none" : ""',
     '[style.user-select]': 'dragging ? "none" : ""',
     '[style.cursor]': 'dragging ? "grabbing" : ""',
+    '[style.z-index]': 'dragging ? "999999" : ""',
   },
 })
 export class NgxDraggableDirective implements OnDestroy, OnInit {
+  @Input() boundary?: HTMLElement;
   dragging = false;
   el: HTMLElement;
   protected x: number = 0;
   protected y: number = 0;
   private previousXY: IPosition = { x: 0, y: 0 };
-  private scrollSpeed = 25;
+  private scrollSpeed = 10;
   private scrollThreshold = 100;
   private subscriptions: Subscription[] = [];
   constructor(elRef: ElementRef, private _renderer: Renderer2) {
@@ -89,19 +93,22 @@ export class NgxDraggableDirective implements OnDestroy, OnInit {
     ev.stopPropagation();
     let position = getPointerPosition(ev);
 
-    this.updatePosition(
-      position.x - this.previousXY.x,
-      position.y - this.previousXY.y,
-      position
-    );
+    const offsetX = position.x - this.previousXY.x;
+    const offsetY = position.y - this.previousXY.y;
+    this.updatePosition(offsetX, offsetY, position);
     this.handleAutoScroll(ev);
   }
 
   updatePosition(offsetX: number, offsetY: number, position: IPosition) {
-    this.x += offsetX;
-    this.y += offsetY;
+    if (checkBoundX(this.boundary, this.el, offsetX)) {
+      this.x += offsetX;
+      this.previousXY.x = position.x;
+    }
+    if (checkBoundY(this.boundary, this.el, offsetY)) {
+      this.y += offsetY;
+      this.previousXY.y = position.y;
+    }
     let transform = `translate(${this.x}px, ${this.y}px)`;
-    this.previousXY = position;
     this._renderer.setStyle(this.el, 'transform', transform);
   }
   handleAutoScroll(ev: MouseEvent | TouchEvent) {
