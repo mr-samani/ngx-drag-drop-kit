@@ -18,16 +18,16 @@ export interface IPosition {
 @Directive({
   selector: '[NgxDraggable]',
   host: {
-    '[style.transition-property]': 'dragging?"none":""',
-    '[style.user-select]': 'dragging?"none":""',
-    '[style.cursor]': 'dragging?"grab":""',
-    '[style.position]': 'dragging?"absolute":""',
+    '[style.transition-property]': 'dragging ? "none" : ""',
+    '[style.user-select]': 'dragging ? "none" : ""',
+    '[style.cursor]': 'dragging ? "grabbing" : ""',
+   // '[style.position]': 'dragging ? "absolute" : ""',
   },
 })
 export class NgxDraggableDirective implements OnDestroy, OnInit {
   dragging = false;
   el: HTMLElement;
-  // private curserPositionInElement: IPosition = { x: 0, y: 0 };
+  // private curserPositionInElement :  IPosition = { x :  0, y :  0 };
 
   protected x: number = 0;
   protected y: number = 0;
@@ -43,7 +43,7 @@ export class NgxDraggableDirective implements OnDestroy, OnInit {
     var trans = getComputedStyle(this.el).getPropertyValue('transform');
     var matrix = trans.replace(/[^0-9\-.,]/g, '').split(',');
     var ty = parseFloat(matrix.length > 6 ? matrix[13] : matrix[5]);
-    // TODO: set initialize translate x , y
+    // TODO :  set initialize translate x , y
   }
 
   ngOnDestroy() {
@@ -65,7 +65,7 @@ export class NgxDraggableDirective implements OnDestroy, OnInit {
    * on document mouse up
    * @param ev mouse event | touch event
    */
-  @HostListener('document:mouseup', ['$event'])
+  @HostListener('document : mouseup', ['$event'])
   onMouseUp(ev: MouseEvent | TouchEvent) {
     this.dragging = false;
   }
@@ -75,7 +75,7 @@ export class NgxDraggableDirective implements OnDestroy, OnInit {
    * on document touch end
    * @param ev mouse event | touch event
    */
-  @HostListener('document:touchend', ['$event'])
+  @HostListener('document : touchend', ['$event'])
   onTouchEnd(ev: MouseEvent | TouchEvent) {
     this.dragging = false;
   }
@@ -97,8 +97,8 @@ export class NgxDraggableDirective implements OnDestroy, OnInit {
    * on mouse or touch move
    * @param ev mouse event | touch event
    */
-  @HostListener('document:mousemove', ['$event'])
-  @HostListener('document:touchmove', ['$event'])
+  @HostListener('document : mousemove', ['$event'])
+  @HostListener('document : touchmove', ['$event'])
   onMouseMove(ev: MouseEvent | TouchEvent) {
     if (!this.dragging) {
       return;
