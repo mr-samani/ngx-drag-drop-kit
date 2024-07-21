@@ -22,15 +22,19 @@ export function getOffsetPosition(
   return position;
 }
 
+
+
 export function getPointerPosition(evt: MouseEvent | TouchEvent) {
   if (evt instanceof MouseEvent) {
     return {
-      x: evt.clientX,
-      y: evt.clientY,
+      x: evt.pageX,
+      y: evt.pageY,
+    };
+  } else {
+    const touch = evt.targetTouches[0] || evt.changedTouches[0];
+    return {
+      x: touch.pageX,
+      y: touch.pageY,
     };
   }
-  return {
-    x: evt.touches[0].clientX,
-    y: evt.touches[0].clientY,
-  };
 }

@@ -6,29 +6,25 @@ import {
   OnInit,
   Renderer2,
 } from '@angular/core';
-import {
-  getOffsetPosition,
-  getPointerPosition,
-} from '../../helper/get-position';
 import { Subscription, fromEvent } from 'rxjs';
+import { getPointerPosition } from '../../helper/get-position';
+
 export interface IPosition {
   x: number;
   y: number;
 }
+
 @Directive({
   selector: '[NgxDraggable]',
   host: {
     '[style.transition-property]': 'dragging ? "none" : ""',
     '[style.user-select]': 'dragging ? "none" : ""',
     '[style.cursor]': 'dragging ? "grabbing" : ""',
-   // '[style.position]': 'dragging ? "absolute" : ""',
   },
 })
 export class NgxDraggableDirective implements OnDestroy, OnInit {
   dragging = false;
   el: HTMLElement;
-  // private curserPositionInElement :  IPosition = { x :  0, y :  0 };
-
   protected x: number = 0;
   protected y: number = 0;
   private previousXY: IPosition = { x: 0, y: 0 };
@@ -40,10 +36,10 @@ export class NgxDraggableDirective implements OnDestroy, OnInit {
   }
 
   ngOnInit(): void {
-    var trans = getComputedStyle(this.el).getPropertyValue('transform');
-    var matrix = trans.replace(/[^0-9\-.,]/g, '').split(',');
-    var ty = parseFloat(matrix.length > 6 ? matrix[13] : matrix[5]);
-    // TODO :  set initialize translate x , y
+    const trans = getComputedStyle(this.el).getPropertyValue('transform');
+    const matrix = trans.replace(/[^0-9\-.,]/g, '').split(',');
+    this.x = parseFloat(matrix.length > 6 ? matrix[12] : matrix[4]) || 0;
+    this.y = parseFloat(matrix.length > 6 ? matrix[13] : matrix[5]) || 0;
   }
 
   ngOnDestroy() {
@@ -60,45 +56,29 @@ export class NgxDraggableDirective implements OnDestroy, OnInit {
       )
     );
   }
-  /**
-   * End dragging
-   * on document mouse up
-   * @param ev mouse event | touch event
-   */
-  @HostListener('document : mouseup', ['$event'])
-  onMouseUp(ev: MouseEvent | TouchEvent) {
+
+  @HostListener('document:mouseup', ['$event'])
+  @HostListener('document:touchend', ['$event'])
+  onEndDrag(ev: MouseEvent | TouchEvent) {
     this.dragging = false;
   }
 
-  /**
-   * End dragging
-   * on document touch end
-   * @param ev mouse event | touch event
-   */
-  @HostListener('document : touchend', ['$event'])
-  onTouchEnd(ev: MouseEvent | TouchEvent) {
-    this.dragging = false;
-  }
-
-  /**
-   * Start dragging
-   * on mouse or touch down
-   * @param ev mouse event | touch event
-   */
   onMouseDown(ev: MouseEvent | TouchEvent) {
     ev.preventDefault();
     ev.stopPropagation();
     this.previousXY = getPointerPosition(ev);
     this.dragging = true;
+
+    this.subscriptions.push(
+      fromEvent<MouseEvent>(document, 'mousemove').subscribe((ev) =>
+        this.onMouseMove(ev)
+      ),
+      fromEvent<TouchEvent>(document, 'touchmove').subscribe((ev) =>
+        this.onMouseMove(ev)
+      )
+    );
   }
 
-  /**
-   * Move
-   * on mouse or touch move
-   * @param ev mouse event | touch event
-   */
-  @HostListener('document : mousemove', ['$event'])
-  @HostListener('document : touchmove', ['$event'])
   onMouseMove(ev: MouseEvent | TouchEvent) {
     if (!this.dragging) {
       return;
@@ -118,7 +98,7 @@ export class NgxDraggableDirective implements OnDestroy, OnInit {
   updatePosition(offsetX: number, offsetY: number, position: IPosition) {
     this.x += offsetX;
     this.y += offsetY;
-    let transform = 'translate(' + this.x + 'px, ' + this.y + 'px)';
+    let transform = `translate(${this.x}px, ${this.y}px)`;
     this.previousXY = position;
     this._renderer.setStyle(this.el, 'transform', transform);
   }
