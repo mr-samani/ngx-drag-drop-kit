@@ -28,7 +28,8 @@ export class NgxDraggableDirective implements OnDestroy, OnInit {
   protected x: number = 0;
   protected y: number = 0;
   private previousXY: IPosition = { x: 0, y: 0 };
-
+  private scrollSpeed = 25;
+  private scrollThreshold = 100;
   private subscriptions: Subscription[] = [];
   constructor(elRef: ElementRef, private _renderer: Renderer2) {
     this.el = elRef.nativeElement;
@@ -93,6 +94,7 @@ export class NgxDraggableDirective implements OnDestroy, OnInit {
       position.y - this.previousXY.y,
       position
     );
+    this.handleAutoScroll(ev);
   }
 
   updatePosition(offsetX: number, offsetY: number, position: IPosition) {
@@ -101,5 +103,25 @@ export class NgxDraggableDirective implements OnDestroy, OnInit {
     let transform = `translate(${this.x}px, ${this.y}px)`;
     this.previousXY = position;
     this._renderer.setStyle(this.el, 'transform', transform);
+  }
+  handleAutoScroll(ev: MouseEvent | TouchEvent) {
+    const clientX =
+      ev instanceof MouseEvent ? ev.clientX : ev.targetTouches[0].clientX;
+    const clientY =
+      ev instanceof MouseEvent ? ev.clientY : ev.targetTouches[0].clientY;
+    const windowWidth = window.innerWidth;
+    const windowHeight = window.innerHeight;
+
+    if (clientX < this.scrollThreshold) {
+      window.scrollBy(-this.scrollSpeed, 0);
+    } else if (clientX > windowWidth - this.scrollThreshold) {
+      window.scrollBy(this.scrollSpeed, 0);
+    }
+
+    if (clientY < this.scrollThreshold) {
+      window.scrollBy(0, -this.scrollSpeed);
+    } else if (clientY > windowHeight - this.scrollThreshold) {
+      window.scrollBy(0, this.scrollSpeed);
+    }
   }
 }
