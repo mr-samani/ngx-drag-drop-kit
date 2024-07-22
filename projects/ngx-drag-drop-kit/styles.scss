@@ -1,36 +1,37 @@
-.widget-corner-resize {
+.ngx-corner-resize {
   position: absolute;
   width: 10px;
   height: 10px;
   margin: 0px;
-  visibility: visible;
+  visibility: hidden;
   transition: margin 300ms;
   &.topLeft {
     top: 0px;
     left: 0px;
     cursor: nw-resize;
-    border: 2px #005aff solid;
+    border: 2px var(--pointerColor) solid;
     border-radius: 50px;
+    margin: 3px;
   }
   &.topRight {
     top: 0px;
     right: 0px;
     cursor: nesw-resize;
-    border: 2px #005aff solid;
+    border: 2px var(--pointerColor) solid;
     border-radius: 50px;
   }
   &.bottomLeft {
     bottom: 0px;
     left: 0px;
     cursor: nesw-resize;
-    border: 2px #005aff solid;
+    border: 2px var(--pointerColor) solid;
     border-radius: 50px;
   }
   &.bottomRight {
     bottom: 0px;
     right: 0px;
     cursor: nwse-resize;
-    border: 2px #005aff solid;
+    border: 2px var(--pointerColor) solid;
     border-radius: 50px;
   }
   &.top {
@@ -59,5 +60,25 @@
     height: 10px;
     width: 100%;
     cursor: row-resize;
+  }
+}
+
+.ngx-resizable {
+  --pointerColor: #005aff;
+  &.resizing {
+    transition-property: none !important;
+  }
+  &:hover {
+    .ngx-corner-resize {
+      visibility: visible;
+      z-index: 1;
+      margin: -4px;
+    }
+  }
+}
+
+.ngx-draggable {
+  &.dragging {
+    transition-property: none !important;
   }
 }

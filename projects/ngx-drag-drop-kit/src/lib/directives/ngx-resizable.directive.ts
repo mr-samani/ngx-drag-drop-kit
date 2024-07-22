@@ -5,6 +5,7 @@ import {
   HostListener,
   Inject,
   Input,
+  OnInit,
   Renderer2,
 } from '@angular/core';
 import { Corner } from '../../utils/corner-type';
@@ -17,9 +18,11 @@ import { checkBoundX, checkBoundY } from '../../utils/check-boundary';
     '[style.transition-property]': 'dragging ? "none" : ""',
     '[style.user-select]': 'dragging ? "none" : ""',
     '[style.z-index]': 'dragging ? "999999" : ""',
+    '[class.resizing]': 'dragging',
+    class: 'ngx-resizable',
   },
 })
-export class NgxResizableDirective {
+export class NgxResizableDirective implements OnInit {
   @Input() boundary?: HTMLElement;
   @Input() minWidth = 20;
   @Input() minHeight = 20;
@@ -55,6 +58,16 @@ export class NgxResizableDirective {
   ) {
     this.el = elRef.nativeElement;
     this.addCornerDiv();
+  }
+
+  ngOnInit(): void {
+    this.initXY();
+  }
+  initXY() {
+    const trans = getComputedStyle(this.el).getPropertyValue('transform');
+    const matrix = trans.replace(/[^0-9\-.,]/g, '').split(',');
+    this.x = parseFloat(matrix.length > 6 ? matrix[12] : matrix[4]) || 0;
+    this.y = parseFloat(matrix.length > 6 ? matrix[13] : matrix[5]) || 0;
   }
 
   @HostListener('document:mousemove', ['$event'])
@@ -93,7 +106,7 @@ export class NgxResizableDirective {
   private addCornerDiv() {
     for (const corner of this.corners) {
       const child = this.document.createElement('div');
-      child.classList.add('widget-corner-resize', corner);
+      child.classList.add('ngx-corner-resize', corner);
       const self: any = this;
       child.addEventListener('mousedown', ($event) => {
         this.onCornerClick($event, self[corner + 'Resize']);
@@ -115,6 +128,8 @@ export class NgxResizableDirective {
     this.resizer = resizer;
     event.preventDefault();
     event.stopPropagation();
+    this.initXY();
+
     this.initSize();
     this.checkFlexibale();
   }
@@ -125,15 +140,15 @@ export class NgxResizableDirective {
     this.height = elRec.height;
     this.left = this.el.offsetLeft;
     this.top = this.el.offsetTop;
-    this.el.style.top = this.top + 'px';
-    this.el.style.left = this.left + 'px';
+    // this.el.style.top = this.top + 'px';
+    // this.el.style.left = this.left + 'px';
     this.setElPosition();
   }
 
   public setElPosition() {
     this.el.style.transform = `translate(${this.x}px,${this.y}px)`;
     //this.el.style.removeProperty('position');
-    this.el.style.position = 'fixed';
+    // this.el.style.position = 'fixed';
     this.el.style.width = this.width + 'px';
     this.el.style.height = this.height + 'px';
   }

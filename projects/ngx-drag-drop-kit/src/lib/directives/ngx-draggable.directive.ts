@@ -23,6 +23,8 @@ export interface IPosition {
     '[style.user-select]': 'dragging ? "none" : ""',
     '[style.cursor]': 'dragging ? "grabbing" : ""',
     '[style.z-index]': 'dragging ? "999999" : ""',
+    '[class.dragging]': 'dragging',
+    class: 'ngx-draggable',
   },
 })
 export class NgxDraggableDirective implements OnDestroy, OnInit {
@@ -41,14 +43,18 @@ export class NgxDraggableDirective implements OnDestroy, OnInit {
   }
 
   ngOnInit(): void {
-    const trans = getComputedStyle(this.el).getPropertyValue('transform');
-    const matrix = trans.replace(/[^0-9\-.,]/g, '').split(',');
-    this.x = parseFloat(matrix.length > 6 ? matrix[12] : matrix[4]) || 0;
-    this.y = parseFloat(matrix.length > 6 ? matrix[13] : matrix[5]) || 0;
+    this.initXY();
   }
 
   ngOnDestroy() {
     this.subscriptions.forEach((sub) => sub.unsubscribe());
+  }
+
+  initXY() {
+    const trans = getComputedStyle(this.el).getPropertyValue('transform');
+    const matrix = trans.replace(/[^0-9\-.,]/g, '').split(',');
+    this.x = parseFloat(matrix.length > 6 ? matrix[12] : matrix[4]) || 0;
+    this.y = parseFloat(matrix.length > 6 ? matrix[13] : matrix[5]) || 0;
   }
 
   initDrag() {
@@ -73,6 +79,7 @@ export class NgxDraggableDirective implements OnDestroy, OnInit {
     ev.stopPropagation();
     this.previousXY = getPointerPosition(ev);
     this.dragging = true;
+    this.initXY();
 
     this.subscriptions.push(
       fromEvent<MouseEvent>(document, 'mousemove').subscribe((ev) =>
