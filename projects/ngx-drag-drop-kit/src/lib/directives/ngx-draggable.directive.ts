@@ -2,14 +2,24 @@ import {
   Directive,
   ElementRef,
   HostListener,
+  Inject,
+  InjectionToken,
   Input,
   OnDestroy,
   OnInit,
+  Optional,
   Renderer2,
+  SkipSelf,
 } from '@angular/core';
 import { Subscription, fromEvent } from 'rxjs';
 import { getPointerPosition } from '../../utils/get-position';
 import { checkBoundX, checkBoundY } from '../../utils/check-boundary';
+import { NgxDropListDirective } from './ngx-drop-list.directive';
+import { NgxDragDropService } from '../services/ngx-drag-drop.service';
+import { getXYfromTransform } from '../../utils/get-transform';
+export const NGX_DROP_LIST = new InjectionToken<NgxDropListDirective>(
+  'NgxDropList'
+);
 
 export interface IPosition {
   x: number;
@@ -20,10 +30,14 @@ export interface IPosition {
   selector: '[ngxDraggable]',
   host: {
     '[style.transition-property]': 'dragging ? "none" : ""',
+    '[style.pointer-events]': 'dragging ? "none" : ""',
     '[style.user-select]': 'dragging ? "none" : ""',
     '[style.cursor]': 'dragging ? "grabbing" : ""',
     '[style.z-index]': 'dragging ? "999999" : ""',
     '[class.dragging]': 'dragging',
+    '[style.touch-action]': 'dragging ? "none" : ""',
+    '[style.-webkit-user-drag]': 'dragging ? "none" : ""',
+    '[style.-webkit-tap-highlight-color]': 'dragging ? "transparent" : ""',
     class: 'ngx-draggable',
   },
 })
@@ -37,7 +51,12 @@ export class NgxDraggableDirective implements OnDestroy, OnInit {
   private scrollSpeed = 10;
   private scrollThreshold = 100;
   private subscriptions: Subscription[] = [];
-  constructor(elRef: ElementRef, private _renderer: Renderer2) {
+  containerDropList?: NgxDropListDirective;
+  constructor(
+    elRef: ElementRef,
+    private _renderer: Renderer2,
+    private _dragService: NgxDragDropService
+  ) {
     this.el = elRef.nativeElement;
     this.initDrag();
   }
@@ -51,10 +70,9 @@ export class NgxDraggableDirective implements OnDestroy, OnInit {
   }
 
   initXY() {
-    const trans = getComputedStyle(this.el).getPropertyValue('transform');
-    const matrix = trans.replace(/[^0-9\-.,]/g, '').split(',');
-    this.x = parseFloat(matrix.length > 6 ? matrix[12] : matrix[4]) || 0;
-    this.y = parseFloat(matrix.length > 6 ? matrix[13] : matrix[5]) || 0;
+    const xy = getXYfromTransform(this.el);
+    this.x = xy.x;
+    this.y = xy.y;
   }
 
   initDrag() {
@@ -64,7 +82,14 @@ export class NgxDraggableDirective implements OnDestroy, OnInit {
       ),
       fromEvent<TouchEvent>(this.el, 'touchstart').subscribe((ev) =>
         this.onMouseDown(ev)
-      )
+      ),
+
+      fromEvent<TouchEvent>(this.el, 'mouseenter').subscribe((ev) => {
+        this._dragService.enterDrag(this);
+      }),
+      fromEvent<TouchEvent>(this.el, 'mouseleave').subscribe((ev) => {
+        this._dragService.leaveDrag(this);
+      })
     );
   }
 
@@ -72,6 +97,7 @@ export class NgxDraggableDirective implements OnDestroy, OnInit {
   @HostListener('document:touchend', ['$event'])
   onEndDrag(ev: MouseEvent | TouchEvent) {
     this.dragging = false;
+    this._dragService.stopDrag(this);
   }
 
   onMouseDown(ev: MouseEvent | TouchEvent) {
@@ -80,6 +106,7 @@ export class NgxDraggableDirective implements OnDestroy, OnInit {
     this.previousXY = getPointerPosition(ev);
     this.dragging = true;
     this.initXY();
+    this._dragService.startDrag(this);
 
     this.subscriptions.push(
       fromEvent<MouseEvent>(document, 'mousemove').subscribe((ev) =>
@@ -96,14 +123,15 @@ export class NgxDraggableDirective implements OnDestroy, OnInit {
       return;
     }
 
-    ev.preventDefault();
-    ev.stopPropagation();
+    // ev.preventDefault();
+    // ev.stopPropagation();
     let position = getPointerPosition(ev);
 
     const offsetX = position.x - this.previousXY.x;
     const offsetY = position.y - this.previousXY.y;
     this.updatePosition(offsetX, offsetY, position);
     this.handleAutoScroll(ev);
+    this._dragService.dragMove(this, ev);
   }
 
   updatePosition(offsetX: number, offsetY: number, position: IPosition) {

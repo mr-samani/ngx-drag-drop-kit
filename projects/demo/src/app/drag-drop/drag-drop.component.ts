@@ -1,12 +1,14 @@
 import { Component } from '@angular/core';
 import { NgxDragDropKitModule } from '../../../../ngx-drag-drop-kit/src/lib/ngx-drag-drop-kit.module';
+import { IDropEvent } from '../../../../ngx-drag-drop-kit/src/lib/directives/ngx-drop-list.directive';
+import { moveItemInArray } from '../../../../ngx-drag-drop-kit/src/drag-utils';
 
 @Component({
   selector: 'app-drag-drop',
   standalone: true,
   imports: [NgxDragDropKitModule],
   templateUrl: './drag-drop.component.html',
-  styleUrl: './drag-drop.component.scss'
+  styleUrl: './drag-drop.component.scss',
 })
 export class DragDropComponent {
   movies = [
@@ -21,7 +23,24 @@ export class DragDropComponent {
     'Episode IX - The Rise of Skywalker',
   ];
 
+  constructor() {
+    this.movies = [];
+    for (let i = 1; i < 80; i++) {
+      this.movies.push('Episode ' + i);
+    }
+  }
+
   // drop(event: CdkDragDrop<string[]>) {
   //  // moveItemInArray(this.movies, event.previousIndex, event.currentIndex);
   // }
+
+  add() {
+    let rndPosition = Math.floor(Math.random() * this.movies.length);
+    let rndName = 'added item_' + Math.round(Math.random() * 9999);
+    this.movies.splice(rndPosition, 0, rndName);
+  }
+
+  drop(ev: IDropEvent) {
+    moveItemInArray(this.movies, ev.previousIndex, ev.currentIndex);
+  }
 }

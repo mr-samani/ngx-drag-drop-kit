@@ -10,6 +10,7 @@ import {
 } from '@angular/core';
 import { Corner } from '../../utils/corner-type';
 import { checkBoundX, checkBoundY } from '../../utils/check-boundary';
+import { getXYfromTransform } from '../../utils/get-transform';
 
 @Directive({
   selector: '[ngxResizable]',
@@ -64,10 +65,9 @@ export class NgxResizableDirective implements OnInit {
     this.initXY();
   }
   initXY() {
-    const trans = getComputedStyle(this.el).getPropertyValue('transform');
-    const matrix = trans.replace(/[^0-9\-.,]/g, '').split(',');
-    this.x = parseFloat(matrix.length > 6 ? matrix[12] : matrix[4]) || 0;
-    this.y = parseFloat(matrix.length > 6 ? matrix[13] : matrix[5]) || 0;
+    const xy = getXYfromTransform(this.el);
+    this.x = xy.x;
+    this.y = xy.y;
   }
 
   @HostListener('document:mousemove', ['$event'])

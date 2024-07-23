@@ -1,4 +1,4 @@
-<div ngxDropList class="example-list" >
+<div ngxDropList class="example-list" (drop)="drop($event)">
     @for (movie of movies; track movie) {
       <div class="example-box" ngxDraggable>
         <div class="example-custom-placeholder" *cdkDragPlaceholder></div>
@@ -6,3 +6,5 @@
       </div>
     }
   </div>
+
+  <button (click)="add()">add</button>
