@@ -2,14 +2,11 @@ import {
   Directive,
   ElementRef,
   HostListener,
-  Inject,
   InjectionToken,
   Input,
   OnDestroy,
   OnInit,
-  Optional,
   Renderer2,
-  SkipSelf,
 } from '@angular/core';
 import { Subscription, fromEvent } from 'rxjs';
 import { getPointerPosition } from '../../utils/get-position';
@@ -17,6 +14,7 @@ import { checkBoundX, checkBoundY } from '../../utils/check-boundary';
 import { NgxDropListDirective } from './ngx-drop-list.directive';
 import { NgxDragDropService } from '../services/ngx-drag-drop.service';
 import { getXYfromTransform } from '../../utils/get-transform';
+import { AutoScroll } from '../../utils/auto-scroll';
 export const NGX_DROP_LIST = new InjectionToken<NgxDropListDirective>(
   'NgxDropList'
 );
@@ -48,14 +46,13 @@ export class NgxDraggableDirective implements OnDestroy, OnInit {
   protected x: number = 0;
   protected y: number = 0;
   private previousXY: IPosition = { x: 0, y: 0 };
-  private scrollSpeed = 10;
-  private scrollThreshold = 100;
   private subscriptions: Subscription[] = [];
   containerDropList?: NgxDropListDirective;
   constructor(
     elRef: ElementRef,
     private _renderer: Renderer2,
-    private _dragService: NgxDragDropService
+    private _dragService: NgxDragDropService,
+    private _autoScroll: AutoScroll
   ) {
     this.el = elRef.nativeElement;
     this.initDrag();
@@ -67,6 +64,8 @@ export class NgxDraggableDirective implements OnDestroy, OnInit {
 
   ngOnDestroy() {
     this.subscriptions.forEach((sub) => sub.unsubscribe());
+    this._autoScroll._stopScrolling();
+    // this._autoScroll._stopScrollTimers.complete();
   }
 
   initXY() {
@@ -97,6 +96,7 @@ export class NgxDraggableDirective implements OnDestroy, OnInit {
   @HostListener('document:touchend', ['$event'])
   onEndDrag(ev: MouseEvent | TouchEvent) {
     this.dragging = false;
+    this._autoScroll._stopScrolling();
     this._dragService.stopDrag(this);
   }
 
@@ -130,7 +130,7 @@ export class NgxDraggableDirective implements OnDestroy, OnInit {
     const offsetX = position.x - this.previousXY.x;
     const offsetY = position.y - this.previousXY.y;
     this.updatePosition(offsetX, offsetY, position);
-    this.handleAutoScroll(ev);
+    this._autoScroll.handleAutoScroll(ev);
     this._dragService.dragMove(this, ev);
   }
 
@@ -145,25 +145,5 @@ export class NgxDraggableDirective implements OnDestroy, OnInit {
     }
     let transform = `translate(${this.x}px, ${this.y}px)`;
     this._renderer.setStyle(this.el, 'transform', transform);
-  }
-  handleAutoScroll(ev: MouseEvent | TouchEvent) {
-    const clientX =
-      ev instanceof MouseEvent ? ev.clientX : ev.targetTouches[0].clientX;
-    const clientY =
-      ev instanceof MouseEvent ? ev.clientY : ev.targetTouches[0].clientY;
-    const windowWidth = window.innerWidth;
-    const windowHeight = window.innerHeight;
-
-    if (clientX < this.scrollThreshold) {
-      window.scrollBy(-this.scrollSpeed, 0);
-    } else if (clientX > windowWidth - this.scrollThreshold) {
-      window.scrollBy(this.scrollSpeed, 0);
-    }
-
-    if (clientY < this.scrollThreshold) {
-      window.scrollBy(0, -this.scrollSpeed);
-    } else if (clientY > windowHeight - this.scrollThreshold) {
-      window.scrollBy(0, this.scrollSpeed);
-    }
   }
 }

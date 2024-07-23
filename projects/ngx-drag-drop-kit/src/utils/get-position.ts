@@ -22,8 +22,6 @@ export function getOffsetPosition(
   return position;
 }
 
-
-
 export function getPointerPosition(evt: MouseEvent | TouchEvent) {
   if (evt instanceof MouseEvent) {
     return {

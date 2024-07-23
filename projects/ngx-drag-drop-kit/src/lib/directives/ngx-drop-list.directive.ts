@@ -42,6 +42,7 @@ export interface IDropEvent {
 @Directive({
   selector: '[ngxDropList]',
   host: {
+    '[style.position]': '"relative"',
     '[style.scroll-snap-type]': 'dragging ? "none": "" ',
   },
 })

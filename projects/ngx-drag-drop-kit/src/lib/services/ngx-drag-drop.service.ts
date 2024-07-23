@@ -54,8 +54,8 @@ export class NgxDragDropService {
     this.dragElementInBody.className = drag.el.className + ' ngx-drag-drop';
     this.dragElementInBody.style.display = 'block';
     this.dragElementInBody.style.position = 'absolute';
-    this.dragElementInBody.style.top = dragElRec.top + 'px';
-    this.dragElementInBody.style.left = dragElRec.left + 'px';
+    this.dragElementInBody.style.top = window.scrollY + dragElRec.top + 'px';
+    this.dragElementInBody.style.left = window.scrollX + dragElRec.left + 'px';
     this.dragElementInBody.style.width = dragElRec.width + 'px';
     this.dragElementInBody.style.height = dragElRec.height + 'px';
     this.dragElementInBody.style.pointerEvents = 'none';
@@ -142,11 +142,12 @@ export class NgxDragDropService {
   }
 
   hidePlaceHolder(drag: NgxDraggableDirective) {
-    this._renderer.setStyle(
-      drag.containerDropList?.placeHolder,
-      'display',
-      'none'
-    );
+    if (drag.containerDropList && drag.containerDropList.placeHolder)
+      this._renderer.setStyle(
+        drag.containerDropList.placeHolder,
+        'display',
+        'none'
+      );
   }
 
   droped(drag: NgxDraggableDirective) {

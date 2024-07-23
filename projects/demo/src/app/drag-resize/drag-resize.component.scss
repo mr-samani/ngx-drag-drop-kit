@@ -1,0 +1,21 @@
+.drag-item {
+  //   border: 1px solid red;
+  width: 120px;
+  height: 120px;
+  box-shadow: 0 0 10px #00000073;
+  border-radius: 10px;
+  transition: all 500ms;
+}
+
+.boundary {
+  border: 1px dashed red;
+  border-radius: 10px;
+  height: 50vh;
+  width: 80vh;
+  margin: 0 auto;
+}
+
+.list-scroll {
+  height: 500px;
+  overflow: auto;
+}
