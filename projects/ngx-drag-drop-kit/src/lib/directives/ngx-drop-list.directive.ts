@@ -54,7 +54,6 @@ export class NgxDropListDirective<T = any> implements AfterViewInit {
   @ContentChildren(NgxDraggableDirective)
   _draggables?: QueryList<NgxDraggableDirective>;
   _el: HTMLElement;
-  placeHolder!: HTMLElement;
   dragging = false;
   private subscriptions: Subscription[] = [];
   constructor(
@@ -63,7 +62,6 @@ export class NgxDropListDirective<T = any> implements AfterViewInit {
     @Inject(DOCUMENT) private _document: Document
   ) {
     this._el = elRef.nativeElement;
-    this.createPlaceHolder();
     _dragDropService.registerDropList(this);
   }
 
@@ -95,12 +93,7 @@ export class NgxDropListDirective<T = any> implements AfterViewInit {
     });
   }
 
-  createPlaceHolder() {
-    this.placeHolder = this._document.createElement('div');
-    this.placeHolder.style.display = 'inline-block';
-    this.placeHolder.className = 'ngx-drag-placeholder';
-    this._el.insertAdjacentElement('afterbegin', this.placeHolder);
-  }
+
 
   onDrop(event: IDropEvent) {
     this.drop.emit(event);
