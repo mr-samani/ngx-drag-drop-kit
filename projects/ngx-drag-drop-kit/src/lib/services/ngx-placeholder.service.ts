@@ -67,7 +67,7 @@ export class NgxPlaceholderService {
     if (els) {
       const draggingPosition = Array.from(els).findIndex((x) => x.className.includes('dragging'));
       this._placeHolderIndex = Array.from(els).findIndex((x) => x == this._placeholder);
-      if (draggingPosition < this._placeHolderIndex) {
+      if (draggingPosition > -1 && draggingPosition < this._placeHolderIndex) {
         this._placeHolderIndex--;
       }
     } else {

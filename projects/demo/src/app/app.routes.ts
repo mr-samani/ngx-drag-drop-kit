@@ -3,6 +3,7 @@ import { DragResizeComponent } from './drag-resize/drag-resize.component';
 import { DragDropComponent } from './drag-drop/drag-drop.component';
 import { SortListComponent } from './sort-list/sort-list.component';
 import { HorizontalListComponent } from './horizontal-list/horizontal-list.component';
+import { CopyToZoneComponent } from './copy-to-zone/copy-to-zone.component';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'drag-drop', pathMatch: 'full' },
@@ -10,4 +11,5 @@ export const routes: Routes = [
   { path: 'sort-list', component: SortListComponent },
   { path: 'drag-drop', component: DragDropComponent },
   { path: 'horizontal-list', component: HorizontalListComponent },
+  { path: 'copy-to-zone', component: CopyToZoneComponent },
 ];

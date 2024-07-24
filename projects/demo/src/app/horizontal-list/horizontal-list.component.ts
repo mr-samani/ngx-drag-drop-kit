@@ -11,7 +11,7 @@ import { NgxDragDropKitModule } from '../../../../ngx-drag-drop-kit/src/lib/ngx-
   styleUrl: './horizontal-list.component.scss',
 })
 export class HorizontalListComponent {
-  movies = [
+  items = [
     'Episode I - The Phantom Menace',
     'Episode II - Attack of the Clones',
     'Episode III - Revenge of the Sith',
@@ -24,23 +24,23 @@ export class HorizontalListComponent {
   ];
 
   constructor() {
-    this.movies = [];
+    this.items = [];
     for (let i = 1; i < 80; i++) {
-      this.movies.push('Episode ' + i);
+      this.items.push('Episode ' + i);
     }
   }
 
   // drop(event: CdkDragDrop<string[]>) {
-  //  // moveItemInArray(this.movies, event.previousIndex, event.currentIndex);
+  //  // moveItemInArray(this.items, event.previousIndex, event.currentIndex);
   // }
 
   add() {
-    let rndPosition = Math.floor(Math.random() * this.movies.length);
+    let rndPosition = Math.floor(Math.random() * this.items.length);
     let rndName = 'added item_' + Math.round(Math.random() * 9999);
-    this.movies.splice(rndPosition, 0, rndName);
+    this.items.splice(rndPosition, 0, rndName);
   }
 
   drop(ev: IDropEvent) {
-    moveItemInArray(this.movies, ev.previousIndex, ev.currentIndex);
+    moveItemInArray(this.items, ev.previousIndex, ev.currentIndex);
   }
 }

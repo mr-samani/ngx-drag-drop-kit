@@ -1,0 +1,19 @@
+<div class="form-container">
+  <div ngxDropList class="example-list" [data]="sourceList">
+    @for (item of sourceList; track item) {
+    <div class="example-box" ngxDraggable>
+      <div class="example-custom-placeholder" *cdkDragPlaceholder></div>
+      {{ item }}
+    </div>
+    }
+  </div>
+
+  <div class="target-container">
+    <div class="inner" ngxDropList [data]="targetList" (drop)="drop($event)">
+      <div class="example-box" ngxDraggable *ngFor="let item of targetList">
+        <div class="example-custom-placeholder" *cdkDragPlaceholder></div>
+        {{ item }}
+      </div>
+    </div>
+  </div>
+</div>

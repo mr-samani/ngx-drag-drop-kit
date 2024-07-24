@@ -2,10 +2,10 @@
   <div class="example-list">
     <h6>TODO</h6>
     <div class="inner" ngxDropList (drop)="drop($event)" [data]="todoList">
-      @for (movie of todoList; track movie) {
+      @for (item of todoList; track item) {
       <div class="example-box" ngxDraggable>
         <div class="example-custom-placeholder" *cdkDragPlaceholder></div>
-        {{ movie }}
+        {{ item }}
       </div>
       }
     </div>
@@ -14,10 +14,10 @@
   <div class="example-list">
     <h6>In progress</h6>
     <div class="inner" ngxDropList (drop)="drop($event)" [data]="inProgressList">
-      @for (movie of inProgressList; track movie) {
+      @for (item of inProgressList; track item) {
       <div class="example-box" ngxDraggable>
         <div class="example-custom-placeholder" *cdkDragPlaceholder></div>
-        {{ movie }}
+        {{ item }}
       </div>
       }
     </div>
@@ -26,10 +26,10 @@
   <div class="example-list">
     <h6>Completed</h6>
     <div class="inner" ngxDropList (drop)="drop($event)" [data]="completedList">
-      @for (movie of completedList; track movie) {
+      @for (item of completedList; track item) {
       <div class="example-box" ngxDraggable>
         <div class="example-custom-placeholder" *cdkDragPlaceholder></div>
-        {{ movie }}
+        {{ item }}
       </div>
       }
     </div>
@@ -38,10 +38,10 @@
   <div class="example-list">
     <h6>Failed</h6>
     <div class="inner" ngxDropList (drop)="drop($event)" [data]="failedList">
-      @for (movie of failedList; track movie) {
+      @for (item of failedList; track item) {
       <div class="example-box" ngxDraggable>
         <div class="example-custom-placeholder" *cdkDragPlaceholder></div>
-        {{ movie }}
+        {{ item }}
       </div>
       }
     </div>
