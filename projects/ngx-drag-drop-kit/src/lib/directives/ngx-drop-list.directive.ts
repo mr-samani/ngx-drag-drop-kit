@@ -5,6 +5,7 @@ import {
   ElementRef,
   EventEmitter,
   Inject,
+  Input,
   OnInit,
   Optional,
   Output,
@@ -15,7 +16,8 @@ import {
 import { NgxDragDropService } from '../services/ngx-drag-drop.service';
 import { NgxDraggableDirective } from './ngx-draggable.directive';
 import { DOCUMENT } from '@angular/common';
-export interface IDropEvent {
+import { Subscription, fromEvent } from 'rxjs';
+export interface IDropEvent<DataType=any> {
   /** Index of the item when it was picked up. */
   previousIndex: number;
   /** Current index of the item. */
@@ -23,9 +25,9 @@ export interface IDropEvent {
   /** Item that is being dropped. */
   item: NgxDraggableDirective;
   /** Container in which the item was dropped. */
-  container: NgxDropListDirective;
+  container: NgxDropListDirective<DataType>;
   /** Container from which the item was picked up. Can be the same as the `container`. */
-  previousContainer: NgxDropListDirective;
+  previousContainer: NgxDropListDirective<DataType>;
   //   /** Distance in pixels that the user has dragged since the drag sequence started. */
   //   distance: {
   //     x: number;
@@ -46,13 +48,15 @@ export interface IDropEvent {
     '[style.scroll-snap-type]': 'dragging ? "none": "" ',
   },
 })
-export class NgxDropListDirective implements AfterViewInit {
+export class NgxDropListDirective<T = any> implements AfterViewInit {
+  @Input() data?: T;
   @Output() drop = new EventEmitter<IDropEvent>();
   @ContentChildren(NgxDraggableDirective)
   _draggables?: QueryList<NgxDraggableDirective>;
   _el: HTMLElement;
   placeHolder!: HTMLElement;
   dragging = false;
+  private subscriptions: Subscription[] = [];
   constructor(
     private _dragDropService: NgxDragDropService,
     elRef: ElementRef<HTMLElement>,
@@ -70,6 +74,19 @@ export class NgxDropListDirective implements AfterViewInit {
       this.onChangeDragChilds();
       // console.log('_draggables', 'change', r);
     });
+
+    this.subscriptions.push(
+      fromEvent<TouchEvent>(this._el, 'mouseenter').subscribe((ev) => {
+        this._dragDropService.enterDropList(this);
+      }),
+      fromEvent<TouchEvent>(this._el, 'mouseleave').subscribe((ev) => {
+        this._dragDropService.leaveDropList(this);
+      })
+    );
+  }
+
+  ngOnDestroy() {
+    this.subscriptions.forEach((sub) => sub.unsubscribe());
   }
 
   onChangeDragChilds() {

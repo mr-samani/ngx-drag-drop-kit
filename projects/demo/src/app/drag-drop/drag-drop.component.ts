@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { NgxDragDropKitModule } from '../../../../ngx-drag-drop-kit/src/lib/ngx-drag-drop-kit.module';
 import { IDropEvent } from '../../../../ngx-drag-drop-kit/src/lib/directives/ngx-drop-list.directive';
-import { moveItemInArray } from '../../../../ngx-drag-drop-kit/src/drag-utils';
+import { moveItemInArray, transferArrayItem } from '../../../../ngx-drag-drop-kit/src/drag-utils';
 
 @Component({
   selector: 'app-drag-drop',
@@ -41,7 +41,16 @@ export class DragDropComponent {
     this.movies.splice(rndPosition, 0, rndName);
   }
 
-  drop(ev: IDropEvent) {
-    moveItemInArray(this.movies, ev.previousIndex, ev.currentIndex);
+  drop(event: IDropEvent) {
+    if (event.previousContainer === event.container) {
+      moveItemInArray(event.container.data, event.previousIndex, event.currentIndex);
+    } else {
+      transferArrayItem(
+        event.previousContainer.data,
+        event.container.data,
+        event.previousIndex,
+        event.currentIndex,
+      );
+    }
   }
 }

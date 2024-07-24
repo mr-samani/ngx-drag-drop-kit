@@ -95,9 +95,11 @@ export class NgxDraggableDirective implements OnDestroy, OnInit {
   @HostListener('document:mouseup', ['$event'])
   @HostListener('document:touchend', ['$event'])
   onEndDrag(ev: MouseEvent | TouchEvent) {
+    if(this.dragging){
+      this._dragService.stopDrag(this);
+    }
     this.dragging = false;
     this._autoScroll._stopScrolling();
-    this._dragService.stopDrag(this);
   }
 
   onMouseDown(ev: MouseEvent | TouchEvent) {
