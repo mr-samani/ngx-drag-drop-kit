@@ -1,13 +1,5 @@
 import { DOCUMENT } from '@angular/common';
-import {
-  Directive,
-  ElementRef,
-  HostListener,
-  Inject,
-  Input,
-  OnInit,
-  Renderer2,
-} from '@angular/core';
+import { Directive, ElementRef, HostListener, Inject, Input, OnInit, Renderer2 } from '@angular/core';
 import { Corner } from '../../utils/corner-type';
 import { checkBoundX, checkBoundY } from '../../utils/check-boundary';
 import { getXYfromTransform } from '../../utils/get-transform';
@@ -27,7 +19,8 @@ export class NgxResizableDirective implements OnInit {
   @Input() boundary?: HTMLElement;
   @Input() minWidth = 20;
   @Input() minHeight = 20;
-
+  @Input() disableTransform = false;
+  @Input() corners: Corner[] = ['top', 'right', 'left', 'bottom', 'topLeft', 'topRight', 'bottomLeft', 'bottomRight'];
   protected resizer!: Function;
   protected px: number = 0;
   protected py: number = 0;
@@ -41,16 +34,6 @@ export class NgxResizableDirective implements OnInit {
   protected top!: number;
 
   dragging = false;
-  protected corners: Corner[] = [
-    'top',
-    'right',
-    'left',
-    'bottom',
-    'topLeft',
-    'topRight',
-    'bottomLeft',
-    'bottomRight',
-  ];
   el: HTMLElement;
   constructor(
     elRef: ElementRef<HTMLElement>,
@@ -58,10 +41,10 @@ export class NgxResizableDirective implements OnInit {
     @Inject(DOCUMENT) private document: Document
   ) {
     this.el = elRef.nativeElement;
-    this.addCornerDiv();
   }
 
   ngOnInit(): void {
+    this.addCornerDiv();
     this.initXY();
   }
   initXY() {
@@ -120,10 +103,8 @@ export class NgxResizableDirective implements OnInit {
 
   private onCornerClick(event: MouseEvent | TouchEvent, resizer: Function) {
     this.dragging = true;
-    this.px =
-      event instanceof MouseEvent ? event.clientX : event.touches[0].clientX;
-    this.py =
-      event instanceof MouseEvent ? event.clientY : event.touches[0].clientY;
+    this.px = event instanceof MouseEvent ? event.clientX : event.touches[0].clientX;
+    this.py = event instanceof MouseEvent ? event.clientY : event.touches[0].clientY;
 
     this.resizer = resizer;
     event.preventDefault();
@@ -146,7 +127,9 @@ export class NgxResizableDirective implements OnInit {
   }
 
   public setElPosition() {
-    this.el.style.transform = `translate(${this.x}px,${this.y}px)`;
+    if (!this.disableTransform) {
+      this.el.style.transform = `translate(${this.x}px,${this.y}px)`;
+    }
     //this.el.style.removeProperty('position');
     // this.el.style.position = 'fixed';
     this.el.style.width = this.width + 'px';
@@ -173,12 +156,7 @@ export class NgxResizableDirective implements OnInit {
     // }
   }
 
-  private onCornerMove(
-    offsetX: number,
-    offsetY: number,
-    clientX: number,
-    clientY: number
-  ) {
+  private onCornerMove(offsetX: number, offsetY: number, clientX: number, clientY: number) {
     let lastX = this.x;
     let lastY = this.y;
     let pWidth = this.width;

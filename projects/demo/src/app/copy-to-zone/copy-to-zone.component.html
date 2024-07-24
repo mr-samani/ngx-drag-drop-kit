@@ -10,7 +10,13 @@
 
   <div class="target-container">
     <div class="inner" ngxDropList [data]="targetList" (drop)="drop($event)">
-      <div class="example-box" *ngFor="let item of targetList" ngxDraggable ngxResizable>
+      <div
+        class="example-box"
+        *ngFor="let item of targetList"
+        ngxDraggable
+        ngxResizable
+        [disableTransform]="true"
+        [corners]="resizeCorner">
         <div class="example-custom-placeholder" *cdkDragPlaceholder></div>
         {{ item }}
       </div>

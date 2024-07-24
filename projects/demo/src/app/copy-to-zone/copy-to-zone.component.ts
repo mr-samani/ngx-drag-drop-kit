@@ -3,6 +3,7 @@ import { IDropEvent } from '../../../../ngx-drag-drop-kit/src/lib/directives/ngx
 import { copyArrayItem, moveItemInArray, transferArrayItem } from '../../../../ngx-drag-drop-kit/src/drag-utils';
 import { NgxDragDropKitModule } from '../../../../ngx-drag-drop-kit/src/lib/ngx-drag-drop-kit.module';
 import { CommonModule } from '@angular/common';
+import { Corner } from '../../../../ngx-drag-drop-kit/src/utils/corner-type';
 
 @Component({
   selector: 'app-copy-to-zone',
@@ -14,6 +15,7 @@ import { CommonModule } from '@angular/common';
 export class CopyToZoneComponent {
   sourceList: string[] = [];
   targetList: string[] = [];
+  resizeCorner: Corner[] = ['right', 'bottom', 'bottomRight'];
   constructor() {
     this.sourceList = [];
     for (let i = 1; i < 80; i++) {
