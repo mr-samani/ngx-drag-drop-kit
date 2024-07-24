@@ -17,7 +17,7 @@ import { NgxDragDropService } from '../services/ngx-drag-drop.service';
 import { NgxDraggableDirective } from './ngx-draggable.directive';
 import { DOCUMENT } from '@angular/common';
 import { Subscription, fromEvent } from 'rxjs';
-export interface IDropEvent<DataType=any> {
+export interface IDropEvent<DataType = any> {
   /** Index of the item when it was picked up. */
   previousIndex: number;
   /** Current index of the item. */
@@ -97,7 +97,7 @@ export class NgxDropListDirective<T = any> implements AfterViewInit {
 
   createPlaceHolder() {
     this.placeHolder = this._document.createElement('div');
-    this.placeHolder.innerHTML = 'placehlder';
+    this.placeHolder.style.display = 'inline-block';
     this.placeHolder.className = 'ngx-drag-placeholder';
     this._el.insertAdjacentElement('afterbegin', this.placeHolder);
   }

@@ -24,10 +24,14 @@ export class NgxPlaceholderService {
     });
   }
 
-  public showPlaceholder(dropList: NgxDropListDirective) {
+  public showPlaceholder(dropList: NgxDropListDirective, activeDragDomRec?: DOMRect) {
     this._placeholder = dropList.placeHolder;
     this._placeHolderIndex = 0;
     this._renderer.setStyle(this._placeholder, 'display', 'block');
+    if (activeDragDomRec) {
+      this._renderer.setStyle(this._placeholder, 'width', activeDragDomRec.width + 'px');
+      this._renderer.setStyle(this._placeholder, 'height', activeDragDomRec.height + 'px');
+    }
   }
 
   public hidePlaceholder(dropList: NgxDropListDirective) {
@@ -74,8 +78,6 @@ export class NgxPlaceholderService {
         this._placeHolderIndex++;
       }
     }
-    this._placeholder.innerHTML = 'plc=' + this._placeHolderIndex;
-    // console.log(enteredDrag.el.innerHTML);
     enteredDrag.containerDropList?._draggables?.forEach((dropitem, index) => {
       // console.log(currentDrag.el.innerHTML, dropitem.el.innerHTML);
       //console.log(index > findIndex);

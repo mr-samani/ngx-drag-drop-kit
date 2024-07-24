@@ -1,4 +1,4 @@
-import { Inject, Injectable, Renderer2, RendererFactory2 } from '@angular/core';
+import { Inject, Injectable, Renderer2, RendererFactory2, RendererStyleFlags2 } from '@angular/core';
 import { IDropEvent, NgxDropListDirective } from '../directives/ngx-drop-list.directive';
 import { NgxDraggableDirective } from '../directives/ngx-draggable.directive';
 import { getXYfromTransform } from '../../utils/get-transform';
@@ -12,6 +12,7 @@ export class NgxDragDropService {
 
   _dropList = new Set<NgxDropListDirective>();
   private _activeDragInstances: NgxDraggableDirective[] = [];
+  private _activeDragDomRect?: DOMRect;
   private _activeDropListInstances?: NgxDropListDirective;
   private _renderer: Renderer2;
   private _dropEvent: IDropEvent | null = null;
@@ -32,6 +33,7 @@ export class NgxDragDropService {
 
   startDrag(drag: NgxDraggableDirective) {
     this.isDragging = true;
+    this._activeDragDomRect = drag.el.getBoundingClientRect();
     this._activeDragInstances.push(drag);
 
     let previousIndex = 0;
@@ -51,7 +53,7 @@ export class NgxDragDropService {
     };
 
     const dragElRec = drag.el.getBoundingClientRect();
-    this._renderer.setStyle(drag.el, 'display', 'none');
+    this._renderer.setStyle(drag.el, 'display', 'none', RendererStyleFlags2.Important);
     this.dragElementInBody = this._document.createElement(drag.el.tagName);
     this.dragElementInBody.innerHTML = drag.el.innerHTML;
     this.dragElementInBody.className = drag.el.className + ' ngx-drag-drop';
@@ -63,7 +65,7 @@ export class NgxDragDropService {
     this.dragElementInBody.style.height = dragElRec.height + 'px';
     this.dragElementInBody.style.pointerEvents = 'none';
     this._document.body.appendChild(this.dragElementInBody);
-    this.placeholderService.showPlaceholder(this._activeDropListInstances);
+    this.placeholderService.showPlaceholder(this._activeDropListInstances, this._activeDragDomRect);
     this.initDrag(drag);
   }
 
@@ -85,7 +87,7 @@ export class NgxDragDropService {
     this._activeDropListInstances = drop;
     this.dragOverItem = undefined;
     if (!this.isDragging) return;
-    this.placeholderService.showPlaceholder(this._activeDropListInstances);
+    this.placeholderService.showPlaceholder(this._activeDropListInstances, this._activeDragDomRect);
     if (!this._activeDropListInstances || !this._activeDragInstances.length) return;
     this.placeholderService.updatePlaceholderPosition$.next({
       currentDrag: this._activeDragInstances[0],
