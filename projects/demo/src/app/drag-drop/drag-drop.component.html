@@ -1,10 +1,21 @@
-<div ngxDropList class="example-list" (drop)="drop($event)">
+<div class="kanban-view">
+  <div ngxDropList class="example-list" (drop)="drop($event)">
     @for (movie of movies; track movie) {
-      <div class="example-box" ngxDraggable>
-        <div class="example-custom-placeholder" *cdkDragPlaceholder></div>
-        {{movie}}
-      </div>
+    <div class="example-box" ngxDraggable>
+      <div class="example-custom-placeholder" *cdkDragPlaceholder></div>
+      {{ movie }}
+    </div>
     }
   </div>
 
-  <button (click)="add()">add</button>
+  <div ngxDropList class="example-list" (drop)="drop($event)">
+    @for (movie of dropedList; track movie) {
+    <div class="example-box" ngxDraggable>
+      <div class="example-custom-placeholder" *cdkDragPlaceholder></div>
+      {{ movie }}
+    </div>
+    }
+  </div>
+</div>
+
+<button (click)="add()">add</button>

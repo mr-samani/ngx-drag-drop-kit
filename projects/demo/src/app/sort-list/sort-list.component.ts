@@ -1,17 +1,16 @@
 import { Component } from '@angular/core';
-import { NgxDragDropKitModule } from '../../../../ngx-drag-drop-kit/src/lib/ngx-drag-drop-kit.module';
-import { IDropEvent } from '../../../../ngx-drag-drop-kit/src/lib/directives/ngx-drop-list.directive';
 import { moveItemInArray } from '../../../../ngx-drag-drop-kit/src/drag-utils';
+import { IDropEvent } from '../../../../ngx-drag-drop-kit/src/lib/directives/ngx-drop-list.directive';
+import { NgxDragDropKitModule } from '../../../../ngx-drag-drop-kit/src/lib/ngx-drag-drop-kit.module';
 
 @Component({
-  selector: 'app-drag-drop',
+  selector: 'app-sort-list',
   standalone: true,
   imports: [NgxDragDropKitModule],
-  templateUrl: './drag-drop.component.html',
-  styleUrl: './drag-drop.component.scss',
+  templateUrl: './sort-list.component.html',
+  styleUrl: './sort-list.component.scss'
 })
-export class DragDropComponent {
-  dropedList=[];
+export class SortListComponent {
   movies = [
     'Episode I - The Phantom Menace',
     'Episode II - Attack of the Clones',
@@ -26,7 +25,7 @@ export class DragDropComponent {
 
   constructor() {
     this.movies = [];
-    for (let i = 1; i < 8; i++) {
+    for (let i = 1; i < 80; i++) {
       this.movies.push('Episode ' + i);
     }
   }
