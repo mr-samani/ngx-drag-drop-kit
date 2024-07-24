@@ -11,46 +11,33 @@ import { moveItemInArray, transferArrayItem } from '../../../../ngx-drag-drop-ki
   styleUrl: './drag-drop.component.scss',
 })
 export class DragDropComponent {
-  dropedList=[];
-  movies = [
-    'Episode I - The Phantom Menace',
-    'Episode II - Attack of the Clones',
-    'Episode III - Revenge of the Sith',
-    'Episode IV - A New Hope',
-    'Episode V - The Empire Strikes Back',
-    'Episode VI - Return of the Jedi',
-    'Episode VII - The Force Awakens',
-    'Episode VIII - The Last Jedi',
-    'Episode IX - The Rise of Skywalker',
-  ];
+  inProgressList: string[] = [];
+  completedList: string[] = [];
+  failedList: string[] = [];
+  todoList: string[] = [];
 
   constructor() {
-    this.movies = [];
+    this.todoList = [];
     for (let i = 1; i < 8; i++) {
-      this.movies.push('Episode ' + i);
+      this.todoList.push('Episode ' + i);
     }
   }
 
   // drop(event: CdkDragDrop<string[]>) {
-  //  // moveItemInArray(this.movies, event.previousIndex, event.currentIndex);
+  //  // moveItemInArray(this.todoList, event.previousIndex, event.currentIndex);
   // }
 
   add() {
-    let rndPosition = Math.floor(Math.random() * this.movies.length);
+    let rndPosition = Math.floor(Math.random() * this.todoList.length);
     let rndName = 'added item_' + Math.round(Math.random() * 9999);
-    this.movies.splice(rndPosition, 0, rndName);
+    this.todoList.splice(rndPosition, 0, rndName);
   }
 
   drop(event: IDropEvent) {
     if (event.previousContainer === event.container) {
       moveItemInArray(event.container.data, event.previousIndex, event.currentIndex);
     } else {
-      transferArrayItem(
-        event.previousContainer.data,
-        event.container.data,
-        event.previousIndex,
-        event.currentIndex,
-      );
+      transferArrayItem(event.previousContainer.data, event.container.data, event.previousIndex, event.currentIndex);
     }
   }
 }

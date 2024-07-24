@@ -1,20 +1,50 @@
 <div class="kanban-view">
-  <div ngxDropList class="example-list" (drop)="drop($event)" [data]="movies">
-    @for (movie of movies; track movie) {
-    <div class="example-box" ngxDraggable>
-      <div class="example-custom-placeholder" *cdkDragPlaceholder></div>
-      {{ movie }}
+  <div class="example-list">
+    <h6>TODO</h6>
+    <div class="inner" ngxDropList (drop)="drop($event)" [data]="todoList">
+      @for (movie of todoList; track movie) {
+      <div class="example-box" ngxDraggable>
+        <div class="example-custom-placeholder" *cdkDragPlaceholder></div>
+        {{ movie }}
+      </div>
+      }
     </div>
-    }
   </div>
 
-  <div ngxDropList class="example-list" (drop)="drop($event)" [data]="dropedList">
-    @for (movie of dropedList; track movie) {
-    <div class="example-box" ngxDraggable>
-      <div class="example-custom-placeholder" *cdkDragPlaceholder></div>
-      {{ movie }}
+  <div class="example-list">
+    <h6>In progress</h6>
+    <div class="inner" ngxDropList (drop)="drop($event)" [data]="inProgressList">
+      @for (movie of inProgressList; track movie) {
+      <div class="example-box" ngxDraggable>
+        <div class="example-custom-placeholder" *cdkDragPlaceholder></div>
+        {{ movie }}
+      </div>
+      }
     </div>
-    }
+  </div>
+
+  <div class="example-list">
+    <h6>Completed</h6>
+    <div class="inner" ngxDropList (drop)="drop($event)" [data]="completedList">
+      @for (movie of completedList; track movie) {
+      <div class="example-box" ngxDraggable>
+        <div class="example-custom-placeholder" *cdkDragPlaceholder></div>
+        {{ movie }}
+      </div>
+      }
+    </div>
+  </div>
+
+  <div class="example-list">
+    <h6>Failed</h6>
+    <div class="inner" ngxDropList (drop)="drop($event)" [data]="failedList">
+      @for (movie of failedList; track movie) {
+      <div class="example-box" ngxDraggable>
+        <div class="example-custom-placeholder" *cdkDragPlaceholder></div>
+        {{ movie }}
+      </div>
+      }
+    </div>
   </div>
 </div>
 

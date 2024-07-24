@@ -1,6 +1,16 @@
 .kanban-view {
   display: flex;
   gap: 10px;
+  h6 {
+    padding: 10px;
+    margin: 0;
+    border-bottom: 1px rgb(133, 133, 199) solid;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background: #fff;
+    height: 45px;
+  }
 }
 .example-list {
   width: 500px;
@@ -12,6 +22,11 @@
   border-radius: 4px;
   overflow: auto;
   max-height: 1000px;
+  min-height: 50vh;
+  .inner {
+    background-color: #ccc;
+    height: calc(100% - 45px);
+  }
 }
 
 .example-box {
