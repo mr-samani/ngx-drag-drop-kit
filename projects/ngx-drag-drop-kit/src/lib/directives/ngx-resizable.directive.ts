@@ -156,21 +156,21 @@ export class NgxResizableDirective implements OnInit {
   // TODO : resize material dialog
   // TODO not working in rtl
   private checkFlexibale() {
-    if (!document.defaultView || !this.el.parentElement) {
-      return;
-    }
-    let parentStyle = document.defaultView.getComputedStyle(
-      this.el.parentElement
-    );
-    if (
-      (parentStyle.alignItems && parentStyle.alignItems !== 'normal') ||
-      (parentStyle.justifyContent && parentStyle.justifyContent !== 'normal')
-    ) {
-      this.el.parentElement.style.display = 'block';
-      this.el.parentElement.style.alignItems = 'unset';
-      this.el.parentElement.style.justifyContent = 'unset';
-      this.el.style.position = 'unset !important';
-    }
+    // if (!document.defaultView || !this.el.parentElement) {
+    //   return;
+    // }
+    // let parentStyle = document.defaultView.getComputedStyle(
+    //   this.el.parentElement
+    // );
+    // if (
+    //   (parentStyle.alignItems && parentStyle.alignItems !== 'normal') ||
+    //   (parentStyle.justifyContent && parentStyle.justifyContent !== 'normal')
+    // ) {
+    //   this.el.parentElement.style.display = 'block';
+    //   this.el.parentElement.style.alignItems = 'unset';
+    //   this.el.parentElement.style.justifyContent = 'unset';
+    //   this.el.style.position = 'unset !important';
+    // }
   }
 
   private onCornerMove(

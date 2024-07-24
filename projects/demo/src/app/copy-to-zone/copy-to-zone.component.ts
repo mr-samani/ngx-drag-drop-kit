@@ -7,7 +7,7 @@ import { CommonModule } from '@angular/common';
 @Component({
   selector: 'app-copy-to-zone',
   standalone: true,
-  imports: [NgxDragDropKitModule,CommonModule],
+  imports: [NgxDragDropKitModule, CommonModule],
   templateUrl: './copy-to-zone.component.html',
   styleUrl: './copy-to-zone.component.scss',
 })
@@ -28,6 +28,10 @@ export class CopyToZoneComponent {
     //   transferArrayItem(event.previousContainer.data, event.container.data, event.previousIndex, event.currentIndex);
     // }
     console.log(event);
-    copyArrayItem(event.previousContainer.data, event.container.data, event.previousIndex, event.currentIndex);
+    if (event.previousContainer !== event.container) {
+      copyArrayItem(event.previousContainer.data, event.container.data, event.previousIndex, event.currentIndex);
+    } else {
+      moveItemInArray(event.container.data, event.previousIndex, event.currentIndex);
+    }
   }
 }

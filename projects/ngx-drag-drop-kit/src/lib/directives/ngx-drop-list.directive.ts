@@ -50,6 +50,7 @@ export interface IDropEvent<DataType = any> {
 })
 export class NgxDropListDirective<T = any> implements AfterViewInit {
   @Input() data?: T;
+  @Input() disableSort: boolean = false;
   @Output() drop = new EventEmitter<IDropEvent>();
   @ContentChildren(NgxDraggableDirective)
   _draggables?: QueryList<NgxDraggableDirective>;
@@ -66,7 +67,6 @@ export class NgxDropListDirective<T = any> implements AfterViewInit {
   }
 
   ngAfterViewInit(): void {
-    // console.log(this._draggables);
     this.onChangeDragChilds();
     this._draggables?.changes.subscribe((r) => {
       this.onChangeDragChilds();
@@ -92,8 +92,6 @@ export class NgxDropListDirective<T = any> implements AfterViewInit {
       el.containerDropList = this;
     });
   }
-
-
 
   onDrop(event: IDropEvent) {
     this.drop.emit(event);

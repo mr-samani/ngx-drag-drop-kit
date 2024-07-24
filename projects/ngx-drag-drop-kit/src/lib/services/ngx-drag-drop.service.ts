@@ -65,12 +65,14 @@ export class NgxDragDropService {
     this.dragElementInBody.style.height = dragElRec.height + 'px';
     this.dragElementInBody.style.pointerEvents = 'none';
     this._document.body.appendChild(this.dragElementInBody);
-    this.placeholderService.showPlaceholder({
-      currentDrag: this._activeDragInstances[0],
-      isAfter: this.isAfter,
-      activeDragDomRec: this._activeDragDomRect,
-      dropList: this._activeDropListInstances,
-    });
+    if (this._activeDropListInstances.disableSort == false) {
+      this.placeholderService.showPlaceholder({
+        currentDrag: this._activeDragInstances[0],
+        isAfter: this.isAfter,
+        activeDragDomRec: this._activeDragDomRect,
+        dropList: this._activeDropListInstances,
+      });
+    }
     this.initDrag(drag);
   }
 
@@ -99,7 +101,12 @@ export class NgxDragDropService {
     this._activeDropListInstances = drop;
     this.dragOverItem = undefined;
     if (!this.isDragging) return;
-    if (!this._activeDropListInstances || !this._activeDragInstances.length) return;
+    if (
+      !this._activeDropListInstances ||
+      !this._activeDragInstances.length ||
+      this._activeDropListInstances.disableSort
+    )
+      return;
     this.placeholderService.updatePlaceholderPosition$.next({
       currentDrag: this._activeDragInstances[0],
       isAfter: this.isAfter,
@@ -143,7 +150,12 @@ export class NgxDragDropService {
   }
 
   private initDrag(enteredDrag: NgxDraggableDirective) {
-    if (!this._activeDropListInstances || !this._activeDragInstances.length) return;
+    if (
+      !this._activeDropListInstances ||
+      !this._activeDragInstances.length ||
+      this._activeDropListInstances.disableSort
+    )
+      return;
     this.placeholderService.updatePlaceholderPosition$.next({
       currentDrag: this._activeDragInstances[0],
       enteredDrag,

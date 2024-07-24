@@ -1,5 +1,5 @@
 <div class="form-container">
-  <div ngxDropList class="example-list" [data]="sourceList">
+  <div ngxDropList class="example-list" [data]="sourceList" [disableSort]="true">
     @for (item of sourceList; track item) {
     <div class="example-box" ngxDraggable>
       <div class="example-custom-placeholder" *cdkDragPlaceholder></div>
@@ -10,7 +10,7 @@
 
   <div class="target-container">
     <div class="inner" ngxDropList [data]="targetList" (drop)="drop($event)">
-      <div class="example-box" ngxDraggable *ngFor="let item of targetList">
+      <div class="example-box" *ngFor="let item of targetList" ngxDraggable ngxResizable>
         <div class="example-custom-placeholder" *cdkDragPlaceholder></div>
         {{ item }}
       </div>
