@@ -78,15 +78,19 @@ export class NgxDragDropService {
     this.isDragging = false;
     const index = this._activeDragInstances.indexOf(drag);
     if (index > -1) {
-      this._activeDragInstances.splice(index, 1);
       drag.el.style.display = '';
       this.dragElementInBody?.remove();
       if (this._activeDropListInstances) {
         this.placeholderService.hidePlaceholder();
+        this._activeDropListInstances._draggables?.forEach((el) => {
+          this._renderer.removeStyle(el.el, 'transform');
+        });
       }
-      this._activeDropListInstances?._draggables?.forEach((el) => {
+      this._activeDragInstances?.forEach((el) => {
         this._renderer.removeStyle(el.el, 'transform');
       });
+      this._activeDragInstances.splice(index, 1);
+
       this.droped(drag);
     }
   }
@@ -123,7 +127,7 @@ export class NgxDragDropService {
 
   // prettier-ignore
   dragMove(drag: NgxDraggableDirective, ev: MouseEvent | TouchEvent) {
-    if (!this._activeDropListInstances || !this._activeDragInstances.length || !this.dragElementInBody) return;
+    if (!this._activeDragInstances.length || !this.dragElementInBody) return;
     this._renderer.setStyle(this.dragElementInBody,'transform',drag.el.style.transform);
     if(this.dragOverItem){
         const position = getPointerPosition(ev);
