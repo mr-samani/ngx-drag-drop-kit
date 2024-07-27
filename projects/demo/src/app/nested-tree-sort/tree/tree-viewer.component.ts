@@ -16,8 +16,6 @@ import { CommonModule } from '@angular/common';
 export class TreeViewerComponent {
   @Input() items: TreeModel[] = [];
   drop(event: IDropEvent) {
-    console.log(event);
     transferArrayItem(event.previousContainer.data, event.container.data, event.previousIndex, event.currentIndex);
-    console.log('new =>', event.container.data);
   }
 }

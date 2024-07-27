@@ -18,6 +18,7 @@ export class NgxPlaceholderService {
   _placeholder: HTMLElement | undefined;
   _placeHolderIndex = 0;
   public updatePlaceholderPosition$ = new Subject<IUpdatePlaceholderPosition>();
+  public _activeDropListInstances?: NgxDropListDirective;
 
   constructor(rendererFactory: RendererFactory2, @Inject(DOCUMENT) private _document: Document) {
     this._renderer = rendererFactory.createRenderer(null, null);
@@ -33,6 +34,7 @@ export class NgxPlaceholderService {
 
   public showPlaceholder(input: IUpdatePlaceholderPosition) {
     const { activeDragDomRec, isAfter, enteredDrag, dropList } = input;
+    this._activeDropListInstances = dropList;
     this.hidePlaceholder();
     this._placeholder = this._document.createElement('div');
     this._placeholder.style.display = 'inline-block';
@@ -53,6 +55,11 @@ export class NgxPlaceholderService {
   public hidePlaceholder() {
     if (this._placeholder) {
       this._placeholder.remove();
+    }
+    if(this._activeDropListInstances){
+      this._activeDropListInstances._draggables?.forEach((el) => {
+        this._renderer.removeStyle(el.el, 'transform');
+      });
     }
   }
 
