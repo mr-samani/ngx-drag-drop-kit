@@ -70,9 +70,9 @@ export class NgxDropListDirective<T = any> implements AfterViewInit {
     this.onChangeDragChilds();
     this._draggables?.changes.subscribe((r) => {
       this.onChangeDragChilds();
-      // console.log('_draggables', 'change', r);
+      //console.log('_draggables', 'change', r);
     });
-
+   // console.log(this._draggables);
     this.subscriptions.push(
       fromEvent<TouchEvent>(this._el, 'mouseenter').subscribe((ev) => {
         this._dragDropService.enterDropList(this);
@@ -84,7 +84,8 @@ export class NgxDropListDirective<T = any> implements AfterViewInit {
   }
 
   ngOnDestroy() {
-    this.subscriptions.forEach((sub) => sub.unsubscribe());
+     this.subscriptions.forEach((sub) => sub.unsubscribe());
+    this._draggables?.reset([]);
   }
 
   onChangeDragChilds() {

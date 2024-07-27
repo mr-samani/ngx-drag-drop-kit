@@ -35,8 +35,10 @@ export class NgxDragDropService {
     this.isDragging = true;
     this._activeDragDomRect = drag.el.getBoundingClientRect();
     this._activeDragInstances.push(drag);
-
     let previousIndex = 0;
+    if (!this._activeDropListInstances) {
+      this._activeDropListInstances = drag.containerDropList;
+    }
     if (!this._activeDropListInstances || !this._activeDragInstances.length) return;
     this._activeDropListInstances.dragging = true;
     this._activeDropListInstances._draggables?.forEach((el, i) => {
@@ -51,7 +53,7 @@ export class NgxDragDropService {
       item: drag,
       previousContainer: this._activeDropListInstances,
     };
-
+    console.log('_dropEvent in drag start', this._dropEvent);
     const dragElRec = drag.el.getBoundingClientRect();
     this._renderer.setStyle(drag.el, 'display', 'none', RendererStyleFlags2.Important);
     this.dragElementInBody = this._document.createElement(drag.el.tagName);

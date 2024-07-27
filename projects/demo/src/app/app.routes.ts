@@ -4,6 +4,7 @@ import { DragDropComponent } from './drag-drop/drag-drop.component';
 import { SortListComponent } from './sort-list/sort-list.component';
 import { HorizontalListComponent } from './horizontal-list/horizontal-list.component';
 import { CopyToZoneComponent } from './copy-to-zone/copy-to-zone.component';
+import { NestedTreeSortComponent } from './nested-tree-sort/nested-tree-sort.component';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'drag-drop', pathMatch: 'full' },
@@ -12,4 +13,5 @@ export const routes: Routes = [
   { path: 'drag-drop', component: DragDropComponent },
   { path: 'horizontal-list', component: HorizontalListComponent },
   { path: 'copy-to-zone', component: CopyToZoneComponent },
+  { path: 'nested-tree-sort', component: NestedTreeSortComponent },
 ];
