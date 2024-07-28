@@ -24,7 +24,9 @@ export class NgxPlaceholderService {
     this._renderer = rendererFactory.createRenderer(null, null);
     this.updatePlaceholderPosition$
       .pipe(
-        distinctUntilChanged()
+        distinctUntilChanged((prev, curr) => {
+          return prev.currentDrag == curr.currentDrag && prev.isAfter == curr.isAfter && prev.dropList == curr.dropList;
+        })
         // debounceTime(10)
       )
       .subscribe((input) => {
@@ -56,7 +58,7 @@ export class NgxPlaceholderService {
     if (this._placeholder) {
       this._placeholder.remove();
     }
-    if(this._activeDropListInstances){
+    if (this._activeDropListInstances) {
       this._activeDropListInstances._draggables?.forEach((el) => {
         this._renderer.removeStyle(el.el, 'transform');
       });

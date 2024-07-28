@@ -98,4 +98,24 @@
   transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
   pointer-events: none;
   max-width: 100%;
+  // animation: animationMaxHeight 1000ms, animationShow 300ms;
+  // transform-origin: 0% 0%;
+  // @keyframes animationMaxHeight {
+  //   from {
+  //     min-height: 0;
+  //     max-height: 0;
+  //   }
+  //   to {
+  //     max-height: 500px;
+  //   }
+  // }
+
+  // @keyframes animationShow {
+  //   from {
+  //     transform: scaleY(0);
+  //   }
+  //   to {
+  //     transform: scaleY(1);
+  //   }
+  // }
 }

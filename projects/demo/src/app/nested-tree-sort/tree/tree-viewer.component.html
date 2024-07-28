@@ -2,8 +2,9 @@
   @for (item of items; track item) {
   <div class="example-box" ngxDraggable>
     <div class="example-custom-placeholder" *cdkDragPlaceholder></div>
-    {{ item.name }}
+
     <div class="children" ngxDropList (drop)="drop($event)" [data]="item.children">
+      <div>{{ item.name }}</div>
       <tree *ngIf="item.children" [items]="item.children"></tree>
     </div>
   </div>
