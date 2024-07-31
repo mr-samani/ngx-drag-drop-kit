@@ -17,8 +17,9 @@ import { CommonModule } from '@angular/common';
 export class GridLayoutComponent {
   options: IGridLayoutOptions = {
     cols: 12,
+    gap:10,
     gridBackgroundConfig:{
-      borderWidth:6,
+      borderWidth:1,
     }
   };
 

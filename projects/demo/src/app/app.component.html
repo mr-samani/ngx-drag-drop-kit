@@ -8,6 +8,10 @@
     <li><a [routerLink]="['/nested-tree-sort']">nested-tree-sort</a></li>
     <li><a [routerLink]="['/grid-layout']">grid-layout</a></li>
   </ul>
+  <label>
+    <input type="checkbox" name="direction" [(ngModel)]="isRtl" (change)="changeDirection()" />
+    {{ isRtl ? 'RTL' : 'LTR' }}
+  </label>
 </nav>
 <div class="main-content">
   <router-outlet />
