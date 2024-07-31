@@ -18,7 +18,10 @@ import { getXYfromTransform } from '../../utils/get-transform';
   exportAs: 'NgxResizable',
 })
 export class NgxResizableDirective implements OnInit {
-  @Input() boundary?: HTMLElement;
+  private _boundary?: HTMLElement;
+  @Input() set boundary(val: HTMLElement) {
+    this._boundary = val;
+  }
   @Input() minWidth = 20;
   @Input() minHeight = 20;
   @Input() disableTransform = false;
@@ -181,62 +184,62 @@ export class NgxResizableDirective implements OnInit {
 
   /*--------------RESIZE FUNCTIONS--------------------------*/
   private topLeftResize(offsetX: number, offsetY: number) {
-    if (checkBoundX(this.boundary, this.el, offsetX, true, false)) {
+    if (checkBoundX(this._boundary, this.el, offsetX, true, false)) {
       this.x += offsetX;
       this.width -= offsetX;
     }
-    if (checkBoundY(this.boundary, this.el, offsetY)) {
+    if (checkBoundY(this._boundary, this.el, offsetY)) {
       this.y += offsetY;
       this.height -= offsetY;
     }
   }
 
   private topRightResize(offsetX: number, offsetY: number) {
-    if (checkBoundX(this.boundary, this.el, offsetX, false, true)) {
+    if (checkBoundX(this._boundary, this.el, offsetX, false, true)) {
       this.width += offsetX;
     }
-    if (checkBoundY(this.boundary, this.el, offsetY, true, false)) {
+    if (checkBoundY(this._boundary, this.el, offsetY, true, false)) {
       this.y += offsetY;
       this.height -= offsetY;
     }
   }
 
   private bottomLeftResize(offsetX: number, offsetY: number) {
-    if (checkBoundX(this.boundary, this.el, offsetX, true, false)) {
+    if (checkBoundX(this._boundary, this.el, offsetX, true, false)) {
       this.x += offsetX;
       this.width -= offsetX;
     }
-    if (checkBoundY(this.boundary, this.el, offsetY, false)) {
+    if (checkBoundY(this._boundary, this.el, offsetY, false)) {
       this.height += offsetY;
     }
   }
 
   private bottomRightResize(offsetX: number, offsetY: number) {
-    if (checkBoundX(this.boundary, this.el, offsetX, false)) {
+    if (checkBoundX(this._boundary, this.el, offsetX, false)) {
       this.width += offsetX;
     }
-    if (checkBoundY(this.boundary, this.el, offsetY, false)) {
+    if (checkBoundY(this._boundary, this.el, offsetY, false)) {
       this.height += offsetY;
     }
   }
   private topResize(offsetX: number, offsetY: number) {
-    if (checkBoundY(this.boundary, this.el, offsetY, true, false)) {
+    if (checkBoundY(this._boundary, this.el, offsetY, true, false)) {
       this.y += offsetY;
       this.height -= offsetY;
     }
   }
   private rightResize(offsetX: number, offsetY: number) {
-    if (checkBoundX(this.boundary, this.el, offsetX, false)) {
+    if (checkBoundX(this._boundary, this.el, offsetX, false)) {
       this.width += offsetX;
     }
   }
   private bottomResize(offsetX: number, offsetY: number) {
-    if (checkBoundY(this.boundary, this.el, offsetY, false)) {
+    if (checkBoundY(this._boundary, this.el, offsetY, false)) {
       this.height += offsetY;
     }
   }
   private leftResize(offsetX: number, offsetY: number) {
-    if (checkBoundX(this.boundary, this.el, offsetX, true, false)) {
+    if (checkBoundX(this._boundary, this.el, offsetX, true, false)) {
       this.x += offsetX;
       this.width -= offsetX;
     }

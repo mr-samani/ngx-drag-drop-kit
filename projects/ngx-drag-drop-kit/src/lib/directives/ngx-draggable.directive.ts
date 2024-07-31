@@ -41,7 +41,10 @@ export interface IPosition {
   exportAs: 'NgxDraggable',
 })
 export class NgxDraggableDirective implements OnDestroy, OnInit {
-  @Input() boundary?: HTMLElement;
+  private _boundary?: HTMLElement;
+  @Input() set boundary(val: HTMLElement) {
+    this._boundary = val;
+  }
   dragging = false;
   el: HTMLElement;
   protected x: number = 0;
@@ -130,11 +133,11 @@ export class NgxDraggableDirective implements OnDestroy, OnInit {
   }
 
   updatePosition(offsetX: number, offsetY: number, position: IPosition) {
-    if (checkBoundX(this.boundary, this.el, offsetX)) {
+    if (checkBoundX(this._boundary, this.el, offsetX)) {
       this.x += offsetX;
       this.previousXY.x = position.x;
     }
-    if (checkBoundY(this.boundary, this.el, offsetY)) {
+    if (checkBoundY(this._boundary, this.el, offsetY)) {
       this.y += offsetY;
       this.previousXY.y = position.y;
     }
