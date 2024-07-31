@@ -48,6 +48,7 @@ export class NgxDraggableDirective implements OnDestroy, OnInit {
     this._boundary = val;
   }
   @Output() dragMove = new EventEmitter<IPosition>();
+  @Output() dragEnd = new EventEmitter<IPosition>();
 
   dragging = false;
   el: HTMLElement;
@@ -101,6 +102,7 @@ export class NgxDraggableDirective implements OnDestroy, OnInit {
   onEndDrag(ev: MouseEvent | TouchEvent) {
     if (this.dragging) {
       this._dragService.stopDrag(this);
+      this.dragEnd.emit();
     }
     this.dragging = false;
     this._autoScroll._stopScrolling();

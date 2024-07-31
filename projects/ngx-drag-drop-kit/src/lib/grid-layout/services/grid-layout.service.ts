@@ -26,6 +26,7 @@ export class GridLayoutService {
 
   private _renderer: Renderer2;
   private _placeholder: HTMLElement | undefined;
+  private placeHolderData?: IUpdatePlaceholderPosition;
   private updatePlaceholderPosition$ = new Subject<IUpdatePlaceholderPosition>();
   constructor(rendererFactory: RendererFactory2, @Inject(DOCUMENT) private _document: Document) {
     this._renderer = rendererFactory.createRenderer(null, null);
@@ -112,13 +113,26 @@ export class GridLayoutService {
   onMove(item: GridItemComponent) {
     const gridItemRec = item.el.getBoundingClientRect();
     let plcInfo = this.convertPointToCell(gridItemRec.left, gridItemRec.top, gridItemRec.width, gridItemRec.height);
-    this.updatePlaceholderPosition$.next({
+    this.placeHolderData = {
       x: plcInfo.plcX,
       y: plcInfo.plcY,
       cellX: plcInfo.cellX,
       cellY: plcInfo.cellY,
       gridItem: item,
-    });
+    };
+    this.updatePlaceholderPosition$.next(this.placeHolderData);
+  }
+  onMoveEnd(item: GridItemComponent) {
+    this.removePlaceholder();
+    if (!this.placeHolderData) {
+      return;
+    }
+    console.log(this.placeHolderData);
+    let newConfix = item._config;
+    newConfix.x = this.placeHolderData.cellX;
+    newConfix.y = this.placeHolderData.cellY;
+    item.config = newConfix;
+    this._renderer.setStyle(item.el, 'transform', '');
   }
 
   convertPointToCell(x: number, y: number, width: number, height: number) {
@@ -154,7 +168,7 @@ export class GridLayoutService {
           return;
         }
         const { gridItem, x, y } = input;
-        this.hidePlaceholder();
+        this.removePlaceholder();
         this._placeholder = this._document.createElement('div');
         this._placeholder.className = 'grid-item-placeholder grid-item-placeholder-default';
         this._placeholder.innerHTML = 'placeholder';
@@ -176,9 +190,10 @@ export class GridLayoutService {
     });
   }
 
-  private hidePlaceholder() {
+  private removePlaceholder() {
     if (this._placeholder) {
       this._placeholder.remove();
+      this._placeholder = undefined;
     }
   }
 }

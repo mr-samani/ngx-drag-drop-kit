@@ -45,7 +45,8 @@ export class GridItemComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this._gridService.registerGridItem(this);
     this.draggable.boundary = this._gridService._mainEl;
-    this.draggable.dragMove.subscribe((ev) => this.onDrag(ev));
+    this.draggable.dragMove.subscribe((ev) => this._gridService.onMove(this));
+    this.draggable.dragEnd.subscribe((ev) => this._gridService.onMoveEnd(this));
     this.resizable.boundary = this._gridService._mainEl;
   }
 
@@ -59,12 +60,5 @@ export class GridItemComponent implements OnInit, OnDestroy {
     this.height = this._gridService.cellHeight * this._config.h + this._gridService._options.gap * (this._config.h - 1);
 
     // console.log(this, this._gridService);
-  }
-
-  onDrag(ev: IPosition) {
-    //console.log(ev);
-    // this.x = ev.x;
-    // this.y = ev.y;
-    this._gridService.onMove(this);
   }
 }
