@@ -3,7 +3,7 @@ import { IDropEvent, NgxDropListDirective } from '../directives/ngx-drop-list.di
 import { NgxDraggableDirective } from '../directives/ngx-draggable.directive';
 import { DOCUMENT } from '@angular/common';
 import { getPointerPosition } from '../../utils/get-position';
-import { NgxPlaceholderService } from './ngx-placeholder.service';
+import { NgxDragPlaceholderService } from './ngx-placeholder.service';
 
 @Injectable({
   providedIn: 'root',
@@ -26,7 +26,7 @@ export class NgxDragDropService {
   constructor(
     rendererFactory: RendererFactory2,
     @Inject(DOCUMENT) private _document: Document,
-    private placeholderService: NgxPlaceholderService
+    private placeholderService: NgxDragPlaceholderService
   ) {
     this._renderer = rendererFactory.createRenderer(null, null);
   }

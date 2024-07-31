@@ -15,7 +15,7 @@ export interface IUpdatePlaceholderPosition {
 @Injectable({
   providedIn: 'root',
 })
-export class NgxPlaceholderService {
+export class NgxDragPlaceholderService {
   private _renderer: Renderer2;
   _placeholder: HTMLElement | undefined;
   _placeHolderIndex = 0;

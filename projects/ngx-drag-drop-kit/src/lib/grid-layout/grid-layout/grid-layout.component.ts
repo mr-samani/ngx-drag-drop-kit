@@ -1,10 +1,4 @@
-import {
-  AfterViewInit,
-  Component,
-  ElementRef,
-  Input,
-  OnInit,
-} from '@angular/core';
+import { AfterViewInit, Component, ElementRef, Input, OnInit, ViewEncapsulation } from '@angular/core';
 import { IGridLayoutOptions } from '../options/options';
 import { GridLayoutService } from '../services/grid-layout.service';
 import { deepMerge } from '../../../utils/deep-merge';
@@ -32,7 +26,7 @@ export class GridLayoutComponent implements OnInit, AfterViewInit {
 
   ngOnInit(): void {
     this.setBackgroundCssVariables();
-    this._gridService.setMainLayout(this.el);
+    this._gridService._mainEl = this.el;
   }
 
   ngAfterViewInit(): void {}

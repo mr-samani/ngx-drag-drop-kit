@@ -1,6 +1,22 @@
-import { Injectable } from '@angular/core';
+import { Inject, Injectable, Renderer2, RendererFactory2 } from '@angular/core';
 import { GridLayoutOptions } from '../options/options';
 import { GridItemComponent } from '../grid-item/grid-item.component';
+import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
+import { DOCUMENT } from '@angular/common';
+import { gridXToScreenX, gridYToScreenY, screenXToGridX, screenYToGridY } from '../utils/grid.utils';
+
+export interface IUpdatePlaceholderPosition {
+  gridItem: GridItemComponent;
+  // mouse position X
+  x: number;
+  // mouse position Y
+  y: number;
+
+  // place in cel X
+  cellX: number;
+  // place in cel Y
+  cellY: number;
+}
 
 @Injectable()
 export class GridLayoutService {
@@ -8,6 +24,27 @@ export class GridLayoutService {
   public _mainEl!: HTMLElement;
   private _gridItems: GridItemComponent[] = [];
 
+  private _renderer: Renderer2;
+  private _placeholder: HTMLElement | undefined;
+  private updatePlaceholderPosition$ = new Subject<IUpdatePlaceholderPosition>();
+  constructor(rendererFactory: RendererFactory2, @Inject(DOCUMENT) private _document: Document) {
+    this._renderer = rendererFactory.createRenderer(null, null);
+    this.updatePlaceholderPosition$
+      .pipe(
+        distinctUntilChanged((prev, curr) => {
+          return prev.x == curr.x && prev.y == curr.y;
+        }),
+        debounceTime(10)
+      )
+      .subscribe((input) => {
+        this.updatePlaceholderPosition(input);
+      });
+  }
+
+  /**
+   * Add new grid item
+   * @param item drid item
+   */
   public registerGridItem(item: GridItemComponent) {
     const findedIndex = this._gridItems.findIndex((x) => x == item);
     if (findedIndex === -1) {
@@ -15,14 +52,15 @@ export class GridLayoutService {
     }
   }
 
+  /**
+   * Remove grid item
+   * @param item grid item
+   */
   public removeGridItem(item: GridItemComponent) {
     const findedIndex = this._gridItems.findIndex((x) => x == item);
     this._gridItems.splice(findedIndex, 1);
   }
 
-  public setMainLayout(el: HTMLElement) {
-    this._mainEl = el;
-  }
   public get mainWidth() {
     const mainElRec = this._mainEl.getBoundingClientRect();
     return mainElRec.width - (this._options.gap * 2 + this._options.gridBackgroundConfig.borderWidth * 2);
@@ -70,7 +108,77 @@ export class GridLayoutService {
       border * 2
     );
   }
-}
 
-// this.y = this._gridService.cellHeight * this._config.y + this._gridService._options.gap * (this._config.y + 1);
-// this.height = this._gridService.cellHeight * this._config.h + this._gridService._options.gap * (this._config.h - 1);
+  onMove(item: GridItemComponent) {
+    const gridItemRec = item.el.getBoundingClientRect();
+    let plcInfo = this.convertPointToCell(gridItemRec.left, gridItemRec.top, gridItemRec.width, gridItemRec.height);
+    this.updatePlaceholderPosition$.next({
+      x: plcInfo.plcX,
+      y: plcInfo.plcY,
+      cellX: plcInfo.cellX,
+      cellY: plcInfo.cellY,
+      gridItem: item,
+    });
+  }
+
+  convertPointToCell(x: number, y: number, width: number, height: number) {
+    const mainRec = this._mainEl.getBoundingClientRect();
+    const newX = x - mainRec.left;
+    const newY = y - mainRec.top;
+    const cellX = screenXToGridX(newX, this._options.cols, mainRec.width, this._options.gap);
+    const cellY = screenYToGridY(newY, this.cellHeight, this._options.gap);
+    const plcX = gridXToScreenX(this.cellWidth, cellX, this._options.gap);
+    const plcY = gridYToScreenY(this.cellHeight, cellY, this._options.gap);
+    return { cellX, cellY, plcX, plcY };
+  }
+
+  /**
+   * update place holder position
+   * @param input
+   */
+  private updatePlaceholderPosition(input: IUpdatePlaceholderPosition) {
+    const { gridItem, x, y } = input;
+    this.showPlaceholder(input).then((plcEl) => {
+      this._renderer.setStyle(this._placeholder, 'width', gridItem.width + 'px');
+      this._renderer.setStyle(this._placeholder, 'height', gridItem.height + 'px');
+      this._renderer.setStyle(this._placeholder, 'top', y + 'px');
+      this._renderer.setStyle(this._placeholder, 'left', x + 'px');
+    });
+  }
+
+  private showPlaceholder(input: IUpdatePlaceholderPosition): Promise<HTMLElement> {
+    return new Promise<HTMLElement>((resolve, reject) => {
+      try {
+        if (this._placeholder) {
+          resolve(this._placeholder);
+          return;
+        }
+        const { gridItem, x, y } = input;
+        this.hidePlaceholder();
+        this._placeholder = this._document.createElement('div');
+        this._placeholder.className = 'grid-item-placeholder grid-item-placeholder-default';
+        this._placeholder.innerHTML = 'placeholder';
+        this._renderer.setStyle(this._placeholder, 'width', gridItem.width + 'px');
+        this._renderer.setStyle(this._placeholder, 'height', gridItem.height + 'px');
+        this._renderer.setStyle(this._placeholder, 'left', x + 'px');
+        this._renderer.setStyle(this._placeholder, 'top', y + 'px');
+        this._renderer.setStyle(this._placeholder, 'opacity', 0.5);
+        this._renderer.setStyle(this._placeholder, 'background-color', '#6e02fc');
+        this._renderer.setStyle(this._placeholder, 'pointer-events', 'none');
+        this._renderer.setStyle(this._placeholder, 'position', 'absolute');
+        this._renderer.setStyle(this._placeholder, 'transition', 'all 100ms ease-in 0s');
+
+        this._renderer.appendChild(this._mainEl, this._placeholder);
+        resolve(this._placeholder);
+      } catch (error) {
+        reject();
+      }
+    });
+  }
+
+  private hidePlaceholder() {
+    if (this._placeholder) {
+      this._placeholder.remove();
+    }
+  }
+}

@@ -1,21 +1,23 @@
 import {
   Directive,
   ElementRef,
+  EventEmitter,
   HostListener,
   InjectionToken,
   Input,
   OnDestroy,
   OnInit,
+  Output,
   Renderer2,
 } from '@angular/core';
-import { Subscription, fromEvent } from 'rxjs';
+import { Observable, Subscription, fromEvent } from 'rxjs';
 import { getPointerPosition } from '../../utils/get-position';
 import { checkBoundX, checkBoundY } from '../../utils/check-boundary';
 import { NgxDropListDirective } from './ngx-drop-list.directive';
 import { NgxDragDropService } from '../services/ngx-drag-drop.service';
 import { getXYfromTransform } from '../../utils/get-transform';
 import { AutoScroll } from '../services/auto-scroll.service';
-import { NgxPlaceholderService } from '../services/ngx-placeholder.service';
+import { NgxDragPlaceholderService } from '../services/ngx-placeholder.service';
 export const NGX_DROP_LIST = new InjectionToken<NgxDropListDirective>('NgxDropList');
 
 export interface IPosition {
@@ -45,6 +47,8 @@ export class NgxDraggableDirective implements OnDestroy, OnInit {
   @Input() set boundary(val: HTMLElement) {
     this._boundary = val;
   }
+  @Output() dragMove = new EventEmitter<IPosition>();
+
   dragging = false;
   el: HTMLElement;
   protected x: number = 0;
@@ -130,6 +134,7 @@ export class NgxDraggableDirective implements OnDestroy, OnInit {
     this.updatePosition(offsetX, offsetY, position);
     this._autoScroll.handleAutoScroll(ev);
     this._dragService.dragMove(this, ev);
+    this.dragMove.emit({ x: this.x, y: this.y });
   }
 
   updatePosition(offsetX: number, offsetY: number, position: IPosition) {

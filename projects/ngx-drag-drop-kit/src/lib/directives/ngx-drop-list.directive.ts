@@ -17,7 +17,7 @@ import { NgxDragDropService } from '../services/ngx-drag-drop.service';
 import { NgxDraggableDirective } from './ngx-draggable.directive';
 import { DOCUMENT } from '@angular/common';
 import { Subscription, fromEvent } from 'rxjs';
-import { NgxPlaceholderService } from '../services/ngx-placeholder.service';
+import { NgxDragPlaceholderService } from '../services/ngx-placeholder.service';
 import { AutoScroll } from '../services/auto-scroll.service';
 export interface IDropEvent<DataType = any> {
   /** Index of the item when it was picked up. */
