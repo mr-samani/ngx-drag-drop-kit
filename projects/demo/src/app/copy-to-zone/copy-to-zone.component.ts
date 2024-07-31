@@ -1,14 +1,14 @@
 import { Component } from '@angular/core';
-import { IDropEvent } from '../../../../ngx-drag-drop-kit/src/lib/directives/ngx-drop-list.directive';
-import { copyArrayItem, moveItemInArray, transferArrayItem } from '../../../../ngx-drag-drop-kit/src/drag-utils';
-import { NgxDragDropKitModule } from '../../../../ngx-drag-drop-kit/src/lib/ngx-drag-drop-kit.module';
+import { copyArrayItem, moveItemInArray } from '../../../../ngx-drag-drop-kit/src/drag-utils';
 import { CommonModule } from '@angular/common';
 import { Corner } from '../../../../ngx-drag-drop-kit/src/utils/corner-type';
+import { NgxDragDropKitModule } from '../../../../ngx-drag-drop-kit/src/public-api';
+import { IDropEvent } from '../../../../ngx-drag-drop-kit/src/lib/directives/ngx-drop-list.directive';
 
 @Component({
   selector: 'app-copy-to-zone',
   standalone: true,
-  imports: [NgxDragDropKitModule, CommonModule],
+  imports: [CommonModule, NgxDragDropKitModule],
   templateUrl: './copy-to-zone.component.html',
   styleUrl: './copy-to-zone.component.scss',
 })

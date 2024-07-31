@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { moveItemInArray } from '../../../../ngx-drag-drop-kit/src/drag-utils';
 import { IDropEvent } from '../../../../ngx-drag-drop-kit/src/lib/directives/ngx-drop-list.directive';
-import { NgxDragDropKitModule } from '../../../../ngx-drag-drop-kit/src/lib/ngx-drag-drop-kit.module';
+import { NgxDragDropKitModule } from '../../../../ngx-drag-drop-kit/src/public-api';
 
 @Component({
   selector: 'app-sort-list',

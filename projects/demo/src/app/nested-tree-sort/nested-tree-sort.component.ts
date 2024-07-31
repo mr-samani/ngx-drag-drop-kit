@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
-import { NgxDragDropKitModule } from '../../../../ngx-drag-drop-kit/src/lib/ngx-drag-drop-kit.module';
 import { TreeViewerComponent } from './tree/tree-viewer.component';
+import { NgxDragDropKitModule } from '../../../../ngx-drag-drop-kit/src/public-api';
 
 export interface TreeModel {
   name: string;

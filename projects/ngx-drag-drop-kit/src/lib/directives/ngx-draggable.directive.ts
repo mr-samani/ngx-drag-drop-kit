@@ -14,10 +14,9 @@ import { checkBoundX, checkBoundY } from '../../utils/check-boundary';
 import { NgxDropListDirective } from './ngx-drop-list.directive';
 import { NgxDragDropService } from '../services/ngx-drag-drop.service';
 import { getXYfromTransform } from '../../utils/get-transform';
-import { AutoScroll } from '../../utils/auto-scroll';
-export const NGX_DROP_LIST = new InjectionToken<NgxDropListDirective>(
-  'NgxDropList'
-);
+import { AutoScroll } from '../services/auto-scroll.service';
+import { NgxPlaceholderService } from '../services/ngx-placeholder.service';
+export const NGX_DROP_LIST = new InjectionToken<NgxDropListDirective>('NgxDropList');
 
 export interface IPosition {
   x: number;
@@ -38,6 +37,8 @@ export interface IPosition {
     '[style.-webkit-tap-highlight-color]': 'dragging ? "transparent" : ""',
     class: 'ngx-draggable',
   },
+  standalone: true,
+  exportAs: 'NgxDraggable',
 })
 export class NgxDraggableDirective implements OnDestroy, OnInit {
   @Input() boundary?: HTMLElement;
@@ -76,12 +77,8 @@ export class NgxDraggableDirective implements OnDestroy, OnInit {
 
   initDrag() {
     this.subscriptions.push(
-      fromEvent<MouseEvent>(this.el, 'mousedown').subscribe((ev) =>
-        this.onMouseDown(ev)
-      ),
-      fromEvent<TouchEvent>(this.el, 'touchstart').subscribe((ev) =>
-        this.onMouseDown(ev)
-      ),
+      fromEvent<MouseEvent>(this.el, 'mousedown').subscribe((ev) => this.onMouseDown(ev)),
+      fromEvent<TouchEvent>(this.el, 'touchstart').subscribe((ev) => this.onMouseDown(ev)),
 
       fromEvent<TouchEvent>(this.el, 'mouseenter').subscribe((ev) => {
         this._dragService.enterDrag(this);
@@ -95,7 +92,7 @@ export class NgxDraggableDirective implements OnDestroy, OnInit {
   @HostListener('document:mouseup', ['$event'])
   @HostListener('document:touchend', ['$event'])
   onEndDrag(ev: MouseEvent | TouchEvent) {
-    if(this.dragging){
+    if (this.dragging) {
       this._dragService.stopDrag(this);
     }
     this.dragging = false;
@@ -111,12 +108,8 @@ export class NgxDraggableDirective implements OnDestroy, OnInit {
     this._dragService.startDrag(this);
 
     this.subscriptions.push(
-      fromEvent<MouseEvent>(document, 'mousemove').subscribe((ev) =>
-        this.onMouseMove(ev)
-      ),
-      fromEvent<TouchEvent>(document, 'touchmove').subscribe((ev) =>
-        this.onMouseMove(ev)
-      )
+      fromEvent<MouseEvent>(document, 'mousemove').subscribe((ev) => this.onMouseMove(ev)),
+      fromEvent<TouchEvent>(document, 'touchmove').subscribe((ev) => this.onMouseMove(ev))
     );
   }
 

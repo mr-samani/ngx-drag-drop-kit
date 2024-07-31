@@ -17,6 +17,8 @@ import { NgxDragDropService } from '../services/ngx-drag-drop.service';
 import { NgxDraggableDirective } from './ngx-draggable.directive';
 import { DOCUMENT } from '@angular/common';
 import { Subscription, fromEvent } from 'rxjs';
+import { NgxPlaceholderService } from '../services/ngx-placeholder.service';
+import { AutoScroll } from '../services/auto-scroll.service';
 export interface IDropEvent<DataType = any> {
   /** Index of the item when it was picked up. */
   previousIndex: number;
@@ -47,6 +49,8 @@ export interface IDropEvent<DataType = any> {
     '[style.position]': '"relative"',
     '[style.scroll-snap-type]': 'dragging ? "none": "" ',
   },
+  standalone: true,
+  exportAs: 'NgxDropList',
 })
 export class NgxDropListDirective<T = any> implements AfterViewInit {
   @Input() data?: T;
@@ -72,7 +76,7 @@ export class NgxDropListDirective<T = any> implements AfterViewInit {
       this.onChangeDragChilds();
       //console.log('_draggables', 'change', r);
     });
-   // console.log(this._draggables);
+    // console.log(this._draggables);
     this.subscriptions.push(
       fromEvent<TouchEvent>(this._el, 'mouseenter').subscribe((ev) => {
         this._dragDropService.enterDropList(this);
@@ -84,7 +88,7 @@ export class NgxDropListDirective<T = any> implements AfterViewInit {
   }
 
   ngOnDestroy() {
-     this.subscriptions.forEach((sub) => sub.unsubscribe());
+    this.subscriptions.forEach((sub) => sub.unsubscribe());
     this._draggables?.reset([]);
   }
 

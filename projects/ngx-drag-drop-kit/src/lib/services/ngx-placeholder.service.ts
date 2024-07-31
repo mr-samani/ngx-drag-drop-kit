@@ -12,7 +12,9 @@ export interface IUpdatePlaceholderPosition {
   activeDragDomRec?: DOMRect;
 }
 
-@Injectable()
+@Injectable({
+  providedIn: 'root',
+})
 export class NgxPlaceholderService {
   private _renderer: Renderer2;
   _placeholder: HTMLElement | undefined;

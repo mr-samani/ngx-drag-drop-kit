@@ -1,6 +1,7 @@
-import { Component, Input, OnDestroy, OnInit } from '@angular/core';
+import { Component, HostBinding, Input, OnDestroy, OnInit } from '@angular/core';
 import { GridItemConfig } from '../options/gride-item-config';
 import { GridLayoutService } from '../services/grid-layout.service';
+import { NgxDraggableDirective } from '../../directives/ngx-draggable.directive';
 
 @Component({
   selector: 'grid-item',
@@ -16,6 +17,7 @@ import { GridLayoutService } from '../services/grid-layout.service';
     '[style.left.px]': 'x',
     '[style.boxSizing]': '"border-box"',
   },
+  hostDirectives: [NgxDraggableDirective],
 })
 export class GridItemComponent implements OnInit, OnDestroy {
   public _config: GridItemConfig = new GridItemConfig();
@@ -36,6 +38,9 @@ export class GridItemComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this._gridService.registerGridItem(this);
   }
+
+  //@HostBinding('attr.ngxDraggable') draggable = new NgxDraggableDirective();
+
   ngOnDestroy(): void {
     this._gridService.removeGridItem(this);
   }

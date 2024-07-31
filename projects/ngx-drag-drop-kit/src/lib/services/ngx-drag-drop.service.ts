@@ -1,12 +1,13 @@
-import { HostListener, Inject, Injectable, Renderer2, RendererFactory2, RendererStyleFlags2 } from '@angular/core';
+import { Inject, Injectable, Renderer2, RendererFactory2, RendererStyleFlags2 } from '@angular/core';
 import { IDropEvent, NgxDropListDirective } from '../directives/ngx-drop-list.directive';
-import { IPosition, NgxDraggableDirective } from '../directives/ngx-draggable.directive';
-import { getXYfromTransform } from '../../utils/get-transform';
+import { NgxDraggableDirective } from '../directives/ngx-draggable.directive';
 import { DOCUMENT } from '@angular/common';
 import { getPointerPosition } from '../../utils/get-position';
 import { NgxPlaceholderService } from './ngx-placeholder.service';
 
-@Injectable()
+@Injectable({
+  providedIn: 'root',
+})
 export class NgxDragDropService {
   isDragging = false;
 
@@ -157,6 +158,4 @@ export class NgxDragDropService {
     this.placeholderService._activeDropListInstances.onDrop(this._dropEvent);
     this.placeholderService._activeDropListInstances.dragging = false;
   }
-
-  
 }

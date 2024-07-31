@@ -14,6 +14,8 @@ import { getXYfromTransform } from '../../utils/get-transform';
     '[class.resizing]': 'dragging',
     class: 'ngx-resizable',
   },
+  standalone: true,
+  exportAs: 'NgxResizable',
 })
 export class NgxResizableDirective implements OnInit {
   @Input() boundary?: HTMLElement;

@@ -1,7 +1,7 @@
 import { DOCUMENT } from '@angular/common';
 import { Inject, Injectable, NgZone } from '@angular/core';
 import { Subject, animationFrameScheduler, interval, takeUntil } from 'rxjs';
-import { getScrollableElement } from './get-scrollable-element';
+import { getScrollableElement } from '../../utils/get-scrollable-element';
 /** Vertical direction in which we can auto-scroll. */
 export enum AutoScrollVerticalDirection {
   NONE,
@@ -16,7 +16,9 @@ export enum AutoScrollHorizontalDirection {
   RIGHT,
 }
 
-@Injectable()
+@Injectable({
+  providedIn: 'root',
+})
 export class AutoScroll {
   private scrollSpeed = 5;
   private scrollThreshold = 30;
@@ -30,16 +32,11 @@ export class AutoScroll {
 
   /** Horizontal direction in which the list is currently scrolling. */
   private _horizontalScrollDirection = AutoScrollHorizontalDirection.NONE;
-  constructor(
-    @Inject(DOCUMENT) private _document: Document,
-    private _ngZone: NgZone
-  ) {}
+  constructor(@Inject(DOCUMENT) private _document: Document, private _ngZone: NgZone) {}
 
   handleAutoScroll(ev: MouseEvent | TouchEvent) {
-    const clientX =
-      ev instanceof MouseEvent ? ev.clientX : ev.targetTouches[0].clientX;
-    const clientY =
-      ev instanceof MouseEvent ? ev.clientY : ev.targetTouches[0].clientY;
+    const clientX = ev instanceof MouseEvent ? ev.clientX : ev.targetTouches[0].clientX;
+    const clientY = ev instanceof MouseEvent ? ev.clientY : ev.targetTouches[0].clientY;
 
     let elementsOnPoint = this._document.elementsFromPoint(clientX, clientY);
     this._scrollNode = getScrollableElement(elementsOnPoint);
@@ -53,10 +50,8 @@ export class AutoScroll {
     // }
     // Get the viewport-relative coordinates of the mousemove event.
     var _scrollNodePosition = this._scrollNode.getBoundingClientRect();
-    var viewportX =
-      clientX - (_scrollNodePosition.x > 0 ? _scrollNodePosition.x : 0);
-    var viewportY =
-      clientY - (_scrollNodePosition.y > 0 ? _scrollNodePosition.y : 0);
+    var viewportX = clientX - (_scrollNodePosition.x > 0 ? _scrollNodePosition.x : 0);
+    var viewportY = clientY - (_scrollNodePosition.y > 0 ? _scrollNodePosition.y : 0);
     // Get the viewport dimensions.
     var viewportWidth = this._scrollNode.clientWidth;
     var viewportHeight = this._scrollNode.clientHeight;
@@ -75,11 +70,7 @@ export class AutoScroll {
     var isInTopEdge = viewportY < edgeTop;
     var isInBottomEdge = viewportY > edgeBottom;
 
-    var innerWidth = Math.max(
-      this._scrollNode.scrollWidth,
-      this._scrollNode.offsetWidth,
-      this._scrollNode.clientWidth
-    );
+    var innerWidth = Math.max(this._scrollNode.scrollWidth, this._scrollNode.offsetWidth, this._scrollNode.clientWidth);
     var innerHeight = Math.max(
       this._scrollNode.scrollHeight,
       this._scrollNode.offsetHeight,
@@ -141,20 +132,13 @@ export class AutoScroll {
         // console.log(node.tagName, node.scrollTop);
         if (this._verticalScrollDirection === AutoScrollVerticalDirection.UP) {
           node.scrollBy(0, -this.scrollSpeed);
-        } else if (
-          this._verticalScrollDirection === AutoScrollVerticalDirection.DOWN
-        ) {
+        } else if (this._verticalScrollDirection === AutoScrollVerticalDirection.DOWN) {
           node.scrollBy(0, this.scrollSpeed);
         }
 
-        if (
-          this._horizontalScrollDirection === AutoScrollHorizontalDirection.LEFT
-        ) {
+        if (this._horizontalScrollDirection === AutoScrollHorizontalDirection.LEFT) {
           node.scrollBy(-this.scrollSpeed, 0);
-        } else if (
-          this._horizontalScrollDirection ===
-          AutoScrollHorizontalDirection.RIGHT
-        ) {
+        } else if (this._horizontalScrollDirection === AutoScrollHorizontalDirection.RIGHT) {
           node.scrollBy(this.scrollSpeed, 0);
         }
       });

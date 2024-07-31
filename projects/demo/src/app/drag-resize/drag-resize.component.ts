@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { NgxDragDropKitModule } from '../../../../ngx-drag-drop-kit/src/lib/ngx-drag-drop-kit.module';
+import { NgxDragDropKitModule } from '../../../../ngx-drag-drop-kit/src/public-api';
 
 @Component({
   selector: 'app-drag-resize',
