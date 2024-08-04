@@ -3,7 +3,17 @@ import { GridLayoutOptions } from '../options/options';
 import { GridItemComponent } from '../grid-item/grid-item.component';
 import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
 import { DOCUMENT } from '@angular/common';
-import { gridHToScreenHeight, gridWToScreenWidth, gridXToScreenX, gridYToScreenY, screenHeightToGridHeight, screenWidthToGridWidth, screenXToGridX, screenYToGridY } from '../utils/grid.utils';
+import {
+  getAllCollisions,
+  gridHToScreenHeight,
+  gridWToScreenWidth,
+  gridXToScreenX,
+  gridYToScreenY,
+  screenHeightToGridHeight,
+  screenWidthToGridWidth,
+  screenXToGridX,
+  screenYToGridY,
+} from '../utils/grid.utils';
 
 export interface IUpdatePlaceholderPosition {
   gridItem: GridItemComponent;
@@ -119,7 +129,7 @@ export class GridLayoutService {
 
   onMoveOrResize(item: GridItemComponent) {
     const gridItemRec = item.el.getBoundingClientRect();
-   // console.log(item.el, gridItemRec);
+    // console.log(item.el, gridItemRec);
     let plcInfo = this.convertPointToCell(gridItemRec.left, gridItemRec.top, gridItemRec.width, gridItemRec.height);
     this.placeHolderData = {
       x: plcInfo.plcX,
@@ -139,7 +149,7 @@ export class GridLayoutService {
     if (!this.placeHolderData) {
       return;
     }
-    console.log(this.placeHolderData);
+    //console.log(this.placeHolderData);
     let newConfix = item._config;
     newConfix.x = this.placeHolderData.cellX;
     newConfix.y = this.placeHolderData.cellY;
@@ -169,8 +179,19 @@ export class GridLayoutService {
    * @param input
    */
   private updatePlaceholderPosition(input: IUpdatePlaceholderPosition) {
-   // console.log(input);
-    const { gridItem, x, y, width, height } = input;
+    // console.log(input);
+    const { gridItem, x, y, width, height, cellX, cellY, cellW, cellH } = input;
+    let fakeItem: any = {
+      x,
+      y,
+      width,
+      height,
+      el: gridItem.el,
+    };
+    const allCollessions = getAllCollisions(this._gridItems, fakeItem);
+    for (let c of allCollessions) {
+      this.moveGridItem(c, cellX + cellW, cellY + cellH);
+    }
     this.showPlaceholder(input).then((plcEl) => {
       this._renderer.setStyle(this._placeholder, 'width', width + 'px');
       this._renderer.setStyle(this._placeholder, 'height', height + 'px');
@@ -214,5 +235,12 @@ export class GridLayoutService {
       this._placeholder.remove();
       this._placeholder = undefined;
     }
+  }
+
+  private moveGridItem(gridItem: GridItemComponent, cellX: number, cellY: number) {
+    let newConfix = gridItem._config;
+   // newConfix.x = cellX;
+    newConfix.y = cellY;
+    gridItem.config = newConfix;
   }
 }

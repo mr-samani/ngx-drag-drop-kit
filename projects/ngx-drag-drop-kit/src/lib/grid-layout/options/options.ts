@@ -1,8 +1,11 @@
+export type CompactType = ('horizontal' | 'vertical') | null | undefined;
+
 export interface IGridLayoutOptions {
   cols: number;
   rowHeight?: 'fit' | number;
   gap?: number;
   gridBackgroundConfig?: IGridBackgroundCfg;
+  compactType?: CompactType;
 }
 export class GridLayoutOptions implements IGridLayoutOptions {
   cols = 12;
@@ -16,6 +19,7 @@ export class GridLayoutOptions implements IGridLayoutOptions {
     rowColor: 'rgba(128, 128, 128, 0.10)',
     columnColor: 'rgba(128, 128, 128, 0.10)',
   };
+  compactType: CompactType = 'horizontal';
 }
 
 export interface IGridBackgroundCfg {
