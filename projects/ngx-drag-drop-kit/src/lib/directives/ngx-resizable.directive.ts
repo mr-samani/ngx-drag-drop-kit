@@ -1,5 +1,16 @@
 import { DOCUMENT } from '@angular/common';
-import { Directive, ElementRef, HostListener, Inject, Input, OnInit, Renderer2 } from '@angular/core';
+import {
+  Directive,
+  ElementRef,
+  EventEmitter,
+  HostListener,
+  Inject,
+  Input,
+  OnInit,
+  Output,
+  Renderer2,
+  output,
+} from '@angular/core';
 import { Corner } from '../../utils/corner-type';
 import { checkBoundX, checkBoundY } from '../../utils/check-boundary';
 import { getXYfromTransform } from '../../utils/get-transform';
@@ -26,6 +37,8 @@ export class NgxResizableDirective implements OnInit {
   @Input() minHeight = 20;
   @Input() disableTransform = false;
   @Input() corners: Corner[] = ['top', 'right', 'left', 'bottom', 'topLeft', 'topRight', 'bottomLeft', 'bottomRight'];
+  @Output() resize = new EventEmitter();
+  @Output() resizeEnd = new EventEmitter();
   protected resizer!: Function;
   protected px: number = 0;
   protected py: number = 0;
@@ -88,6 +101,9 @@ export class NgxResizableDirective implements OnInit {
     // if (this.draggingCorner) {
     //   this.onResizeEnd.emit(this.getPosition());
     // }
+    if (this.dragging) {
+      this.resizeEnd.emit();
+    }
     this.dragging = false;
   }
 
@@ -179,7 +195,7 @@ export class NgxResizableDirective implements OnInit {
     this.px = clientX;
     this.py = clientY;
     this.setElPosition();
-    // this.onResize.emit(this.getPosition());
+    this.resize.emit();
   }
 
   /*--------------RESIZE FUNCTIONS--------------------------*/

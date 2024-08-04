@@ -3,7 +3,7 @@ import { GridLayoutOptions } from '../options/options';
 import { GridItemComponent } from '../grid-item/grid-item.component';
 import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
 import { DOCUMENT } from '@angular/common';
-import { gridXToScreenX, gridYToScreenY, screenXToGridX, screenYToGridY } from '../utils/grid.utils';
+import { gridHToScreenHeight, gridWToScreenWidth, gridXToScreenX, gridYToScreenY, screenHeightToGridHeight, screenWidthToGridWidth, screenXToGridX, screenYToGridY } from '../utils/grid.utils';
 
 export interface IUpdatePlaceholderPosition {
   gridItem: GridItemComponent;
@@ -12,10 +12,17 @@ export interface IUpdatePlaceholderPosition {
   // mouse position Y
   y: number;
 
+  width: number;
+  height: number;
+
   // place in cel X
   cellX: number;
   // place in cel Y
   cellY: number;
+  // cel width
+  cellW: number;
+  // cel height
+  cellH: number;
 }
 
 @Injectable()
@@ -33,7 +40,7 @@ export class GridLayoutService {
     this.updatePlaceholderPosition$
       .pipe(
         distinctUntilChanged((prev, curr) => {
-          return prev.x == curr.x && prev.y == curr.y;
+          return prev.x == curr.x && prev.y == curr.y && prev.width == curr.width && prev.height == curr.height;
         }),
         debounceTime(10)
       )
@@ -110,19 +117,24 @@ export class GridLayoutService {
     );
   }
 
-  onMove(item: GridItemComponent) {
+  onMoveOrResize(item: GridItemComponent) {
     const gridItemRec = item.el.getBoundingClientRect();
+   // console.log(item.el, gridItemRec);
     let plcInfo = this.convertPointToCell(gridItemRec.left, gridItemRec.top, gridItemRec.width, gridItemRec.height);
     this.placeHolderData = {
       x: plcInfo.plcX,
       y: plcInfo.plcY,
       cellX: plcInfo.cellX,
       cellY: plcInfo.cellY,
+      cellW: plcInfo.cellW,
+      cellH: plcInfo.cellH,
+      width: plcInfo.plcW,
+      height: plcInfo.plcH,
       gridItem: item,
     };
     this.updatePlaceholderPosition$.next(this.placeHolderData);
   }
-  onMoveEnd(item: GridItemComponent) {
+  onMoveOrResizeEnd(item: GridItemComponent) {
     this.removePlaceholder();
     if (!this.placeHolderData) {
       return;
@@ -131,6 +143,8 @@ export class GridLayoutService {
     let newConfix = item._config;
     newConfix.x = this.placeHolderData.cellX;
     newConfix.y = this.placeHolderData.cellY;
+    newConfix.w = this.placeHolderData.cellW;
+    newConfix.h = this.placeHolderData.cellH;
     item.config = newConfix;
     this._renderer.setStyle(item.el, 'transform', '');
   }
@@ -143,7 +157,11 @@ export class GridLayoutService {
     const cellY = screenYToGridY(newY, this.cellHeight, this._options.gap);
     const plcX = gridXToScreenX(this.cellWidth, cellX, this._options.gap);
     const plcY = gridYToScreenY(this.cellHeight, cellY, this._options.gap);
-    return { cellX, cellY, plcX, plcY };
+    const cellW = screenWidthToGridWidth(width, this._options.cols, mainRec.width, this._options.gap);
+    const cellH = screenHeightToGridHeight(height, this.cellHeight, mainRec.height, this._options.gap);
+    const plcW = gridWToScreenWidth(this.cellWidth, cellW, this._options.gap);
+    const plcH = gridHToScreenHeight(this.cellHeight, cellH, this._options.gap);
+    return { cellX, cellY, plcX, plcY, cellW, cellH, plcW, plcH };
   }
 
   /**
@@ -151,10 +169,11 @@ export class GridLayoutService {
    * @param input
    */
   private updatePlaceholderPosition(input: IUpdatePlaceholderPosition) {
-    const { gridItem, x, y } = input;
+   // console.log(input);
+    const { gridItem, x, y, width, height } = input;
     this.showPlaceholder(input).then((plcEl) => {
-      this._renderer.setStyle(this._placeholder, 'width', gridItem.width + 'px');
-      this._renderer.setStyle(this._placeholder, 'height', gridItem.height + 'px');
+      this._renderer.setStyle(this._placeholder, 'width', width + 'px');
+      this._renderer.setStyle(this._placeholder, 'height', height + 'px');
       this._renderer.setStyle(this._placeholder, 'top', y + 'px');
       this._renderer.setStyle(this._placeholder, 'left', x + 'px');
     });

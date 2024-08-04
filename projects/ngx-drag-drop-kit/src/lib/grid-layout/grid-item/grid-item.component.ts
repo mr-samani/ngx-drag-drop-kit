@@ -3,7 +3,7 @@ import { GridItemConfig } from '../options/gride-item-config';
 import { GridLayoutService } from '../services/grid-layout.service';
 import { IPosition, NgxDraggableDirective } from '../../directives/ngx-draggable.directive';
 import { NgxResizableDirective } from '../../directives/ngx-resizable.directive';
-import { gridXToScreenX, gridYToScreenY } from '../utils/grid.utils';
+import { gridHToScreenHeight, gridWToScreenWidth, gridXToScreenX, gridYToScreenY } from '../utils/grid.utils';
 
 @Component({
   selector: 'grid-item',
@@ -45,9 +45,11 @@ export class GridItemComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this._gridService.registerGridItem(this);
     this.draggable.boundary = this._gridService._mainEl;
-    this.draggable.dragMove.subscribe((ev) => this._gridService.onMove(this));
-    this.draggable.dragEnd.subscribe((ev) => this._gridService.onMoveEnd(this));
+    this.draggable.dragMove.subscribe((ev) => this._gridService.onMoveOrResize(this));
+    this.draggable.dragEnd.subscribe((ev) => this._gridService.onMoveOrResizeEnd(this));
     this.resizable.boundary = this._gridService._mainEl;
+    this.resizable.resize.subscribe((ev) => this._gridService.onMoveOrResize(this));
+    this.resizable.resizeEnd.subscribe((ev) => this._gridService.onMoveOrResizeEnd(this));
   }
 
   ngOnDestroy(): void {
@@ -56,8 +58,8 @@ export class GridItemComponent implements OnInit, OnDestroy {
   init() {
     this.x = gridXToScreenX(this._gridService.cellWidth, this._config.x, this._gridService._options.gap);
     this.y = gridYToScreenY(this._gridService.cellHeight, this._config.y, this._gridService._options.gap);
-    this.width = this._gridService.cellWidth * this._config.w + this._gridService._options.gap * (this._config.w - 1);
-    this.height = this._gridService.cellHeight * this._config.h + this._gridService._options.gap * (this._config.h - 1);
+    this.width = gridWToScreenWidth(this._gridService.cellWidth, this._config.w, this._gridService._options.gap);
+    this.height = gridHToScreenHeight(this._gridService.cellHeight, this._config.h, this._gridService._options.gap);
 
     // console.log(this, this._gridService);
   }
