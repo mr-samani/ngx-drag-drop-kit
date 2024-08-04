@@ -3,6 +3,7 @@
  */
 
 import { GridItemComponent } from '../grid-item/grid-item.component';
+import { FakeItem } from '../options/gride-item-config';
 
 export function screenXToGridX(screenXPos: number, cols: number, gridWidth: number, gap: number): number {
   const widthMinusGaps = gridWidth - gap * (cols - 1);
@@ -56,26 +57,36 @@ export function gridHToScreenHeight(cellHeight: number, h: number, gap: number) 
 }
 
 /*------------------------------------------------------------------------------*/
-export function getAllCollisions(gridItems: GridItemComponent[], item: GridItemComponent): Array<GridItemComponent> {
+export function getAllCollisions(gridItems: GridItemComponent[], item: FakeItem): Array<GridItemComponent> {
   return gridItems.filter((l) => collides(l, item));
+}
+
+export function getFirstCollision(gridItems: GridItemComponent[], item: FakeItem): GridItemComponent | null {
+  for (let i = 0, len = gridItems.length; i < len; i++) {
+    if (collides(gridItems[i], item)) {
+      console.log('first collession', gridItems[i]);
+      return gridItems[i];
+    }
+  }
+  return null;
 }
 /**
  * Given two GridItemComponent, check if they collide.
  */
-export function collides(l1: GridItemComponent, l2: GridItemComponent): boolean {
+export function collides(l1: GridItemComponent, l2: FakeItem): boolean {
   if (l1.el === l2.el) {
     return false;
   } // same element
-  if (l1.x + l1.width <= l2.x) {
+  if (l1._config.x + l1._config.w <= l2.x) {
     return false;
   } // l1 is left of l2
-  if (l1.x >= l2.x + l2.width) {
+  if (l1._config.x >= l2.x + l2.w) {
     return false;
   } // l1 is right of l2
-  if (l1.y + l1.height <= l2.y) {
+  if (l1._config.y + l1._config.h <= l2.y) {
     return false;
   } // l1 is above l2
-  if (l1.y >= l2.y + l2.height) {
+  if (l1._config.y >= l2.y + l2.h) {
     return false;
   } // l1 is below l2
   return true; // boxes overlap

@@ -10,3 +10,7 @@ export class GridItemConfig {
     this.h = h;
   }
 }
+
+export class FakeItem extends GridItemConfig {
+  el!: HTMLElement;
+}

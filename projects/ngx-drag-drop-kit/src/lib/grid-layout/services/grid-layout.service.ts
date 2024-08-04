@@ -5,6 +5,7 @@ import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
 import { DOCUMENT } from '@angular/common';
 import {
   getAllCollisions,
+  getFirstCollision,
   gridHToScreenHeight,
   gridWToScreenWidth,
   gridXToScreenX,
@@ -14,6 +15,7 @@ import {
   screenXToGridX,
   screenYToGridY,
 } from '../utils/grid.utils';
+import { FakeItem } from '../options/gride-item-config';
 
 export interface IUpdatePlaceholderPosition {
   gridItem: GridItemComponent;
@@ -67,6 +69,7 @@ export class GridLayoutService {
     const findedIndex = this._gridItems.findIndex((x) => x == item);
     if (findedIndex === -1) {
       this._gridItems.push(item);
+      this.compactGridItem(item);
     }
   }
 
@@ -181,17 +184,14 @@ export class GridLayoutService {
   private updatePlaceholderPosition(input: IUpdatePlaceholderPosition) {
     // console.log(input);
     const { gridItem, x, y, width, height, cellX, cellY, cellW, cellH } = input;
-    let fakeItem: any = {
-      x,
-      y,
-      width,
-      height,
+    let fakeItem: FakeItem = {
+      x: cellX,
+      y: cellY,
+      h: cellH,
+      w: cellW,
       el: gridItem.el,
     };
-    const allCollessions = getAllCollisions(this._gridItems, fakeItem);
-    for (let c of allCollessions) {
-      this.moveGridItem(c, cellX + cellW, cellY + cellH);
-    }
+    this.cehckCollesions(fakeItem);
     this.showPlaceholder(input).then((plcEl) => {
       this._renderer.setStyle(this._placeholder, 'width', width + 'px');
       this._renderer.setStyle(this._placeholder, 'height', height + 'px');
@@ -237,10 +237,52 @@ export class GridLayoutService {
     }
   }
 
+  cehckCollesions(fakeItem: FakeItem) {
+    const allCollessions = getAllCollisions(this._gridItems, fakeItem);
+    for (let c of allCollessions) {
+      let movedElement = this.moveGridItem(c, fakeItem.x + fakeItem.w, fakeItem.y + fakeItem.h);
+      let fakeItemMoved: FakeItem = {
+        x: movedElement._config.x,
+        y: movedElement._config.y,
+        w: movedElement._config.w,
+        h: movedElement._config.h,
+        el: movedElement.el,
+      };
+      this.cehckCollesions(fakeItemMoved);
+    //  this.compactGridItems(movedElement.el);
+    }
+  }
+
   private moveGridItem(gridItem: GridItemComponent, cellX: number, cellY: number) {
     let newConfix = gridItem._config;
-   // newConfix.x = cellX;
+    // newConfix.x = cellX;
     newConfix.y = cellY;
     gridItem.config = newConfix;
+    return gridItem;
+  }
+
+  private compactGridItems(exceptItem: HTMLElement) {
+    this._gridItems.forEach((el) => (el.el != exceptItem ? this.compactGridItem(el) : ''));
+  }
+
+  private compactGridItem(gridItem: GridItemComponent, counter = 0) {
+    if (gridItem._config.y <= 0) {
+      return;
+    }
+    let fakeItem: FakeItem = {
+      x: gridItem._config.x,
+      y: gridItem._config.y - 1,
+      w: gridItem._config.w,
+      h: gridItem._config.h,
+      el: gridItem.el,
+    };
+    if (!getFirstCollision(this._gridItems, fakeItem)) {
+      counter++;
+      console.log('compact', counter);
+      const newConfig = gridItem._config;
+      newConfig.y--;
+      gridItem.config = newConfig;
+      this.compactGridItem(gridItem, counter);
+    }
   }
 }

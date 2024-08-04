@@ -29,7 +29,8 @@ export class GridLayoutComponent implements OnInit, AfterViewInit {
     this._gridService._mainEl = this.el;
   }
 
-  ngAfterViewInit(): void {}
+  ngAfterViewInit(): void {
+  }
 
   private setBackgroundCssVariables() {
     const style = this.el.style;
