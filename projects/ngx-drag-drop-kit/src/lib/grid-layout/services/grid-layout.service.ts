@@ -176,7 +176,7 @@ export class GridLayoutService {
         this._renderer.setStyle(this._placeholder, 'height', gridItem.height + 'px');
         this._renderer.setStyle(this._placeholder, 'left', x + 'px');
         this._renderer.setStyle(this._placeholder, 'top', y + 'px');
-        this._renderer.setStyle(this._placeholder, 'opacity', 0.5);
+        this._renderer.setStyle(this._placeholder, 'opacity', 0.4);
         this._renderer.setStyle(this._placeholder, 'background-color', '#6e02fc');
         this._renderer.setStyle(this._placeholder, 'pointer-events', 'none');
         this._renderer.setStyle(this._placeholder, 'position', 'absolute');

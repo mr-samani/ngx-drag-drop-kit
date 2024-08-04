@@ -6,8 +6,10 @@ import { HorizontalListComponent } from './horizontal-list/horizontal-list.compo
 import { CopyToZoneComponent } from './copy-to-zone/copy-to-zone.component';
 import { NestedTreeSortComponent } from './nested-tree-sort/nested-tree-sort.component';
 import { GridLayoutComponent } from './grid-layout/grid-layout.component';
+import { TestComponent } from './test/test.component';
 
 export const routes: Routes = [
+  { path: 'test', component: TestComponent },
   { path: '', redirectTo: 'grid-layout', pathMatch: 'full' },
   //{ path: '', redirectTo: 'drag-drop', pathMatch: 'full' },
   { path: 'drag-resize', component: DragResizeComponent },
