@@ -30,6 +30,10 @@ export class GridLayoutComponent implements OnInit, AfterViewInit {
   }
 
   ngAfterViewInit(): void {
+    setTimeout(() => {
+      // TODO: AFTER LOAD END compact all items
+      this._gridService.compactGridItems();
+    }, 1000);
   }
 
   private setBackgroundCssVariables() {

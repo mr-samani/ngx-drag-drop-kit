@@ -4,6 +4,7 @@ import { GridItemComponent } from '../grid-item/grid-item.component';
 import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
 import { DOCUMENT } from '@angular/common';
 import {
+  collides,
   getAllCollisions,
   getFirstCollision,
   gridHToScreenHeight,
@@ -69,7 +70,6 @@ export class GridLayoutService {
     const findedIndex = this._gridItems.findIndex((x) => x == item);
     if (findedIndex === -1) {
       this._gridItems.push(item);
-      this.compactGridItem(item);
     }
   }
 
@@ -237,8 +237,8 @@ export class GridLayoutService {
     }
   }
 
-  cehckCollesions(fakeItem: FakeItem) {
-    const allCollessions = getAllCollisions(this._gridItems, fakeItem);
+  cehckCollesions(fakeItem: FakeItem, exp: HTMLElement[] = []) {
+    const allCollessions = getAllCollisions(this._gridItems, fakeItem).filter((x) => exp.indexOf(x.el) == -1);
     for (let c of allCollessions) {
       let movedElement = this.moveGridItem(c, fakeItem.x + fakeItem.w, fakeItem.y + fakeItem.h);
       let fakeItemMoved: FakeItem = {
@@ -248,9 +248,14 @@ export class GridLayoutService {
         h: movedElement._config.h,
         el: movedElement.el,
       };
-      this.cehckCollesions(fakeItemMoved);
-    //  this.compactGridItems(movedElement.el);
+      // if (movedElement.el == fakeItem.el) {
+      //   continue;
+      // }
+      exp.push(fakeItem.el);
+      // console.log('must moved:', fakeItemMoved.el, exp);
+      this.cehckCollesions(fakeItemMoved, exp);
     }
+    // this.compactGridItems(fakeItem);
   }
 
   private moveGridItem(gridItem: GridItemComponent, cellX: number, cellY: number) {
@@ -261,11 +266,11 @@ export class GridLayoutService {
     return gridItem;
   }
 
-  private compactGridItems(exceptItem: HTMLElement) {
-    this._gridItems.forEach((el) => (el.el != exceptItem ? this.compactGridItem(el) : ''));
+  compactGridItems(fakeItem?: FakeItem) {
+    this._gridItems.forEach((el) => this.compactGridItem(el, fakeItem));
   }
 
-  private compactGridItem(gridItem: GridItemComponent, counter = 0) {
+  private compactGridItem(gridItem: GridItemComponent, placeholderFakeItem?: FakeItem) {
     if (gridItem._config.y <= 0) {
       return;
     }
@@ -276,13 +281,12 @@ export class GridLayoutService {
       h: gridItem._config.h,
       el: gridItem.el,
     };
-    if (!getFirstCollision(this._gridItems, fakeItem)) {
-      counter++;
-      console.log('compact', counter);
+    let can = (placeholderFakeItem && !collides(gridItem, placeholderFakeItem)) ?? true;
+    if (!getFirstCollision(this._gridItems, fakeItem) && can) {
       const newConfig = gridItem._config;
       newConfig.y--;
       gridItem.config = newConfig;
-      this.compactGridItem(gridItem, counter);
+      this.compactGridItem(gridItem, placeholderFakeItem);
     }
   }
 }

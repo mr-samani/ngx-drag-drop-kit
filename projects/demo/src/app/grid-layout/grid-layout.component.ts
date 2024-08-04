@@ -23,10 +23,10 @@ export class GridLayoutComponent {
   };
 
   layouts: DashboardItem[] = [
-    { config: new GridItemConfig(0, 0, 1, 1) },
     { config: new GridItemConfig(3, 0, 2, 3) },
     { config: new GridItemConfig(5, 0, 2, 4) },
     { config: new GridItemConfig(0, 6, 2, 2) },
+    { config: new GridItemConfig(0, 0, 1, 1) },
     { config: new GridItemConfig(9, 3, 2, 10) },
     { config: new GridItemConfig(0,12, 3, 3) },
   ];
