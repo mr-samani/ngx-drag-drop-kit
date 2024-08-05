@@ -42,6 +42,7 @@ export interface IUpdatePlaceholderPosition {
 export class GridLayoutService {
   public _options: GridLayoutOptions = new GridLayoutOptions();
   public _mainEl!: HTMLElement;
+  public _totalItemCount:number=0;
   private _gridItems: GridItemComponent[] = [];
 
   private _renderer: Renderer2;
@@ -71,6 +72,7 @@ export class GridLayoutService {
     if (findedIndex === -1) {
       this._gridItems.push(item);
     }
+    console.log(this._totalItemCount);
   }
 
   /**

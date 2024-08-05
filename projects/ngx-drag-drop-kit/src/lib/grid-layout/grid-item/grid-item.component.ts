@@ -1,4 +1,13 @@
-import { ChangeDetectionStrategy, Component, ElementRef, Input, OnDestroy, OnInit, inject } from '@angular/core';
+import {
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  Input,
+  OnDestroy,
+  OnInit,
+  inject,
+} from '@angular/core';
 import { GridItemConfig } from '../options/gride-item-config';
 import { GridLayoutService } from '../services/grid-layout.service';
 import { IPosition, NgxDraggableDirective } from '../../directives/ngx-draggable.directive';
@@ -22,7 +31,7 @@ import { gridHToScreenHeight, gridWToScreenWidth, gridXToScreenX, gridYToScreenY
   hostDirectives: [NgxDraggableDirective, NgxResizableDirective],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class GridItemComponent implements OnInit, OnDestroy {
+export class GridItemComponent implements OnInit, AfterViewInit, OnDestroy {
   public _config: GridItemConfig = new GridItemConfig();
   @Input() set config(val: GridItemConfig) {
     if (val) {
@@ -52,10 +61,13 @@ export class GridItemComponent implements OnInit, OnDestroy {
     this.resizable.resize.subscribe((ev) => this._gridService.onMoveOrResize(this));
     this.resizable.resizeEnd.subscribe((ev) => this._gridService.onMoveOrResizeEnd(this));
   }
+  
+  ngAfterViewInit(): void {}
 
   ngOnDestroy(): void {
     this._gridService.removeGridItem(this);
   }
+
   init() {
     this.x = gridXToScreenX(this._gridService.cellWidth, this._config.x, this._gridService._options.gap);
     this.y = gridYToScreenY(this._gridService.cellHeight, this._config.y, this._gridService._options.gap);

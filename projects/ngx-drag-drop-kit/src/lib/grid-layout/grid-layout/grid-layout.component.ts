@@ -1,7 +1,21 @@
-import { AfterViewInit, Component, ElementRef, Input, OnInit, ViewEncapsulation } from '@angular/core';
+import {
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  Component,
+  ContentChild,
+  ContentChildren,
+  ElementRef,
+  Input,
+  OnInit,
+  QueryList,
+  ViewChild,
+  ViewEncapsulation,
+  contentChild,
+} from '@angular/core';
 import { IGridLayoutOptions } from '../options/options';
 import { GridLayoutService } from '../services/grid-layout.service';
 import { deepMerge } from '../../../utils/deep-merge';
+import { GridItemComponent } from '../grid-item/grid-item.component';
 
 @Component({
   selector: 'grid-layout',
@@ -11,6 +25,7 @@ import { deepMerge } from '../../../utils/deep-merge';
     '[style.boxSizing]': '"border-box"',
     '[style.height.px]': '_gridService.getGridHeight',
   },
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class GridLayoutComponent implements OnInit, AfterViewInit {
   @Input() set options(val: IGridLayoutOptions) {
@@ -20,6 +35,7 @@ export class GridLayoutComponent implements OnInit, AfterViewInit {
   }
 
   el: HTMLElement;
+  @ContentChildren(GridItemComponent) _items?: QueryList<GridItemComponent>;
   constructor(public _gridService: GridLayoutService, private _elRef: ElementRef<HTMLElement>) {
     this.el = _elRef.nativeElement;
   }
@@ -30,10 +46,12 @@ export class GridLayoutComponent implements OnInit, AfterViewInit {
   }
 
   ngAfterViewInit(): void {
-    setTimeout(() => {
-      // TODO: AFTER LOAD END compact all items
-      this._gridService.compactGridItems();
-    }, 1000);
+    // setTimeout(() => {
+    // TODO: AFTER LOAD END compact all items
+    this._gridService.compactGridItems();
+    // }, 1000);
+    this._gridService._totalItemCount = this._items ? this._items.length : 0;
+    console.log(this._gridService._totalItemCount);
   }
 
   private setBackgroundCssVariables() {
