@@ -1,21 +1,19 @@
 import {
   AfterViewInit,
   ChangeDetectionStrategy,
+  ChangeDetectorRef,
   Component,
-  ContentChild,
   ContentChildren,
   ElementRef,
   Input,
   OnInit,
   QueryList,
-  ViewChild,
-  ViewEncapsulation,
-  contentChild,
 } from '@angular/core';
 import { IGridLayoutOptions } from '../options/options';
-import { GridLayoutService } from '../services/grid-layout.service';
-import { deepMerge } from '../../../utils/deep-merge';
+import { DEFAULT_GRID_LAYOUT_CONFIG, GridLayoutService } from '../services/grid-layout.service';
 import { GridItemComponent } from '../grid-item/grid-item.component';
+import { log, logEndTime, logStartTime } from '../utils/log';
+import { mergeDeep } from '../../../utils/deep-merge';
 
 @Component({
   selector: 'grid-layout',
@@ -25,18 +23,32 @@ import { GridItemComponent } from '../grid-item/grid-item.component';
     '[style.boxSizing]': '"border-box"',
     '[style.height.px]': '_gridService.getGridHeight',
   },
-  changeDetection: ChangeDetectionStrategy.OnPush,
+  // changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class GridLayoutComponent implements OnInit, AfterViewInit {
   @Input() set options(val: IGridLayoutOptions) {
     if (val) {
-      this._gridService._options = deepMerge(this._gridService._options, val);
+      this._gridService._options = mergeDeep(DEFAULT_GRID_LAYOUT_CONFIG, val);
     }
   }
 
   el: HTMLElement;
-  @ContentChildren(GridItemComponent) _items?: QueryList<GridItemComponent>;
-  constructor(public _gridService: GridLayoutService, private _elRef: ElementRef<HTMLElement>) {
+  @ContentChildren(GridItemComponent) set items(value: QueryList<GridItemComponent>) {
+    log('Change grid items in main layout.');
+    if (value) {
+      logStartTime('StartInit');
+      this._gridService._gridItems = Array.from(value);
+      this.initGridItems();
+    }
+  }
+
+  loading = true;
+
+  constructor(
+    public _gridService: GridLayoutService,
+    private _elRef: ElementRef<HTMLElement>,
+    private _changeDetection: ChangeDetectorRef
+  ) {
     this.el = _elRef.nativeElement;
   }
 
@@ -45,14 +57,7 @@ export class GridLayoutComponent implements OnInit, AfterViewInit {
     this._gridService._mainEl = this.el;
   }
 
-  ngAfterViewInit(): void {
-    // setTimeout(() => {
-    // TODO: AFTER LOAD END compact all items
-    this._gridService.compactGridItems();
-    // }, 1000);
-    this._gridService._totalItemCount = this._items ? this._items.length : 0;
-    console.log(this._gridService._totalItemCount);
-  }
+  ngAfterViewInit(): void {}
 
   private setBackgroundCssVariables() {
     const style = this.el.style;
@@ -82,5 +87,19 @@ export class GridLayoutComponent implements OnInit, AfterViewInit {
       style.removeProperty('--row-color');
       style.removeProperty('--column-color');
     }
+  }
+
+  initGridItems() {
+    for (let i = 0; i < this._gridService._gridItems.length; i++) {
+      this._gridService._gridItems[i].id = 'GRID_ITEM_' + (i + 1);
+      this._gridService.updateGridItem(this._gridService._gridItems[i]);
+    }
+    log('Initialize gridItems done.', this._gridService._gridItems.length);
+   // setTimeout(() => {
+      this._gridService.compactGridItems();
+      this.loading = false;
+      logEndTime('StartInit');
+      this._changeDetection.detectChanges();
+    //}, 100);
   }
 }

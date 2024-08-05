@@ -1,2 +1,7 @@
+<!-- @if (loading) { loading... }@else{
 <ng-content #childItem></ng-content>
+} -->
 
+<ng-container *ngIf="!loading">
+  <ng-content #childItem></ng-content>
+</ng-container>

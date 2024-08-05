@@ -16,7 +16,8 @@ import {
   screenXToGridX,
   screenYToGridY,
 } from '../utils/grid.utils';
-import { FakeItem } from '../options/gride-item-config';
+import { FakeItem, GridItemConfig } from '../options/gride-item-config';
+import { mergeDeep } from '../../../utils/deep-merge';
 
 export interface IUpdatePlaceholderPosition {
   gridItem: GridItemComponent;
@@ -38,12 +39,14 @@ export interface IUpdatePlaceholderPosition {
   cellH: number;
 }
 
+export const DEFAULT_GRID_ITEM_CONFIG = new GridItemConfig();
+export const DEFAULT_GRID_LAYOUT_CONFIG = new GridLayoutOptions();
+
 @Injectable()
 export class GridLayoutService {
-  public _options: GridLayoutOptions = new GridLayoutOptions();
+  public _options: GridLayoutOptions = DEFAULT_GRID_LAYOUT_CONFIG;
   public _mainEl!: HTMLElement;
-  public _totalItemCount:number=0;
-  private _gridItems: GridItemComponent[] = [];
+  public _gridItems: GridItemComponent[] = [];
 
   private _renderer: Renderer2;
   private _placeholder: HTMLElement | undefined;
@@ -63,25 +66,13 @@ export class GridLayoutService {
       });
   }
 
-  /**
-   * Add new grid item
-   * @param item drid item
-   */
-  public registerGridItem(item: GridItemComponent) {
-    const findedIndex = this._gridItems.findIndex((x) => x == item);
-    if (findedIndex === -1) {
-      this._gridItems.push(item);
-    }
-    console.log(this._totalItemCount);
-  }
-
-  /**
-   * Remove grid item
-   * @param item grid item
-   */
-  public removeGridItem(item: GridItemComponent) {
-    const findedIndex = this._gridItems.findIndex((x) => x == item);
-    this._gridItems.splice(findedIndex, 1);
+  public updateGridItem(item: GridItemComponent) {
+    item.config = mergeDeep(DEFAULT_GRID_ITEM_CONFIG, item.config);
+    item.left = gridXToScreenX(this.cellWidth, item.config.x, this._options.gap);
+    item.top = gridYToScreenY(this.cellHeight, item.config.y, this._options.gap);
+    item.width = gridWToScreenWidth(this.cellWidth, item.config.w, this._options.gap);
+    item.height = gridHToScreenHeight(this.cellHeight, item.config.h, this._options.gap);
+    item._changeDetection.detectChanges();
   }
 
   public get mainWidth() {
@@ -116,9 +107,9 @@ export class GridLayoutService {
         Math.max(
           acc,
           // rowHeight *
-          cur._config.y + cur._config.h // +
-          //  gap * (cur._config.y+1  + cur._config.h-1) //+
-          // Math.max(cur._config.y + cur._config.h, 0)
+          cur.config.y + cur.config.h // +
+          //  gap * (cur.config.y+1  + cur.config.h-1) //+
+          // Math.max(cur.config.y + cur.config.h, 0)
         ),
       0
     );
@@ -155,13 +146,13 @@ export class GridLayoutService {
       return;
     }
     //console.log(this.placeHolderData);
-    let newConfix = item._config;
-    newConfix.x = this.placeHolderData.cellX;
-    newConfix.y = this.placeHolderData.cellY;
-    newConfix.w = this.placeHolderData.cellW;
-    newConfix.h = this.placeHolderData.cellH;
-    item.config = newConfix;
+    item.config.x = this.placeHolderData.cellX;
+    item.config.y = this.placeHolderData.cellY;
+    item.config.w = this.placeHolderData.cellW;
+    item.config.h = this.placeHolderData.cellH;
+    this.updateGridItem(item);
     this._renderer.setStyle(item.el, 'transform', '');
+    this.compactGridItems();
   }
 
   convertPointToCell(x: number, y: number, width: number, height: number) {
@@ -191,7 +182,7 @@ export class GridLayoutService {
       y: cellY,
       h: cellH,
       w: cellW,
-      el: gridItem.el,
+      id: gridItem.id,
     };
     this.cehckCollesions(fakeItem);
     this.showPlaceholder(input).then((plcEl) => {
@@ -200,6 +191,8 @@ export class GridLayoutService {
       this._renderer.setStyle(this._placeholder, 'top', y + 'px');
       this._renderer.setStyle(this._placeholder, 'left', x + 'px');
     });
+    // TODO : must compact other 
+    // this.compactGridItems();
   }
 
   private showPlaceholder(input: IUpdatePlaceholderPosition): Promise<HTMLElement> {
@@ -239,56 +232,55 @@ export class GridLayoutService {
     }
   }
 
-  cehckCollesions(fakeItem: FakeItem, exp: HTMLElement[] = []) {
-    const allCollessions = getAllCollisions(this._gridItems, fakeItem).filter((x) => exp.indexOf(x.el) == -1);
+  cehckCollesions(fakeItem: FakeItem, expIds: string[] = []) {
+    const allCollessions = getAllCollisions(this._gridItems, fakeItem).filter((x) => expIds.indexOf(x.id) == -1);
     for (let c of allCollessions) {
       let movedElement = this.moveGridItem(c, fakeItem.x + fakeItem.w, fakeItem.y + fakeItem.h);
       let fakeItemMoved: FakeItem = {
-        x: movedElement._config.x,
-        y: movedElement._config.y,
-        w: movedElement._config.w,
-        h: movedElement._config.h,
-        el: movedElement.el,
+        x: movedElement.config.x,
+        y: movedElement.config.y,
+        w: movedElement.config.w,
+        h: movedElement.config.h,
+        id: movedElement.id,
       };
       // if (movedElement.el == fakeItem.el) {
       //   continue;
       // }
-      exp.push(fakeItem.el);
+      expIds.push(fakeItem.id);
       // console.log('must moved:', fakeItemMoved.el, exp);
-      this.cehckCollesions(fakeItemMoved, exp);
+      this.cehckCollesions(fakeItemMoved, expIds);
     }
     // this.compactGridItems(fakeItem);
   }
 
   private moveGridItem(gridItem: GridItemComponent, cellX: number, cellY: number) {
-    let newConfix = gridItem._config;
-    // newConfix.x = cellX;
-    newConfix.y = cellY;
-    gridItem.config = newConfix;
+    gridItem.config.y = cellY;
+    this.updateGridItem(gridItem);
     return gridItem;
   }
 
-  compactGridItems(fakeItem?: FakeItem) {
-    this._gridItems.forEach((el) => this.compactGridItem(el, fakeItem));
+  compactGridItems() {
+    for (let item of this._gridItems) {
+      this.compactGridItem(item);
+    }
   }
 
-  private compactGridItem(gridItem: GridItemComponent, placeholderFakeItem?: FakeItem) {
-    if (gridItem._config.y <= 0) {
+  private compactGridItem(gridItem: GridItemComponent) {
+    if (gridItem.config.y <= 0) {
       return;
     }
     let fakeItem: FakeItem = {
-      x: gridItem._config.x,
-      y: gridItem._config.y - 1,
-      w: gridItem._config.w,
-      h: gridItem._config.h,
-      el: gridItem.el,
+      x: gridItem.config.x,
+      y: gridItem.config.y - 1,
+      w: gridItem.config.w,
+      h: gridItem.config.h,
+      id: gridItem.id,
     };
-    let can = (placeholderFakeItem && !collides(gridItem, placeholderFakeItem)) ?? true;
-    if (!getFirstCollision(this._gridItems, fakeItem) && can) {
-      const newConfig = gridItem._config;
-      newConfig.y--;
-      gridItem.config = newConfig;
-      this.compactGridItem(gridItem, placeholderFakeItem);
+    //let can = (placeholderFakeItem && !collides(gridItem, placeholderFakeItem)) ?? true;
+    if (!getFirstCollision(this._gridItems, fakeItem)) {
+      gridItem.config.y--;
+      this.updateGridItem(gridItem);
+      this.compactGridItem(gridItem);
     }
   }
 }

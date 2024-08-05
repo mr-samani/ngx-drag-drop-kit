@@ -62,9 +62,9 @@ export function getAllCollisions(gridItems: GridItemComponent[], item: FakeItem)
 }
 
 export function getFirstCollision(gridItems: GridItemComponent[], item: FakeItem): GridItemComponent | null {
-  for (let i = 0, len = gridItems.length; i < len; i++) {
+  for (let i = 0; i < gridItems.length; i++) {
     if (collides(gridItems[i], item)) {
-      console.log('first collession', gridItems[i]);
+      //   console.log('first collession:', item, ' with: ', gridItems[i].id, gridItems[i].config);
       return gridItems[i];
     }
   }
@@ -74,19 +74,19 @@ export function getFirstCollision(gridItems: GridItemComponent[], item: FakeItem
  * Given two GridItemComponent, check if they collide.
  */
 export function collides(l1: GridItemComponent, l2: FakeItem): boolean {
-  if (l1.el === l2.el) {
+  if (l1.id === l2.id) {
     return false;
   } // same element
-  if (l1._config.x + l1._config.w <= l2.x) {
+  if (l1.config.x + l1.config.w <= l2.x) {
     return false;
   } // l1 is left of l2
-  if (l1._config.x >= l2.x + l2.w) {
+  if (l1.config.x >= l2.x + l2.w) {
     return false;
   } // l1 is right of l2
-  if (l1._config.y + l1._config.h <= l2.y) {
+  if (l1.config.y + l1.config.h <= l2.y) {
     return false;
   } // l1 is above l2
-  if (l1._config.y >= l2.y + l2.h) {
+  if (l1.config.y >= l2.y + l2.h) {
     return false;
   } // l1 is below l2
   return true; // boxes overlap

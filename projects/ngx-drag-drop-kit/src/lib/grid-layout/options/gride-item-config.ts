@@ -11,6 +11,10 @@ export class GridItemConfig {
   }
 }
 
-export class FakeItem extends GridItemConfig {
-  el!: HTMLElement;
+export class FakeItem {
+  id!: string;
+  x!: number;
+  y!: number;
+  w!: number;
+  h!: number;
 }

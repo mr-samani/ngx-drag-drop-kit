@@ -2,7 +2,6 @@
   @for(item of layouts;track item){
   <grid-item [config]="item.config" class="grid-item">
     {{ item.title }}
-    <pre>{{ item.config | json }}</pre>
   </grid-item>
 
   }
