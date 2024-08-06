@@ -8,6 +8,10 @@ import {
   Input,
   OnInit,
   QueryList,
+  ViewChild,
+  ViewContainerRef,
+  ViewEncapsulation,
+  viewChild,
 } from '@angular/core';
 import { IGridLayoutOptions } from '../options/options';
 import { DEFAULT_GRID_LAYOUT_CONFIG, GridLayoutService } from '../services/grid-layout.service';
@@ -24,6 +28,7 @@ import { mergeDeep } from '../../../utils/deep-merge';
     '[style.height.px]': '_gridService.getGridHeight',
   },
   // changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
 })
 export class GridLayoutComponent implements OnInit, AfterViewInit {
   @Input() set options(val: IGridLayoutOptions) {
@@ -43,7 +48,11 @@ export class GridLayoutComponent implements OnInit, AfterViewInit {
   }
 
   loading = true;
-
+  @ViewChild('placeholder', { read: ViewContainerRef, static: false }) private set placeholderRef(
+    val: ViewContainerRef
+  ) {
+    this._gridService._placeholderContainerRef = val;
+  }
   constructor(
     public _gridService: GridLayoutService,
     private _elRef: ElementRef<HTMLElement>,
@@ -95,11 +104,13 @@ export class GridLayoutComponent implements OnInit, AfterViewInit {
       this._gridService.updateGridItem(this._gridService._gridItems[i]);
     }
     log('Initialize gridItems done.', this._gridService._gridItems.length);
-   // setTimeout(() => {
-      this._gridService.compactGridItems();
-      this.loading = false;
-      logEndTime('StartInit');
+    // setTimeout(() => {
+    this._gridService.compactGridItems();
+    this.loading = false;
+    logEndTime('StartInit');
+    setTimeout(() => {
       this._changeDetection.detectChanges();
+    }, 0);
     //}, 100);
   }
 }

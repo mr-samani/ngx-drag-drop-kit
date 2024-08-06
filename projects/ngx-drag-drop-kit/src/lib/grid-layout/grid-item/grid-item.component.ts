@@ -52,7 +52,7 @@ export class GridItemComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    this.draggable.boundary = this._gridService._mainEl;
+    //this.draggable.boundary = this._gridService._mainEl;
     this.draggable.dragMove.subscribe((ev) => this._gridService.onMoveOrResize(this));
     this.draggable.dragEnd.subscribe((ev) => this._gridService.onMoveOrResizeEnd(this));
     this.resizable.boundary = this._gridService._mainEl;

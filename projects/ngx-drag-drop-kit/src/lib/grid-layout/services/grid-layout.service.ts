@@ -1,4 +1,4 @@
-import { Inject, Injectable, Renderer2, RendererFactory2 } from '@angular/core';
+import { ComponentRef, Inject, Injectable, Renderer2, RendererFactory2, ViewContainerRef } from '@angular/core';
 import { GridLayoutOptions } from '../options/options';
 import { GridItemComponent } from '../grid-item/grid-item.component';
 import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
@@ -18,6 +18,8 @@ import {
 } from '../utils/grid.utils';
 import { FakeItem, GridItemConfig } from '../options/gride-item-config';
 import { mergeDeep } from '../../../utils/deep-merge';
+import { log } from '../utils/log';
+import { GridLayoutComponent } from '../grid-layout/grid-layout.component';
 
 export interface IUpdatePlaceholderPosition {
   gridItem: GridItemComponent;
@@ -48,16 +50,24 @@ export class GridLayoutService {
   public _mainEl!: HTMLElement;
   public _gridItems: GridItemComponent[] = [];
 
-  private _renderer: Renderer2;
-  private _placeholder: HTMLElement | undefined;
-  private placeHolderData?: IUpdatePlaceholderPosition;
+  public _placeholderContainerRef!: ViewContainerRef;
+  private placeHolder?: GridItemComponent;
+  private placeHolderRef?: ComponentRef<GridItemComponent>;
+
   private updatePlaceholderPosition$ = new Subject<IUpdatePlaceholderPosition>();
+  private _renderer: Renderer2;
   constructor(rendererFactory: RendererFactory2, @Inject(DOCUMENT) private _document: Document) {
     this._renderer = rendererFactory.createRenderer(null, null);
     this.updatePlaceholderPosition$
       .pipe(
         distinctUntilChanged((prev, curr) => {
-          return prev.x == curr.x && prev.y == curr.y && prev.width == curr.width && prev.height == curr.height;
+          return (
+            prev.x == curr.x &&
+            prev.y == curr.y &&
+            prev.width == curr.width &&
+            prev.height == curr.height &&
+            prev.gridItem == curr.gridItem
+          );
         }),
         debounceTime(10)
       )
@@ -127,7 +137,7 @@ export class GridLayoutService {
     const gridItemRec = item.el.getBoundingClientRect();
     // console.log(item.el, gridItemRec);
     let plcInfo = this.convertPointToCell(gridItemRec.left, gridItemRec.top, gridItemRec.width, gridItemRec.height);
-    this.placeHolderData = {
+    const placeHolderData = {
       x: plcInfo.plcX,
       y: plcInfo.plcY,
       cellX: plcInfo.cellX,
@@ -138,21 +148,19 @@ export class GridLayoutService {
       height: plcInfo.plcH,
       gridItem: item,
     };
-    this.updatePlaceholderPosition$.next(this.placeHolderData);
+    this.updatePlaceholderPosition$.next(placeHolderData);
   }
   onMoveOrResizeEnd(item: GridItemComponent) {
-    this.removePlaceholder();
-    if (!this.placeHolderData) {
+    this.placeHolderRef?.destroy();
+    if (!this.placeHolder) {
       return;
     }
     //console.log(this.placeHolderData);
-    item.config.x = this.placeHolderData.cellX;
-    item.config.y = this.placeHolderData.cellY;
-    item.config.w = this.placeHolderData.cellW;
-    item.config.h = this.placeHolderData.cellH;
+    item.config = this.placeHolder.config;
     this.updateGridItem(item);
     this._renderer.setStyle(item.el, 'transform', '');
     this.compactGridItems();
+    this.placeHolder = undefined;
   }
 
   convertPointToCell(x: number, y: number, width: number, height: number) {
@@ -176,7 +184,7 @@ export class GridLayoutService {
    */
   private updatePlaceholderPosition(input: IUpdatePlaceholderPosition) {
     // console.log(input);
-    const { gridItem, x, y, width, height, cellX, cellY, cellW, cellH } = input;
+    const { gridItem, cellX, cellY, cellW, cellH } = input;
     let fakeItem: FakeItem = {
       x: cellX,
       y: cellY,
@@ -185,51 +193,13 @@ export class GridLayoutService {
       id: gridItem.id,
     };
     this.cehckCollesions(fakeItem);
-    this.showPlaceholder(input).then((plcEl) => {
-      this._renderer.setStyle(this._placeholder, 'width', width + 'px');
-      this._renderer.setStyle(this._placeholder, 'height', height + 'px');
-      this._renderer.setStyle(this._placeholder, 'top', y + 'px');
-      this._renderer.setStyle(this._placeholder, 'left', x + 'px');
-    });
-    // TODO : must compact other 
-    // this.compactGridItems();
-  }
-
-  private showPlaceholder(input: IUpdatePlaceholderPosition): Promise<HTMLElement> {
-    return new Promise<HTMLElement>((resolve, reject) => {
-      try {
-        if (this._placeholder) {
-          resolve(this._placeholder);
-          return;
-        }
-        const { gridItem, x, y } = input;
-        this.removePlaceholder();
-        this._placeholder = this._document.createElement('div');
-        this._placeholder.className = 'grid-item-placeholder grid-item-placeholder-default';
-        this._placeholder.innerHTML = 'placeholder';
-        this._renderer.setStyle(this._placeholder, 'width', gridItem.width + 'px');
-        this._renderer.setStyle(this._placeholder, 'height', gridItem.height + 'px');
-        this._renderer.setStyle(this._placeholder, 'left', x + 'px');
-        this._renderer.setStyle(this._placeholder, 'top', y + 'px');
-        this._renderer.setStyle(this._placeholder, 'opacity', 0.4);
-        this._renderer.setStyle(this._placeholder, 'background-color', '#6e02fc');
-        this._renderer.setStyle(this._placeholder, 'pointer-events', 'none');
-        this._renderer.setStyle(this._placeholder, 'position', 'absolute');
-        this._renderer.setStyle(this._placeholder, 'transition', 'all 100ms ease-in 0s');
-
-        this._renderer.appendChild(this._mainEl, this._placeholder);
-        resolve(this._placeholder);
-      } catch (error) {
-        reject();
-      }
-    });
-  }
-
-  private removePlaceholder() {
-    if (this._placeholder) {
-      this._placeholder.remove();
-      this._placeholder = undefined;
+    if (!this.placeHolderRef || !this.placeHolder) {
+      this.placeHolderRef = this._placeholderContainerRef.createComponent(GridItemComponent);
+      this.placeHolder = this.placeHolderRef.instance;
+      this.placeHolder.el.className = 'grid-item-placeholder grid-item-placeholder-default';
     }
+    this.placeHolder.config = new GridItemConfig(cellX, cellY, cellW, cellH);
+    this.updateGridItem(this.placeHolder);
   }
 
   cehckCollesions(fakeItem: FakeItem, expIds: string[] = []) {
@@ -250,7 +220,10 @@ export class GridLayoutService {
       // console.log('must moved:', fakeItemMoved.el, exp);
       this.cehckCollesions(fakeItemMoved, expIds);
     }
-    // this.compactGridItems(fakeItem);
+
+    // // TODO : must compact other
+    // log(expIds)
+    // this.compactGridItems(expIds);
   }
 
   private moveGridItem(gridItem: GridItemComponent, cellX: number, cellY: number) {
@@ -259,9 +232,13 @@ export class GridLayoutService {
     return gridItem;
   }
 
-  compactGridItems() {
+  compactGridItems(expIds?: string[]) {
     for (let item of this._gridItems) {
-      this.compactGridItem(item);
+      if (expIds) {
+        if (expIds.indexOf(item.id) == -1) this.compactGridItem(item);
+      } else {
+        this.compactGridItem(item);
+      }
     }
   }
 
