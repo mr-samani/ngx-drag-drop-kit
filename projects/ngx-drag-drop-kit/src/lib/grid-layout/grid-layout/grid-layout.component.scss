@@ -39,10 +39,10 @@ grid-layout {
   position: absolute;
   z-index: 0;
   transition-property: transform;
-  transition: all 150ms ease;
+  transition: all 150ms ease !important;
 
   &-default {
     opacity: 0.5;
     background-color: #6e02fc;
   }
-} 
+}

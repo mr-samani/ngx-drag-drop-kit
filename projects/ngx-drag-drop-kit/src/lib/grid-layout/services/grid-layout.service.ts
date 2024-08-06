@@ -56,6 +56,7 @@ export class GridLayoutService {
 
   private updatePlaceholderPosition$ = new Subject<IUpdatePlaceholderPosition>();
   private _renderer: Renderer2;
+
   constructor(rendererFactory: RendererFactory2, @Inject(DOCUMENT) private _document: Document) {
     this._renderer = rendererFactory.createRenderer(null, null);
     this.updatePlaceholderPosition$
@@ -192,6 +193,8 @@ export class GridLayoutService {
       w: cellW,
       id: gridItem.id,
     };
+    // TODO : must compact other
+    this.undoMovedCollisions();
     this.cehckCollesions(fakeItem);
     if (!this.placeHolderRef || !this.placeHolder) {
       this.placeHolderRef = this._placeholderContainerRef.createComponent(GridItemComponent);
@@ -202,9 +205,10 @@ export class GridLayoutService {
     this.updateGridItem(this.placeHolder);
   }
 
-  cehckCollesions(fakeItem: FakeItem, expIds: string[] = []) {
-    const allCollessions = getAllCollisions(this._gridItems, fakeItem).filter((x) => expIds.indexOf(x.id) == -1);
-    for (let c of allCollessions) {
+  cehckCollesions(fakeItem: FakeItem) {
+    const allCollisions = getAllCollisions(this._gridItems, fakeItem);
+
+    for (let c of allCollisions) {
       let movedElement = this.moveGridItem(c, fakeItem.x + fakeItem.w, fakeItem.y + fakeItem.h);
       let fakeItemMoved: FakeItem = {
         x: movedElement.config.x,
@@ -213,17 +217,19 @@ export class GridLayoutService {
         h: movedElement.config.h,
         id: movedElement.id,
       };
-      // if (movedElement.el == fakeItem.el) {
-      //   continue;
-      // }
-      expIds.push(fakeItem.id);
-      // console.log('must moved:', fakeItemMoved.el, exp);
-      this.cehckCollesions(fakeItemMoved, expIds);
     }
+  }
 
-    // // TODO : must compact other
-    // log(expIds)
-    // this.compactGridItems(expIds);
+  undoMovedCollisions() {
+    for (let item of this._gridItems) {
+      if (this.placeHolder) {
+        if (collides(item, { ...this.placeHolder.config, id: this.placeHolder.id }) == false) {
+          this.compactGridItem(item);
+        }
+      } else {
+        this.compactGridItem(item);
+      }
+    }
   }
 
   private moveGridItem(gridItem: GridItemComponent, cellX: number, cellY: number) {

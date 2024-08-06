@@ -41,6 +41,9 @@ export class GridLayoutComponent implements OnInit, AfterViewInit {
   @ContentChildren(GridItemComponent) set items(value: QueryList<GridItemComponent>) {
     log('Change grid items in main layout.');
     if (value) {
+      value.changes.subscribe(_=>{
+        debugger
+      })
       logStartTime('StartInit');
       this._gridService._gridItems = Array.from(value);
       this.initGridItems();
