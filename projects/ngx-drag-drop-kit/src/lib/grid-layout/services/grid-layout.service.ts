@@ -122,6 +122,10 @@ export class GridLayoutService {
       id: item.id,
     };
     // TODO: check available position
+    while (fakeItem.y > 0 && getFirstCollision(this._gridItems, fakeItem) == null) {
+      log('shift up');
+      fakeItem.y--;
+    }
     //const firstCollission = getPreviusY(this._gridItems, fakeItem);
     //fakeItem.y = firstCollission;
 
@@ -147,10 +151,14 @@ export class GridLayoutService {
     const mainRec = this._mainEl.getBoundingClientRect();
     const newX = x - mainRec.left;
     const newY = y - mainRec.top;
-    const cellX = screenXToGridX(newX, this._options.cols, mainRec.width, this._options.gap);
+    let cellX = screenXToGridX(newX, this._options.cols, mainRec.width, this._options.gap);
     const cellY = screenYToGridY(newY, this.cellHeight, this._options.gap);
     const cellW = screenWidthToGridWidth(width, this._options.cols, mainRec.width, this._options.gap);
     const cellH = screenHeightToGridHeight(height, this.cellHeight, mainRec.height, this._options.gap);
+    if (cellX + cellW > this._options.cols) {
+      cellX -= cellX + cellW - this._options.cols;
+    }
+    if (cellX < 0) cellX = 0;
     return { cellX, cellY, cellW, cellH };
   }
 
