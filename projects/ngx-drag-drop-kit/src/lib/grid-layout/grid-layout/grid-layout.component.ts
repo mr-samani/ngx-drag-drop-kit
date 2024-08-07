@@ -43,7 +43,6 @@ export class GridLayoutComponent implements OnInit, AfterViewInit {
     }
   }
 
-  loading = true;
   el: HTMLElement;
   @ContentChildren(GridItemComponent) set items(value: QueryList<GridItemComponent>) {
     log('Change grid items in main layout.');
@@ -124,7 +123,6 @@ export class GridLayoutComponent implements OnInit, AfterViewInit {
     logEndTime('StartInit');
     setTimeout(() => {
       this._changeDetection.detectChanges();
-      this.loading = false;
     }, 0);
 
     console.log(this._gridService._gridItems.map((x) => x.id));
@@ -135,4 +133,7 @@ export class GridLayoutComponent implements OnInit, AfterViewInit {
     this.setBackgroundCssVariables();
     this.initGridItems();
   }
+
+  // todo : clone changed grid items
+  public getRenderedColumns() {}
 }

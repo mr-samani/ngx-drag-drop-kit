@@ -13,10 +13,11 @@ import { FormsModule } from '@angular/forms';
   styleUrl: './grid-layout.component.scss',
 })
 export class GridLayoutComponent {
+  showLayout = true;
   options: IGridLayoutOptions = {
     cols: 12,
     gap: 10,
-    pushOnDrag: false,
+    //pushOnDrag: false,
     gridBackgroundConfig: {
       borderWidth: 1,
     },
@@ -62,6 +63,13 @@ export class GridLayoutComponent {
   addInFirst() {
     let config = new GridItemConfig(0, 0, 2, 3);
     this.layouts.push({ config });
+  }
+
+  rerenderLayout() {
+    this.showLayout = false;
+    setTimeout(() => {
+      this.showLayout = true;
+    }, 10);
   }
 }
 

@@ -73,7 +73,7 @@ export class NgxDraggableDirective implements OnDestroy, OnInit {
 
   ngOnDestroy() {
     this.subscriptions.forEach((sub) => sub.unsubscribe());
-    //this._autoScroll._stopScrolling();
+    this._autoScroll._stopScrolling();
     // this._autoScroll._stopScrollTimers.complete();
   }
 
@@ -105,7 +105,7 @@ export class NgxDraggableDirective implements OnDestroy, OnInit {
       this.dragEnd.emit();
     }
     this.dragging = false;
-    //this._autoScroll._stopScrolling();
+    this._autoScroll._stopScrolling();
   }
 
   onMouseDown(ev: MouseEvent | TouchEvent) {
