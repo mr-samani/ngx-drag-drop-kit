@@ -19,7 +19,7 @@ export class GridLayoutOptions implements IGridLayoutOptions {
     rowColor: 'rgba(128, 128, 128, 0.10)',
     columnColor: 'rgba(128, 128, 128, 0.10)',
   };
-  compactType: CompactType = 'horizontal';
+  compactType: CompactType = 'vertical';
 }
 
 export interface IGridBackgroundCfg {

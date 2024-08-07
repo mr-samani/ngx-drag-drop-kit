@@ -18,6 +18,7 @@ import { DEFAULT_GRID_LAYOUT_CONFIG, GridLayoutService } from '../services/grid-
 import { GridItemComponent } from '../grid-item/grid-item.component';
 import { log, logEndTime, logStartTime } from '../utils/log';
 import { mergeDeep } from '../../../utils/deep-merge';
+import { sortGridItems } from '../utils/grid.utils';
 
 @Component({
   selector: 'grid-layout',
@@ -41,11 +42,14 @@ export class GridLayoutComponent implements OnInit, AfterViewInit {
   @ContentChildren(GridItemComponent) set items(value: QueryList<GridItemComponent>) {
     log('Change grid items in main layout.');
     if (value) {
-      value.changes.subscribe(_=>{
-        debugger
-      })
+      value.changes.subscribe((_) => {
+        debugger;
+      });
       logStartTime('StartInit');
-      this._gridService._gridItems = Array.from(value);
+      let i = 0;
+      const listItem = Array.from(value);
+      listItem.map((m) => m.id = 'G_' + i++);
+      this._gridService._gridItems = sortGridItems(listItem, this._gridService._options.compactType);
       this.initGridItems();
     }
   }
@@ -103,7 +107,7 @@ export class GridLayoutComponent implements OnInit, AfterViewInit {
 
   initGridItems() {
     for (let i = 0; i < this._gridService._gridItems.length; i++) {
-      this._gridService._gridItems[i].id = 'GRID_ITEM_' + (i + 1);
+      //  this._gridService._gridItems[i].id = 'GRID_ITEM_' + (i + 1);
       this._gridService.updateGridItem(this._gridService._gridItems[i]);
     }
     log('Initialize gridItems done.', this._gridService._gridItems.length);
@@ -115,5 +119,7 @@ export class GridLayoutComponent implements OnInit, AfterViewInit {
       this._changeDetection.detectChanges();
     }, 0);
     //}, 100);
+
+    console.log(this._gridService._gridItems.map((x) => x.id));
   }
 }

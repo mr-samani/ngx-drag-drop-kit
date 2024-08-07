@@ -4,6 +4,8 @@
 
 import { GridItemComponent } from '../grid-item/grid-item.component';
 import { FakeItem } from '../options/gride-item-config';
+import { CompactType } from '../options/options';
+import { log } from './log';
 
 export function screenXToGridX(screenXPos: number, cols: number, gridWidth: number, gap: number): number {
   const widthMinusGaps = gridWidth - gap * (cols - 1);
@@ -61,14 +63,40 @@ export function getAllCollisions(gridItems: GridItemComponent[], item: FakeItem)
   return gridItems.filter((l) => collides(l, item));
 }
 
-export function getFirstCollision(gridItems: GridItemComponent[], item: FakeItem): GridItemComponent | null {
-  for (let i = 0; i < gridItems.length; i++) {
-    if (collides(gridItems[i], item)) {
-      //   console.log('first collession:', item, ' with: ', gridItems[i].id, gridItems[i].config);
-      return gridItems[i];
-    }
+/**
+ * get collides from pprevious item
+ * @param gridItems   sorted grid items
+ * @param item
+ * @returns
+ */
+export function getPreviusY(gridItems: GridItemComponent[], item: FakeItem): number {
+  const m1 = item.x;
+  const m2 = item.x + item.w;
+  const verticalCollissions = gridItems.filter((x) => {
+    const x1 = x.config.x;
+    const x2 = x.config.x + x.config.w;
+    return (
+      // collides by left side
+      (x1 <= m1 && x2 > m1) ||
+      // collide by right side
+      (x1 <= m1 && x2 > m2) ||
+      // collide in inset
+      (x1 >= m1 && x2 < m2) ||
+      // is greather than item
+      (x1 <= m1 && x2 > m2)
+    );
+  });
+
+  const selfIndex = verticalCollissions.findIndex((x) => x.id == item.id);
+  log('verticalCollissions', verticalCollissions.map((m) => m.id).join(' , '));
+
+  if (selfIndex > 0) {
+    const prv = verticalCollissions[selfIndex - 1];
+    log('first collession:', item.id, ' with: ', prv.id, ' =>', prv.config.y + prv.config.h);
+ 
+    return prv.config.y + prv.config.h;
   }
-  return null;
+  return 0; //item.y;
 }
 /**
  * Given two GridItemComponent, check if they collide.
@@ -90,4 +118,41 @@ export function collides(l1: GridItemComponent, l2: FakeItem): boolean {
     return false;
   } // l1 is below l2
   return true; // boxes overlap
+}
+
+/*---------------------------------------------------------------------------------------------------------*/
+
+/**
+ * Get grid items sorted from top left to right and down.
+ *
+ * @return {Array} Array of grid objects.
+ * @return {Array}        grid, sorted static items first.
+ */
+export function sortGridItems(grid: GridItemComponent[], compactType: CompactType): GridItemComponent[] {
+  if (compactType === 'horizontal') {
+    return sortGridItemsByColRow(grid);
+  } else {
+    return sortGridItemsByRowCol(grid);
+  }
+}
+
+export function sortGridItemsByRowCol(grid: GridItemComponent[]): GridItemComponent[] {
+  return grid.sort((a, b) => {
+    if (a.config.y > b.config.y || (a.config.y === b.config.y && a.config.x > b.config.x)) {
+      return 1;
+    } else if (a.config.y === b.config.y && a.config.x === b.config.x) {
+      // Without this, we can get different sort results in IE vs. Chrome/FF
+      return 0;
+    }
+    return -1;
+  });
+}
+
+export function sortGridItemsByColRow(grid: GridItemComponent[]): GridItemComponent[] {
+  return grid.sort((a, b) => {
+    if (a.config.x > b.config.x || (a.config.x === b.config.x && a.config.y > b.config.y)) {
+      return 1;
+    }
+    return -1;
+  });
 }
