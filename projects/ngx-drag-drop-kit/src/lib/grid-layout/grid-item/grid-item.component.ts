@@ -49,12 +49,14 @@ export class GridItemComponent implements OnInit, AfterViewInit, OnDestroy {
   el: HTMLElement;
   id!: string;
 
+  isDragging = false;
+  isResizing = false;
   constructor(
     elRef: ElementRef<HTMLElement>,
     private _gridService: GridLayoutService,
     private _changeDetection: ChangeDetectorRef,
-    public draggable: NgxDraggableDirective,
-    public resizable: NgxResizableDirective,
+    private draggable: NgxDraggableDirective,
+    private resizable: NgxResizableDirective,
     private _renderer: Renderer2
   ) {
     this.el = elRef.nativeElement;
@@ -75,11 +77,19 @@ export class GridItemComponent implements OnInit, AfterViewInit, OnDestroy {
 
   ngOnInit(): void {
     //this.draggable.boundary = this._gridService._mainEl;
+    this.draggable.dragStart.subscribe((ev) => (this.isDragging = true));
     this.draggable.dragMove.subscribe((ev) => this._gridService.onMoveOrResize(this));
-    this.draggable.dragEnd.subscribe((ev) => this._gridService.onMoveOrResizeEnd(this));
-    this.resizable.boundary = this._gridService._mainEl;
+    this.draggable.dragEnd.subscribe((ev) => {
+      this.isDragging = false;
+      this._gridService.onMoveOrResizeEnd(this);
+    });
+    //this.resizable.boundary = this._gridService._mainEl;
+    this.resizable.resizeStart.subscribe((ev) => (this.isResizing = true));
     this.resizable.resize.subscribe((ev) => this._gridService.onMoveOrResize(this));
-    this.resizable.resizeEnd.subscribe((ev) => this._gridService.onMoveOrResizeEnd(this));
+    this.resizable.resizeEnd.subscribe((ev) => {
+      this.isResizing = false;
+      this._gridService.onMoveOrResizeEnd(this);
+    });
   }
 
   ngAfterViewInit(): void {
@@ -94,5 +104,9 @@ export class GridItemComponent implements OnInit, AfterViewInit, OnDestroy {
     this._renderer.setStyle(this.el, 'top', this.top + 'px');
     this._renderer.setStyle(this.el, 'left', this.left + 'px');
     this._changeDetection.detectChanges();
+  }
+
+  public get isDraggingOrResizing() {
+    return this.isDragging || this.isResizing;
   }
 }

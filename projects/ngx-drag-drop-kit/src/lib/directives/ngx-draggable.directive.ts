@@ -46,6 +46,7 @@ export class NgxDraggableDirective implements OnDestroy, OnInit {
   @Input() set boundary(val: HTMLElement) {
     this._boundary = val;
   }
+  @Output() dragStart = new EventEmitter<IPosition>();
   @Output() dragMove = new EventEmitter<IPosition>();
   @Output() dragEnd = new EventEmitter<IPosition>();
 
@@ -114,7 +115,7 @@ export class NgxDraggableDirective implements OnDestroy, OnInit {
     this.dragging = true;
     this.initXY();
     this._dragService.startDrag(this);
-
+    this.dragStart.emit(this.previousXY);
     this.subscriptions.push(
       fromEvent<MouseEvent>(document, 'mousemove').subscribe((ev) => this.onMouseMove(ev)),
       fromEvent<TouchEvent>(document, 'touchmove').subscribe((ev) => this.onMouseMove(ev))

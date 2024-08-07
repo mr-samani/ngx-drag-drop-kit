@@ -4,6 +4,7 @@ import { GridItemComponent } from '../grid-item/grid-item.component';
 import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
 import { DOCUMENT } from '@angular/common';
 import {
+  collides,
   getAllCollisions,
   getFirstCollision,
   gridHToScreenHeight,
@@ -134,8 +135,8 @@ export class GridLayoutService {
     item.config = this.placeHolder.config;
     this.updateGridItem(item);
     this._renderer.setStyle(item.el, 'transform', '');
-    this.compactGridItems();
     this.placeHolder = undefined;
+    this.compactGridItems();
     console.log(this._gridItems.map((x) => x.id));
   }
 
@@ -161,29 +162,34 @@ export class GridLayoutService {
    */
   private updatePlaceholderPosition(fakeItem: FakeItem) {
     // console.log(input);
-    // this.undoMovedCollisions();
 
     this.cehckCollesions(fakeItem);
-    
-    while (fakeItem.y > 0 && getFirstCollision(this._gridItems, { ...fakeItem, y: fakeItem.y - 1 }) == null) {
-      log('shift up');
-      fakeItem.y--;
-    }
 
     if (!this.placeHolderRef || !this.placeHolder) {
       this.placeHolderRef = this._placeholderContainerRef.createComponent(GridItemComponent);
       this.placeHolder = this.placeHolderRef.instance;
       this.placeHolder.el.className = 'grid-item-placeholder grid-item-placeholder-default';
+      this.placeHolder.id = 'PLACEHOLDER_GRID_ITEM';
+    }
+    while (fakeItem.y > 0 && getFirstCollision(this._gridItems, { ...fakeItem, y: fakeItem.y - 1 }) == null) {
+      log('shift up place holder');
+      fakeItem.y--;
     }
     this.placeHolder.config = new GridItemConfig(fakeItem.x, fakeItem.y, fakeItem.w, fakeItem.h);
     this.updateGridItem(this.placeHolder);
+
+    this.compactGridItems();
   }
 
   cehckCollesions(fakeItem: FakeItem) {
     const allCollisions = getAllCollisions(this._gridItems, fakeItem);
-
+    console.log(
+      'allCollisions',
+      allCollisions.map((m) => m.id)
+    );
     for (let c of allCollisions) {
       let movedElement = this.moveGridItem(c, fakeItem.x + fakeItem.w, fakeItem.y + fakeItem.h);
+      console.log('must move down :', movedElement.id);
       let fakeItemMoved: FakeItem = {
         x: movedElement.config.x,
         y: movedElement.config.y,
@@ -194,18 +200,6 @@ export class GridLayoutService {
       this.cehckCollesions(fakeItemMoved);
     }
   }
-
-  // undoMovedCollisions() {
-  //   for (let item of this._gridItems) {
-  //     if (this.placeHolder) {
-  //       if (collides(item, { ...this.placeHolder.config, id: this.placeHolder.id }) == false) {
-  //         this.compactGridItem(item);
-  //       }
-  //     } else {
-  //       this.compactGridItem(item);
-  //     }
-  //   }
-  // }
 
   private moveGridItem(gridItem: GridItemComponent, cellX: number, cellY: number) {
     gridItem.config.y = cellY;
@@ -227,6 +221,18 @@ export class GridLayoutService {
         id: gridItem.id,
       };
       while (gridItem.config.y > 0 && getFirstCollision(this._gridItems, fakeItem) == null) {
+        if (
+          gridItem.isDraggingOrResizing ||
+          (this.placeHolder &&
+            collides(gridItem, {
+              ...this.placeHolder.config,
+              y: this.placeHolder.config.y + 1,
+              id: this.placeHolder.id,
+            }))
+        ) {
+          console.log('has collission with placehlder');
+          break;
+        }
         log('shift up');
         fakeItem.y--;
         gridItem.config.y--;

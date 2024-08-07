@@ -52,6 +52,10 @@ export class GridLayoutComponent {
       this.add();
     }
   }
+
+  clear() {
+    this.layouts = [];
+  }
 }
 
 export interface DashboardItem {
