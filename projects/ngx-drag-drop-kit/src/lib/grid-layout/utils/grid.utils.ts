@@ -49,12 +49,12 @@ export function screenHeightToGridHeight(
 }
 
 export function gridWToScreenWidth(cellWidth: number, w: number, gap: number) {
-  const width = cellWidth * w + gap * (w - 1);
+  const width = Math.max(0, cellWidth * w + gap * (w - 1));
   return width;
 }
 
 export function gridHToScreenHeight(cellHeight: number, h: number, gap: number) {
-  const height = cellHeight * h + gap * (h - 1);
+  const height = Math.max(0, cellHeight * h + gap * (h - 1));
   return height;
 }
 
@@ -63,41 +63,49 @@ export function getAllCollisions(gridItems: GridItemComponent[], item: FakeItem)
   return gridItems.filter((l) => collides(l, item));
 }
 
-/**
- * get collides from pprevious item
- * @param gridItems   sorted grid items
- * @param item
- * @returns
- */
-export function getPreviusY(gridItems: GridItemComponent[], item: FakeItem): number {
-  const m1 = item.x;
-  const m2 = item.x + item.w;
-  const verticalCollissions = gridItems.filter((x) => {
-    const x1 = x.config.x;
-    const x2 = x.config.x + x.config.w;
-    return (
-      // collides by left side
-      (x1 <= m1 && x2 > m1) ||
-      // collide by right side
-      (x1 <= m1 && x2 > m2) ||
-      // collide in inset
-      (x1 >= m1 && x2 < m2) ||
-      // is greather than item
-      (x1 <= m1 && x2 > m2)
-    );
-  });
-
-  const selfIndex = verticalCollissions.findIndex((x) => x.id == item.id);
-  log('verticalCollissions', verticalCollissions.map((m) => m.id).join(' , '));
-
-  if (selfIndex > 0) {
-    const prv = verticalCollissions[selfIndex - 1];
-    log('first collession:', item.id, ' with: ', prv.id, ' =>', prv.config.y + prv.config.h);
- 
-    return prv.config.y + prv.config.h;
+export function getFirstCollision(gridItems: GridItemComponent[], item: FakeItem): GridItemComponent | null {
+  for (let i = 0; i < gridItems.length; i++) {
+    if (collides(gridItems[i], item)) {
+      console.log('first collession:', item, ' with: ', gridItems[i].id, gridItems[i].config);
+      return gridItems[i];
+    }
   }
-  return 0; //item.y;
+  return null;
 }
+
+// export function getPreviusGridItem(gridItems: GridItemComponent[], item: FakeItem): GridItemComponent | null {
+//   const m1 = item.x;
+//   const m2 = item.x + item.w;
+//   let verticalCollissions = gridItems
+//     .filter((x) => {
+//       const x1 = x.config.x;
+//       const x2 = x.config.x + x.config.w;
+//       return (
+//         // collides by left side
+//         (x1 <= m1 && x2 > m1) ||
+//         // collide by right side
+//         (x1 <= m1 && x2 > m2) ||
+//         // collide in inset
+//         (x1 >= m1 && x2 < m2) ||
+//         // is greather than item
+//         (x1 <= m1 && x2 > m2)
+//       );
+//     })
+//     .filter((x) => x.config.y + x.config.h < item.y);
+
+//   const sorted = sortGridItems(verticalCollissions, 'vertical');
+
+//   log('verticalCollissions=', 'this:', item.id, ' with:', sorted.map((m) => m.id).join(' , '));
+
+//   const prv = sorted[0];
+//   if (prv) {
+//     log('must be change ', item.id, ' with: ', prv.id, 'position is =>', prv.config.y + prv.config.h);
+
+//     return prv;
+//   }
+
+//   return null; //item.y;
+// }
 /**
  * Given two GridItemComponent, check if they collide.
  */

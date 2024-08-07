@@ -4,9 +4,8 @@ import { GridItemComponent } from '../grid-item/grid-item.component';
 import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
 import { DOCUMENT } from '@angular/common';
 import {
-  collides,
   getAllCollisions,
-  getPreviusY,
+  getFirstCollision,
   gridHToScreenHeight,
   gridWToScreenWidth,
   gridXToScreenX,
@@ -19,6 +18,7 @@ import {
 } from '../utils/grid.utils';
 import { FakeItem, GridItemConfig } from '../options/gride-item-config';
 import { mergeDeep } from '../../../utils/deep-merge';
+import { log } from '../utils/log';
 
 export const DEFAULT_GRID_ITEM_CONFIG = new GridItemConfig();
 export const DEFAULT_GRID_LAYOUT_CONFIG = new GridLayoutOptions();
@@ -59,7 +59,7 @@ export class GridLayoutService {
     item.top = gridYToScreenY(this.cellHeight, item.config.y, this._options.gap);
     item.width = gridWToScreenWidth(this.cellWidth, item.config.w, this._options.gap);
     item.height = gridHToScreenHeight(this.cellHeight, item.config.h, this._options.gap);
-    item._changeDetection.detectChanges();
+    item.updateView();
   }
 
   public get mainWidth() {
@@ -131,6 +131,7 @@ export class GridLayoutService {
   onMoveOrResizeEnd(item: GridItemComponent) {
     this.placeHolderRef?.destroy();
     if (!this.placeHolder) {
+      // this.updateGridItem(item);
       return;
     }
     //console.log(this.placeHolderData);
@@ -139,7 +140,6 @@ export class GridLayoutService {
     this._renderer.setStyle(item.el, 'transform', '');
     this.compactGridItems();
     this.placeHolder = undefined;
-    sortGridItems(this._gridItems, this._options.compactType);
     console.log(this._gridItems.map((x) => x.id));
   }
 
@@ -160,7 +160,8 @@ export class GridLayoutService {
    */
   private updatePlaceholderPosition(fakeItem: FakeItem) {
     // console.log(input);
-    this.undoMovedCollisions();
+    // this.undoMovedCollisions();
+
     this.cehckCollesions(fakeItem);
     if (!this.placeHolderRef || !this.placeHolder) {
       this.placeHolderRef = this._placeholderContainerRef.createComponent(GridItemComponent);
@@ -187,17 +188,17 @@ export class GridLayoutService {
     }
   }
 
-  undoMovedCollisions() {
-    for (let item of this._gridItems) {
-      if (this.placeHolder) {
-        if (collides(item, { ...this.placeHolder.config, id: this.placeHolder.id }) == false) {
-          this.compactGridItem(item);
-        }
-      } else {
-        this.compactGridItem(item);
-      }
-    }
-  }
+  // undoMovedCollisions() {
+  //   for (let item of this._gridItems) {
+  //     if (this.placeHolder) {
+  //       if (collides(item, { ...this.placeHolder.config, id: this.placeHolder.id }) == false) {
+  //         this.compactGridItem(item);
+  //       }
+  //     } else {
+  //       this.compactGridItem(item);
+  //     }
+  //   }
+  // }
 
   private moveGridItem(gridItem: GridItemComponent, cellX: number, cellY: number) {
     gridItem.config.y = cellY;
@@ -206,28 +207,25 @@ export class GridLayoutService {
   }
 
   compactGridItems() {
-    for (let item of this._gridItems) {
-      this.compactGridItem(item);
+    this._gridItems = sortGridItems(this._gridItems, 'vertical');
+    for (let gridItem of this._gridItems) {
+      if (gridItem.config.y <= 0 || gridItem.config.h <= 0) {
+        continue;
+      }
+      let fakeItem: FakeItem = {
+        x: gridItem.config.x,
+        y: gridItem.config.y - 1,
+        w: gridItem.config.w,
+        h: gridItem.config.h,
+        id: gridItem.id,
+      };
+      while (gridItem.config.y > 0 && getFirstCollision(this._gridItems, fakeItem) == null) {
+        log('shift up');
+        fakeItem.y--;
+        gridItem.config.y--;
+      }
+      this.updateGridItem(gridItem);
     }
-    // todo:perhaps  must sort after compact
-  }
-
-  private compactGridItem(gridItem: GridItemComponent) {
-    if (gridItem.config.y <= 0) {
-      return;
-    }
-    let fakeItem: FakeItem = {
-      x: gridItem.config.x,
-      y: gridItem.config.y,
-      w: gridItem.config.w,
-      h: gridItem.config.h,
-      id: gridItem.id,
-    };
-    const firstCollission = getPreviusY(this._gridItems, fakeItem);
-    gridItem.config.y = firstCollission;
-
-    this.updateGridItem(gridItem);
-
     // todo:perhaps  must sort after compact
   }
 }

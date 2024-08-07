@@ -1,3 +1,5 @@
+<button (click)="add()">add</button>
+<button (click)="add10()">add 10</button>
 <grid-layout [options]="options">
   @for(item of layouts;track item){
   <grid-item [config]="item.config" class="grid-item">

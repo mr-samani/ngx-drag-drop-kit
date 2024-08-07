@@ -18,7 +18,7 @@ import { DEFAULT_GRID_LAYOUT_CONFIG, GridLayoutService } from '../services/grid-
 import { GridItemComponent } from '../grid-item/grid-item.component';
 import { log, logEndTime, logStartTime } from '../utils/log';
 import { mergeDeep } from '../../../utils/deep-merge';
-import { sortGridItems } from '../utils/grid.utils';
+import { getFirstCollision } from '../utils/grid.utils';
 
 @Component({
   selector: 'grid-layout',
@@ -37,24 +37,21 @@ export class GridLayoutComponent implements OnInit, AfterViewInit {
       this._gridService._options = mergeDeep(DEFAULT_GRID_LAYOUT_CONFIG, val);
     }
   }
-
+  loading = true;
   el: HTMLElement;
   @ContentChildren(GridItemComponent) set items(value: QueryList<GridItemComponent>) {
     log('Change grid items in main layout.');
     if (value) {
       value.changes.subscribe((_) => {
-        debugger;
+        // log('Add new item to grid:', _);
       });
       logStartTime('StartInit');
-      let i = 0;
-      const listItem = Array.from(value);
-      listItem.map((m) => m.id = 'G_' + i++);
-      this._gridService._gridItems = sortGridItems(listItem, this._gridService._options.compactType);
+      this._gridService._gridItems = Array.from(value);
       this.initGridItems();
     }
   }
 
-  loading = true;
+
   @ViewChild('placeholder', { read: ViewContainerRef, static: false }) private set placeholderRef(
     val: ViewContainerRef
   ) {
@@ -107,18 +104,23 @@ export class GridLayoutComponent implements OnInit, AfterViewInit {
 
   initGridItems() {
     for (let i = 0; i < this._gridService._gridItems.length; i++) {
-      //  this._gridService._gridItems[i].id = 'GRID_ITEM_' + (i + 1);
-      this._gridService.updateGridItem(this._gridService._gridItems[i]);
+      let item = this._gridService._gridItems[i];
+      item.id = 'GRID_ITEM_' + (i + 1);
+      //validate
+      while (getFirstCollision(this._gridService._gridItems, { ...item.config, id: item.id })) {
+        item.config.y++;
+        log('shift down');
+      }
+      this._gridService.updateGridItem(item);
     }
     log('Initialize gridItems done.', this._gridService._gridItems.length);
-    // setTimeout(() => {
     this._gridService.compactGridItems();
-    this.loading = false;
+
     logEndTime('StartInit');
     setTimeout(() => {
       this._changeDetection.detectChanges();
+      this.loading = false;
     }, 0);
-    //}, 100);
 
     console.log(this._gridService._gridItems.map((x) => x.id));
   }
