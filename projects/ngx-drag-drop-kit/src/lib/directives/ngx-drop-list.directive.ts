@@ -6,19 +6,13 @@ import {
   EventEmitter,
   Inject,
   Input,
-  OnInit,
-  Optional,
   Output,
   QueryList,
-  SkipSelf,
-  output,
 } from '@angular/core';
 import { NgxDragDropService } from '../services/ngx-drag-drop.service';
 import { NgxDraggableDirective } from './ngx-draggable.directive';
 import { DOCUMENT } from '@angular/common';
 import { Subscription, fromEvent } from 'rxjs';
-import { NgxDragPlaceholderService } from '../services/ngx-placeholder.service';
-import { AutoScroll } from '../services/auto-scroll.service';
 export interface IDropEvent<DataType = any> {
   /** Index of the item when it was picked up. */
   previousIndex: number;

@@ -9,7 +9,6 @@ import {
   OnInit,
   Output,
   Renderer2,
-  output,
 } from '@angular/core';
 import { Corner } from '../../utils/corner-type';
 import { checkBoundX, checkBoundY } from '../../utils/check-boundary';

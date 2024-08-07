@@ -10,14 +10,13 @@ import {
   Output,
   Renderer2,
 } from '@angular/core';
-import { Observable, Subscription, fromEvent } from 'rxjs';
+import { Subscription, fromEvent } from 'rxjs';
 import { getPointerPosition } from '../../utils/get-position';
 import { checkBoundX, checkBoundY } from '../../utils/check-boundary';
 import { NgxDropListDirective } from './ngx-drop-list.directive';
 import { NgxDragDropService } from '../services/ngx-drag-drop.service';
 import { getXYfromTransform } from '../../utils/get-transform';
 import { AutoScroll } from '../services/auto-scroll.service';
-import { NgxDragPlaceholderService } from '../services/ngx-placeholder.service';
 export const NGX_DROP_LIST = new InjectionToken<NgxDropListDirective>('NgxDropList');
 
 export interface IPosition {
