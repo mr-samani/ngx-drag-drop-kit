@@ -121,14 +121,6 @@ export class GridLayoutService {
       h: plcInfo.cellH,
       id: item.id,
     };
-    // TODO: check available position
-    while (fakeItem.y > 0 && getFirstCollision(this._gridItems, fakeItem) == null) {
-      log('shift up');
-      fakeItem.y--;
-    }
-    //const firstCollission = getPreviusY(this._gridItems, fakeItem);
-    //fakeItem.y = firstCollission;
-
     this.updatePlaceholderPosition$.next(fakeItem);
   }
 
@@ -152,13 +144,14 @@ export class GridLayoutService {
     const newX = x - mainRec.left;
     const newY = y - mainRec.top;
     let cellX = screenXToGridX(newX, this._options.cols, mainRec.width, this._options.gap);
-    const cellY = screenYToGridY(newY, this.cellHeight, this._options.gap);
+    let cellY = screenYToGridY(newY, this.cellHeight, this._options.gap);
     const cellW = screenWidthToGridWidth(width, this._options.cols, mainRec.width, this._options.gap);
     const cellH = screenHeightToGridHeight(height, this.cellHeight, mainRec.height, this._options.gap);
     if (cellX + cellW > this._options.cols) {
       cellX -= cellX + cellW - this._options.cols;
     }
     if (cellX < 0) cellX = 0;
+    if (cellY < 0) cellY = 0;
     return { cellX, cellY, cellW, cellH };
   }
 
@@ -171,6 +164,12 @@ export class GridLayoutService {
     // this.undoMovedCollisions();
 
     this.cehckCollesions(fakeItem);
+    
+    while (fakeItem.y > 0 && getFirstCollision(this._gridItems, { ...fakeItem, y: fakeItem.y - 1 }) == null) {
+      log('shift up');
+      fakeItem.y--;
+    }
+
     if (!this.placeHolderRef || !this.placeHolder) {
       this.placeHolderRef = this._placeholderContainerRef.createComponent(GridItemComponent);
       this.placeHolder = this.placeHolderRef.instance;
