@@ -1,4 +1,4 @@
-export type CompactType = ('horizontal' | 'vertical') | null | undefined;
+export type CompactType = ('horizontal' | 'vertical' | 'both') | null | undefined;
 
 export interface IGridLayoutOptions {
   cols: number;
@@ -6,6 +6,7 @@ export interface IGridLayoutOptions {
   gap?: number;
   gridBackgroundConfig?: IGridBackgroundCfg;
   compactType?: CompactType;
+  pushOnDrag?: boolean;
 }
 export class GridLayoutOptions implements IGridLayoutOptions {
   cols = 12;
@@ -20,6 +21,7 @@ export class GridLayoutOptions implements IGridLayoutOptions {
     columnColor: 'rgba(128, 128, 128, 0.10)',
   };
   compactType: CompactType = 'vertical';
+  pushOnDrag: boolean = true;
 }
 
 export interface IGridBackgroundCfg {

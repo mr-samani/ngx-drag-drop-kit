@@ -2,6 +2,10 @@
 <button (click)="add()">add</button>
 <button (click)="add10()">add 10</button>
 <button (click)="clear()">clear</button>
+<label>
+  <input type="checkbox" [(ngModel)]="options.pushOnDrag"  name="pushOnDrag"/>
+  pushOnDrag
+</label>
 <grid-layout [options]="options">
   @for(item of layouts;track item){
   <grid-item [config]="item.config" class="grid-item">
