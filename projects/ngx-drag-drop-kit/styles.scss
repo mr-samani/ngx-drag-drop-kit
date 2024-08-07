@@ -1,10 +1,12 @@
 .ngx-corner-resize {
   position: absolute;
-  width: 10px;
-  height: 10px;
+  --pointerSize: 8px;
+  width: var(--pointerSize);
+  height: var(--pointerSize);
   margin: 0px;
   visibility: hidden;
   transition: margin 300ms;
+  border: 1px solid darksalmon;
   &.topLeft {
     top: 0px;
     left: 0px;
@@ -12,7 +14,6 @@
     border: 2px var(--pointerColor) solid;
     border-radius: 50px;
     margin: 3px;
-    z-index: 1;
   }
   &.topRight {
     top: 0px;
@@ -20,7 +21,6 @@
     cursor: nesw-resize;
     border: 2px var(--pointerColor) solid;
     border-radius: 50px;
-    z-index: 1;
   }
   &.bottomLeft {
     bottom: 0px;
@@ -28,7 +28,6 @@
     cursor: nesw-resize;
     border: 2px var(--pointerColor) solid;
     border-radius: 50px;
-    z-index: 1;
   }
   &.bottomRight {
     bottom: 0px;
@@ -36,36 +35,34 @@
     cursor: nwse-resize;
     border: 2px var(--pointerColor) solid;
     border-radius: 50px;
-    z-index: 1;
   }
   &.top {
     top: 0;
-    height: 10px;
-    width: 100%;
+    height: var(--pointerSize);
+    width: calc(100% - var(--pointerSize) - var(--pointerSize));
     cursor: row-resize;
   }
   &.right {
-    top: 0;
+    top: var(--pointerSize);
     right: 0;
-    width: 10px;
-    height: 100%;
+    width: var(--pointerSize);
+    height: calc(100% - var(--pointerSize) - var(--pointerSize));
     cursor: col-resize;
   }
 
   &.left {
-    top: 0;
+    top: var(--pointerSize);
     left: 0;
-    width: 10px;
-    height: 100%;
+    width: var(--pointerSize);
+    height: calc(100% - var(--pointerSize) - var(--pointerSize));
     cursor: col-resize;
   }
   &.bottom {
     bottom: 0;
-    height: 10px;
-    width: 100%;
+    height: var(--pointerSize);
+    width: calc(100% - var(--pointerSize) - var(--pointerSize));
     cursor: row-resize;
   }
-
 }
 
 .ngx-resizable {
@@ -77,6 +74,11 @@
     .ngx-corner-resize {
       visibility: visible;
       z-index: 1;
+    }
+    .topRight,
+    .topLeft,
+    .bottomRight,
+    .bottomLeft {
       margin: -4px;
     }
   }
