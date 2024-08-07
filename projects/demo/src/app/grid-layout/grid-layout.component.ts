@@ -56,6 +56,12 @@ export class GridLayoutComponent {
   clear() {
     this.layouts = [];
   }
+
+
+  addInFirst(){
+  let config = new GridItemConfig(0, 0, 2, 3);
+  this.layouts.push({ config });
+  }
 }
 
 export interface DashboardItem {

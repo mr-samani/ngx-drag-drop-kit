@@ -146,13 +146,15 @@ export class GridLayoutService {
     const newY = y - mainRec.top;
     let cellX = screenXToGridX(newX, this._options.cols, mainRec.width, this._options.gap);
     let cellY = screenYToGridY(newY, this.cellHeight, this._options.gap);
-    const cellW = screenWidthToGridWidth(width, this._options.cols, mainRec.width, this._options.gap);
-    const cellH = screenHeightToGridHeight(height, this.cellHeight, mainRec.height, this._options.gap);
+    let cellW = screenWidthToGridWidth(width, this._options.cols, mainRec.width, this._options.gap);
+    let cellH = screenHeightToGridHeight(height, this.cellHeight, mainRec.height, this._options.gap);
     if (cellX + cellW > this._options.cols) {
       cellX -= cellX + cellW - this._options.cols;
     }
     if (cellX < 0) cellX = 0;
     if (cellY < 0) cellY = 0;
+    if (cellW <= 0) cellW = 1;
+    if (cellH <= 0) cellH = 1;
     return { cellX, cellY, cellW, cellH };
   }
 
@@ -172,7 +174,6 @@ export class GridLayoutService {
       this.placeHolder.id = 'PLACEHOLDER_GRID_ITEM';
     }
     while (fakeItem.y > 0 && getFirstCollision(this._gridItems, { ...fakeItem, y: fakeItem.y - 1 }) == null) {
-      log('shift up place holder');
       fakeItem.y--;
     }
     this.placeHolder.config = new GridItemConfig(fakeItem.x, fakeItem.y, fakeItem.w, fakeItem.h);
@@ -183,10 +184,6 @@ export class GridLayoutService {
 
   cehckCollesions(fakeItem: FakeItem) {
     const allCollisions = getAllCollisions(this._gridItems, fakeItem);
-    console.log(
-      'allCollisions',
-      allCollisions.map((m) => m.id)
-    );
     for (let c of allCollisions) {
       let movedElement = this.moveGridItem(c, fakeItem.x + fakeItem.w, fakeItem.y + fakeItem.h);
       console.log('must move down :', movedElement.id);
@@ -202,7 +199,9 @@ export class GridLayoutService {
   }
 
   private moveGridItem(gridItem: GridItemComponent, cellX: number, cellY: number) {
-    gridItem.config.y = cellY;
+    if (!gridItem.isDraggingOrResizing) {
+      gridItem.config.y = cellY;
+    }
     this.updateGridItem(gridItem);
     return gridItem;
   }

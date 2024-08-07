@@ -65,12 +65,8 @@ export function getAllCollisions(gridItems: GridItemComponent[], item: FakeItem)
 
 export function getFirstCollision(gridItems: GridItemComponent[], item: FakeItem): GridItemComponent | null {
   for (let i = 0; i < gridItems.length; i++) {
-    if (
-      collides(gridItems[i], item) &&
-      gridItems[i].isDraggingOrResizing == false &&
-      item.id !== 'PLACEHOLDER_GRID_ITEM'
-    ) {
-      console.log('first collession:', item, ' with: ', gridItems[i].id, gridItems[i].config);
+    if (collides(gridItems[i], item) && gridItems[i].isDraggingOrResizing == false) {
+      // console.log('first collession:', item, ' with: ', gridItems[i].id, gridItems[i].config);
       return gridItems[i];
     }
   }
