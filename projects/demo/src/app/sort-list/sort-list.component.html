@@ -1,7 +1,6 @@
 <div ngxDropList class="example-list" (drop)="drop($event)">
     @for (item of items; track item) {
       <div class="example-box" ngxDraggable>
-        <div class="example-custom-placeholder" *cdkDragPlaceholder></div>
         {{item}}
       </div>
     }
