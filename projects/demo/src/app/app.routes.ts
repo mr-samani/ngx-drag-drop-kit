@@ -7,6 +7,7 @@ import { CopyToZoneComponent } from './copy-to-zone/copy-to-zone.component';
 import { NestedTreeSortComponent } from './nested-tree-sort/nested-tree-sort.component';
 import { GridLayoutComponent } from './grid-layout/grid-layout.component';
 import { TestComponent } from './test/test.component';
+import { ResizableLayoutComponent } from './resizable-layout/resizable-layout.component';
 
 export const routes: Routes = [
   { path: 'test', component: TestComponent },
@@ -20,4 +21,5 @@ export const routes: Routes = [
   { path: 'nested-tree-sort', component: NestedTreeSortComponent },
 
   { path: 'grid-layout', component: GridLayoutComponent },
+  { path: 'resizable-layout', component: ResizableLayoutComponent },
 ];
