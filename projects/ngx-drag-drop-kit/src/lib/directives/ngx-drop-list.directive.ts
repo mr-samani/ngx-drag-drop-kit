@@ -50,6 +50,8 @@ export interface IDropEvent<DataType = any> {
 export class NgxDropListDirective<T = any> implements AfterViewInit {
   @Input() data?: T;
   @Input() disableSort: boolean = false;
+  @Input() direction: 'horizontal' | 'vertical' = 'vertical';
+
   @Output() drop = new EventEmitter<IDropEvent>();
   @ContentChildren(NgxDraggableDirective)
   _draggables?: QueryList<NgxDraggableDirective>;

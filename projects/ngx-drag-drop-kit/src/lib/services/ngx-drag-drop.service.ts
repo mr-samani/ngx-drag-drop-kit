@@ -126,8 +126,14 @@ export class NgxDragDropService {
     this._renderer.setStyle(this.dragElementInBody, 'transform', drag.el.style.transform);
     if (this.dragOverItem) {
       const position = getPointerPosition(ev);
-      let yInEL = position.y - this.dragOverItem.el.getBoundingClientRect().top;
-      this.isAfter = yInEL > this.dragOverItem.el.getBoundingClientRect().height / 2;
+      if (this.dragOverItem.containerDropList?.direction === 'horizontal') {
+        let xInEL = position.x - this.dragOverItem.el.getBoundingClientRect().left;
+        this.isAfter = xInEL > this.dragOverItem.el.getBoundingClientRect().width / 2;
+      } else {
+        let yInEL = position.y - this.dragOverItem.el.getBoundingClientRect().top;
+        this.isAfter = yInEL > this.dragOverItem.el.getBoundingClientRect().height / 2;
+      }
+
       this.initDrag(this.dragOverItem);
     }
   }

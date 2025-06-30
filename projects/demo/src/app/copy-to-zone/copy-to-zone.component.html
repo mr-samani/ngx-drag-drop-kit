@@ -8,7 +8,7 @@
   </div>
 
   <div class="target-container">
-    <div class="inner" ngxDropList [data]="targetList" (drop)="drop($event)">
+    <div class="inner" ngxDropList [data]="targetList" (drop)="drop($event)" [direction]="'horizontal'">
       <div
         class="example-box"
         *ngFor="let item of targetList"
@@ -16,8 +16,7 @@
         ngxResizable
         [disableTransform]="true"
         [corners]="resizeCorner"
-        (click)="onClick(item)"
-      >
+        (click)="onClick(item)">
         {{ item }}
       </div>
     </div>

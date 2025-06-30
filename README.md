@@ -1,67 +1,67 @@
 <div align="center">
 
 <h2 style="color:#fff;background:#d32f2f;padding:24px 12px;border-radius:12px;max-width:700px;margin:32px auto 24px auto;font-size:1.3em;">
-🚨 <span style="color:#fff;">این کتابخانه فعلاً در <b>نسخه آزمایشی</b> قرار دارد.<br>
-<strong>تا انتشار نسخه نهایی، در پروژه‌های اصلی استفاده نکنید.</strong></span> 🚨
+🚨 <span style="color:#fff;">This library is currently in <b>BETA</b>.<br>
+<strong>Do NOT use in production</strong> until the final release is published.</span> 🚨
 </h2>
 
 </div>
 
 # 🚀 ngx-drag-drop-kit
 
-[🇮🇷 مشاهده به فارسی](./README.md) | [🇬🇧 English Version](./README.en.md)
+[🇮🇷 مشاهده به فارسی](./README.fa.md) | [🇬🇧 English Version](./README.md)
 
-کتابخانه‌ای قدرتمند و ماژولار برای افزودن قابلیت‌های پیشرفته Drag & Drop، Grid Layout، لیست‌های افقی و عمودی، مرتب‌سازی، تغییر اندازه و ... به پروژه‌های Angular.
+A powerful and modular Angular library for advanced Drag & Drop, Grid Layout, horizontal/vertical lists, sorting, resizing, and more.
 
 ---
 
-## 🗂️ فهرست مطالب
-- [✨ ویژگی‌ها](#-ویژگیها)
-- [🔧 نصب](#-نصب)
-- [⚡ شروع سریع](#-شروع-سریع)
-- [📚 آموزش استفاده](#-آموزش-استفاده)
-  - [🎯 Drag & Drop ساده](#drag--drop-ساده)
+## 🗂️ Table of Contents
+- [✨ Features](#-features)
+- [🔧 Installation](#-installation)
+- [⚡ Quick Start](#-quick-start)
+- [📚 Usage Guide](#-usage-guide)
+  - [🎯 Simple Drag & Drop](#simple-drag--drop)
   - [🧩 Grid Layout](#grid-layout)
-  - [📏 تغییر اندازه (Resizable)](#تغییر-اندازه-resizable)
-  - [🔄 مرتب‌سازی لیست](#مرتبسازی-لیست)
-  - [🌳 درخت تو در تو (Nested Tree Sort)](#درخت-تو-در-تو-nested-tree-sort)
-- [📝 جدول ورودی/خروجی‌ها](#-جدول-ورودیخروجیها)
-- [🔬 نمونه کد](#-نمونه-کد)
-- [🤝 توسعه و مشارکت](#-توسعه-و-مشارکت)
-- [📄 لایسنس](#-لایسنس)
+  - [📏 Resizable](#resizable)
+  - [🔄 Sortable List](#sortable-list)
+  - [🌳 Nested Tree Sort](#nested-tree-sort)
+- [📝 Inputs/Outputs Table](#-inputsoutputs-table)
+- [🔬 Code Samples](#-code-samples)
+- [🤝 Contributing](#-contributing)
+- [📄 License](#-license)
 
 ---
 
-## ✨ ویژگی‌ها
+## ✨ Features
 
-- 🖱️ **Drag & Drop** پیشرفته با پشتیبانی از چند لیست و جابجایی بین آن‌ها
-- 🧩 **Grid Layout** قابل تنظیم و واکنش‌گرا (Responsive)
-- 📏 **Resizable**: تغییر اندازه آیتم‌ها با ماوس
-- 🔄 **Sortable List**: مرتب‌سازی آیتم‌ها با Drag & Drop
-- ➡️ **Horizontal List**: لیست افقی با قابلیت جابجایی
-- 🌳 **Nested Tree Sort**: مرتب‌سازی درختی تو در تو
-- 🗃️ **Copy to Zone**: کپی آیتم‌ها به ناحیه دیگر
-- 🧲 **Snap to Grid**: چسبندگی به شبکه
-- 🛡️ **Boundary**: تعیین مرز برای جابجایی و تغییر اندازه
-- 🖼️ **Custom Placeholder**: نمایش Placeholder سفارشی هنگام Drag
+- 🖱️ **Advanced Drag & Drop** with multi-list and cross-list support
+- 🧩 **Configurable & Responsive Grid Layout**
+- 📏 **Resizable**: Resize items with mouse
+- 🔄 **Sortable List**: Reorder items via Drag & Drop
+- ➡️ **Horizontal List**: Horizontal drag & drop
+- 🌳 **Nested Tree Sort**: Tree structure sorting
+- 🗃️ **Copy to Zone**: Copy items to another zone
+- 🧲 **Snap to Grid**
+- 🛡️ **Boundary**: Set boundaries for drag/resize
+- 🖼️ **Custom Placeholder**
 - ⚡ **Performance Optimized**
-- 🧑‍💻 **کاملاً ماژولار و قابل استفاده در پروژه‌های Angular 18+**
+- 🧑‍💻 **Fully modular, Angular 18+ ready**
 
 ---
 
-## 🔧 نصب
+## 🔧 Installation
 
 ```bash
 npm install ngx-drag-drop-kit
 ```
-یا با yarn:
+Or with yarn:
 ```bash
 yarn add ngx-drag-drop-kit
 ```
 
 ---
 
-## ⚡ شروع سریع
+## ⚡ Quick Start
 
 ```typescript
 import { NgxDragDropKitModule } from 'ngx-drag-drop-kit';
@@ -74,9 +74,9 @@ export class AppModule {}
 
 ---
 
-## 📚 آموزش استفاده
+## 📚 Usage Guide
 
-### 🎯 Drag & Drop ساده
+### 🎯 Simple Drag & Drop
 
 ```html
 <div ngxDropList (drop)="drop($event)" [data]="todoList">
@@ -120,17 +120,17 @@ layouts = [
 
 ---
 
-### 📏 تغییر اندازه (Resizable)
+### 📏 Resizable
 
 ```html
 <div ngxResizable [minWidth]="50" [minHeight]="50" (resize)="onResize($event)">
-  قابل تغییر اندازه!
+  Resizable!
 </div>
 ```
 
 ---
 
-### 🔄 مرتب‌سازی لیست
+### 🔄 Sortable List
 
 ```html
 <div ngxDropList [data]="items" (drop)="drop($event)">
@@ -140,7 +140,7 @@ layouts = [
 
 ---
 
-### 🌳 درخت تو در تو (Nested Tree Sort)
+### 🌳 Nested Tree Sort
 
 ```html
 <nested-tree-sort [data]="treeData" (drop)="onTreeDrop($event)"></nested-tree-sort>
@@ -148,40 +148,40 @@ layouts = [
 
 ---
 
-## 📝 جدول ورودی/خروجی‌ها
+## 📝 Inputs/Outputs Table
 
-| نام           | نوع/دستور              | توضیح مختصر                                 | نوع ورودی/خروجی |
-|---------------|------------------------|---------------------------------------------|-----------------|
-| `ngxDraggable`| Directive              | دایرکتیو برای Drag آیتم                     | ورودی           |
-| `boundary`    | Input (HTMLElement)    | مرز جابجایی                                 | ورودی           |
-| `dragStart`   | Output (EventEmitter)  | رویداد شروع Drag                            | خروجی           |
-| `dragMove`    | Output (EventEmitter)  | رویداد حرکت آیتم                            | خروجی           |
-| `dragEnd`     | Output (EventEmitter)  | رویداد پایان Drag                           | خروجی           |
-| `ngxResizable`| Directive              | دایرکتیو برای تغییر اندازه                  | ورودی           |
-| `minWidth`    | Input (number)         | حداقل عرض                                    | ورودی           |
-| `minHeight`   | Input (number)         | حداقل ارتفاع                                 | ورودی           |
-| `resize`      | Output (EventEmitter)  | رویداد تغییر اندازه                         | خروجی           |
-| `ngxDropList` | Directive              | دایرکتیو لیست مقصد/مبدا Drag                | ورودی           |
-| `data`        | Input (any[])          | داده‌های لیست                                | ورودی           |
-| `drop`        | Output (EventEmitter)  | رویداد انداختن آیتم                         | خروجی           |
-| `GridLayoutComponent` | Component        | کامپوننت گرید                              | ورودی           |
-| `options`     | Input (IGridLayoutOptions) | تنظیمات گرید                            | ورودی           |
-| `GridItemComponent`   | Component        | آیتم گرید                                   | ورودی           |
-| `config`      | Input (GridItemConfig) | پیکربندی موقعیت و اندازه آیتم                | ورودی           |
-
----
-
-## 🔬 نمونه کد
-
-دموها و مثال‌های بیشتر را در پوشه `projects/demo` مشاهده کنید.
+| Name           | Type/Directive              | Description                                 | Input/Output |
+|----------------|----------------------------|---------------------------------------------|--------------|
+| `ngxDraggable` | Directive                   | Makes an item draggable                     | Input        |
+| `boundary`     | Input (HTMLElement)         | Drag boundary                               | Input        |
+| `dragStart`    | Output (EventEmitter)       | Drag start event                            | Output       |
+| `dragMove`     | Output (EventEmitter)       | Drag move event                             | Output       |
+| `dragEnd`      | Output (EventEmitter)       | Drag end event                              | Output       |
+| `ngxResizable` | Directive                   | Makes an item resizable                     | Input        |
+| `minWidth`     | Input (number)              | Minimum width                               | Input        |
+| `minHeight`    | Input (number)              | Minimum height                              | Input        |
+| `resize`       | Output (EventEmitter)       | Resize event                                | Output       |
+| `ngxDropList`  | Directive                   | Drop list directive                         | Input        |
+| `data`         | Input (any[])               | List data                                   | Input        |
+| `drop`         | Output (EventEmitter)       | Drop event                                  | Output       |
+| `GridLayoutComponent` | Component              | Grid layout component                       | Input        |
+| `options`      | Input (IGridLayoutOptions)  | Grid options                                | Input        |
+| `GridItemComponent`   | Component              | Grid item component                         | Input        |
+| `config`       | Input (GridItemConfig)      | Grid item config                            | Input        |
 
 ---
 
-## 🤝 توسعه و مشارکت
+## 🔬 Code Samples
 
-پروژه را Fork کنید و Pull Request ارسال نمایید.
+See more demos and examples in the `projects/demo` folder.
 
-برای توسعه محلی:
+---
+
+## 🤝 Contributing
+
+Fork the repo and send a Pull Request!
+
+For local development:
 ```bash
 npm install
 npm run start
@@ -189,10 +189,10 @@ npm run start
 
 ---
 
-## 📄 لایسنس
+## 📄 License
 
 MIT
 
 ---
 
-> ساخته شده با ❤️ توسط جامعه متن‌باز
+> Made with ❤️ by the open-source community

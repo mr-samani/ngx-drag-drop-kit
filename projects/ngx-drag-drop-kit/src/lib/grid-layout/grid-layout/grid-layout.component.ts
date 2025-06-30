@@ -28,6 +28,7 @@ import { getFirstCollision } from '../utils/grid.utils';
   host: {
     '[style.boxSizing]': '"border-box"',
     '[style.height.px]': '_gridService.getGridHeight',
+    '[style.user-select]': '"none"',
   },
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,

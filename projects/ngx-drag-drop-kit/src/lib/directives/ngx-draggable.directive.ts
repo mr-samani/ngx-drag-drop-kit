@@ -112,8 +112,8 @@ export class NgxDraggableDirective implements OnDestroy, OnInit {
   onMouseDown(ev: MouseEvent | TouchEvent) {
     this.previousXY = getPointerPosition(ev);
     this.isTouched = true;
-    // ev.preventDefault();
-    // ev.stopPropagation();
+    ev.preventDefault();
+    ev.stopPropagation();
     this.initXY();
     this.subscriptions = this.subscriptions.filter((x) => !x.closed);
     this.subscriptions.push(
