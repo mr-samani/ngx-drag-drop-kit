@@ -29,11 +29,14 @@ export class CopyToZoneComponent {
     // } else {
     //   transferArrayItem(event.previousContainer.data, event.container.data, event.previousIndex, event.currentIndex);
     // }
-    console.log(event);
+    // console.log(event);
     if (event.previousContainer !== event.container) {
       copyArrayItem(event.previousContainer.data, event.container.data, event.previousIndex, event.currentIndex);
     } else {
       moveItemInArray(event.container.data, event.previousIndex, event.currentIndex);
     }
+  }
+  onClick(item: string) {
+    console.log('Clicked item:', item);
   }
 }

@@ -28,8 +28,7 @@ export interface IPosition {
   selector: '[ngxDraggable]',
   host: {
     '[style.transition-property]': 'dragging ? "none" : ""',
-    '[style.pointer-events]': 'dragging ? "none" : ""',
-    '[style.user-select]': 'dragging ? "none" : ""',
+    '[style.user-select]': 'dragging  ? "none" : ""',
     '[style.cursor]': 'dragging ? "grabbing" : ""',
     '[style.z-index]': 'dragging ? "999999" : ""',
     '[class.dragging]': 'dragging',
@@ -51,6 +50,7 @@ export class NgxDraggableDirective implements OnDestroy, OnInit {
   @Output() dragEnd = new EventEmitter<IPosition>();
 
   dragging = false;
+  isTouched = false;
   el: HTMLElement;
   protected x: number = 0;
   protected y: number = 0;
@@ -60,7 +60,7 @@ export class NgxDraggableDirective implements OnDestroy, OnInit {
   constructor(
     elRef: ElementRef,
     private _renderer: Renderer2,
-    private _dragService: NgxDragDropService,
+    public _dragService: NgxDragDropService,
     private _autoScroll: AutoScroll
   ) {
     this.el = elRef.nativeElement;
@@ -105,17 +105,17 @@ export class NgxDraggableDirective implements OnDestroy, OnInit {
       this.dragEnd.emit();
     }
     this.dragging = false;
+    this.isTouched = false;
     this._autoScroll._stopScrolling();
   }
 
   onMouseDown(ev: MouseEvent | TouchEvent) {
-    ev.preventDefault();
-    ev.stopPropagation();
     this.previousXY = getPointerPosition(ev);
-    this.dragging = true;
+    this.isTouched = true;
+    // ev.preventDefault();
+    // ev.stopPropagation();
     this.initXY();
-    this._dragService.startDrag(this);
-    this.dragStart.emit(this.previousXY);
+    this.subscriptions = this.subscriptions.filter((x) => !x.closed);
     this.subscriptions.push(
       fromEvent<MouseEvent>(document, 'mousemove').subscribe((ev) => this.onMouseMove(ev)),
       fromEvent<TouchEvent>(document, 'touchmove').subscribe((ev) => this.onMouseMove(ev))
@@ -123,6 +123,11 @@ export class NgxDraggableDirective implements OnDestroy, OnInit {
   }
 
   onMouseMove(ev: MouseEvent | TouchEvent) {
+    if (this.isTouched && !this.dragging) {
+      this._dragService.startDrag(this);
+      this.dragStart.emit(this.previousXY);
+      this.dragging = true;
+    }
     if (!this.dragging) {
       return;
     }

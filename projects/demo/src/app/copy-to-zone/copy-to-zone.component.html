@@ -15,7 +15,9 @@
         ngxDraggable
         ngxResizable
         [disableTransform]="true"
-        [corners]="resizeCorner">
+        [corners]="resizeCorner"
+        (click)="onClick(item)"
+      >
         {{ item }}
       </div>
     </div>

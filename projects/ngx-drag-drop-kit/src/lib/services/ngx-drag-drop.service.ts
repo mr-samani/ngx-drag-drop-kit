@@ -36,10 +36,10 @@ export class NgxDragDropService {
       return;
     }
     this.isDragging = true;
+    drag.containerDropList.isDragging = true;
     this._activeDragDomRect = drag.el.getBoundingClientRect();
     this._activeDragInstances.push(drag);
     let previousIndex = 0;
-    // this._activeDropListInstances.dragging = true;
     drag.containerDropList?._draggables?.forEach((el, i) => {
       if (el.el == drag.el) {
         previousIndex = i;
@@ -79,6 +79,7 @@ export class NgxDragDropService {
 
   stopDrag(drag: NgxDraggableDirective) {
     this.isDragging = false;
+    if (drag.containerDropList) drag.containerDropList.isDragging = true;
     const index = this._activeDragInstances.indexOf(drag);
     if (index > -1) {
       drag.el.style.display = '';
@@ -156,6 +157,5 @@ export class NgxDragDropService {
     this._dropEvent.container = this.placeholderService._activeDropListInstances;
     this._dropEvent.currentIndex = this.placeholderService._placeHolderIndex;
     this.placeholderService._activeDropListInstances.onDrop(this._dropEvent);
-    this.placeholderService._activeDropListInstances.dragging = false;
   }
 }

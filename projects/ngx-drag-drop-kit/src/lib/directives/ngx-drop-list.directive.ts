@@ -41,7 +41,8 @@ export interface IDropEvent<DataType = any> {
   selector: '[ngxDropList]',
   host: {
     '[style.position]': '"relative"',
-    '[style.scroll-snap-type]': 'dragging ? "none": "" ',
+    '[style.scroll-snap-type]': 'isDragging ? "none": "" ',
+    '[style.user-select]': 'isDragging ? "none" : ""',
   },
   standalone: true,
   exportAs: 'NgxDropList',
@@ -53,13 +54,9 @@ export class NgxDropListDirective<T = any> implements AfterViewInit {
   @ContentChildren(NgxDraggableDirective)
   _draggables?: QueryList<NgxDraggableDirective>;
   _el: HTMLElement;
-  dragging = false;
+  isDragging = false;
   private subscriptions: Subscription[] = [];
-  constructor(
-    private _dragDropService: NgxDragDropService,
-    elRef: ElementRef<HTMLElement>,
-    @Inject(DOCUMENT) private _document: Document
-  ) {
+  constructor(public _dragDropService: NgxDragDropService, elRef: ElementRef<HTMLElement>) {
     this._el = elRef.nativeElement;
     _dragDropService.registerDropList(this);
   }
