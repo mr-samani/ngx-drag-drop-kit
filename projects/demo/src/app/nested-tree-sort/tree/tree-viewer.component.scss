@@ -24,7 +24,11 @@
   font-size: 14px;
   .children {
     width: 100%;
-    margin-left: 20px;
+    padding-left: 20px;
+    &.entered {
+      background: lightblue;
+      padding: 20px;
+    }
   }
 }
 

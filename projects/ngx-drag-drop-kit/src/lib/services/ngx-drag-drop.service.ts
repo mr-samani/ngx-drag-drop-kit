@@ -137,9 +137,14 @@ export class NgxDragDropService {
     if (!this._activeDragInstances.length || !this.dragElementInBody) {
       return;
     }
+    const position = getPointerPosition(ev);
+    console.log(
+      'getDirectiveUnderPointer',
+      (this.getDirectiveUnderPointer(ev, 'drag') as NgxDraggableDirective)?.el?.id
+    );
+
     this._renderer.setStyle(this.dragElementInBody, 'transform', drag.el.style.transform);
     if (this.dragOverItem) {
-      const position = getPointerPosition(ev);
       const dragOverItemRec = this.dragOverItem.el.getBoundingClientRect();
 
       if (this.dragOverItem.containerDropList?.direction === 'horizontal') {
@@ -192,5 +197,32 @@ export class NgxDragDropService {
     this._dropEvent.container = this.placeholderService._activeDropListInstances;
     this._dropEvent.currentIndex = this.placeholderService._placeHolderIndex;
     this.placeholderService._activeDropListInstances.onDrop(this._dropEvent);
+  }
+
+  /**
+   * get draggabe element ot dropList under mouse position
+   * @param ev  mouse event or touch event
+   * @param type drag or drop
+   * @returns
+   */
+  private getDirectiveUnderPointer<T extends NgxDropListDirective | NgxDraggableDirective = NgxDraggableDirective>(
+    ev: MouseEvent | TouchEvent,
+    type: 'drag' | 'dropList'
+  ): NgxDropListDirective | NgxDraggableDirective | undefined {
+    const point = getPointerPosition(ev);
+    const element = document.elementFromPoint(point.x, point.y);
+    if (!element) return undefined;
+    const targetEl = element.closest('[ngxDraggable], [ngxDropList]') as HTMLElement | null;
+    if (!targetEl) return undefined;
+
+    if (type === 'drag') {
+      const foundDropList = Array.from(this._dropList).find((d) => d._draggables?.some((drag) => drag.el === targetEl));
+      if (foundDropList) {
+        return foundDropList._draggables?.find((drag) => drag.el === targetEl);
+      }
+      return undefined;
+    } else {
+      return Array.from(this._dropList).find((dl) => dl._el === targetEl) || undefined;
+    }
   }
 }

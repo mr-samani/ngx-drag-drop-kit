@@ -177,4 +177,6 @@ export class NgxDraggableDirective implements OnDestroy, OnInit, AfterViewInit {
     let transform = `translate(${this.x}px, ${this.y}px)`;
     this._renderer.setStyle(this.el, 'transform', transform);
   }
+
+
 }
