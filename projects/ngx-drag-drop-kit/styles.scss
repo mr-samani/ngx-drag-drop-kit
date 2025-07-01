@@ -103,8 +103,14 @@
   border: dotted 3px #999;
   min-height: 30px;
   transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+  will-change: transform;
+
   pointer-events: none;
   max-width: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+
   // animation: animationMaxHeight 1000ms, animationShow 300ms;
   // transform-origin: 0% 0%;
   // @keyframes animationMaxHeight {

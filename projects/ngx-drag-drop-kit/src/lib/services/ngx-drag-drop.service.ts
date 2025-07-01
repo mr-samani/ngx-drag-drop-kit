@@ -73,6 +73,7 @@ export class NgxDragDropService {
         isAfter: this.isAfter,
         activeDragDomRec: this._activeDragDomRect,
         dropList: drag.containerDropList,
+        direction: drag.containerDropList.direction,
       });
     }
     this.initDrag(drag);
@@ -106,6 +107,7 @@ export class NgxDragDropService {
       isAfter: this.isAfter,
       activeDragDomRec: this._activeDragDomRect,
       dropList: drop,
+      direction: drop.direction,
     });
   }
   leaveDropList(drop: NgxDropListDirective) {
@@ -148,16 +150,17 @@ export class NgxDragDropService {
     // console.log(this._dropList);
   }
 
-  private initDrag(enteredDrag: NgxDraggableDirective) {
-    if (!this.isDragging || !enteredDrag.containerDropList) {
+  private initDrag(dragOverItem: NgxDraggableDirective) {
+    if (!this.isDragging || !dragOverItem.containerDropList) {
       return;
     }
     this.placeholderService.updatePlaceholderPosition$.next({
       currentDrag: this._activeDragInstances[0],
-      enteredDrag,
+      dragOverItem,
       isAfter: this.isAfter,
       activeDragDomRec: this._activeDragDomRect,
-      dropList: enteredDrag.containerDropList,
+      dropList: dragOverItem.containerDropList,
+      direction: dragOverItem.containerDropList.direction,
     });
   }
 

@@ -76,4 +76,16 @@ export class NgxDropListDirective<T = any> implements AfterViewInit {
     this.drop.emit(event);
     this.subscriptions = [];
   }
+
+
+
+
+
+
+
+
+
+
+
+
 }

@@ -36,3 +36,15 @@ export function getPointerPosition(evt: MouseEvent | TouchEvent) {
     };
   }
 }
+
+
+
+export function getRelativePosition(el: HTMLElement, container: HTMLElement) {
+  const elRect = el.getBoundingClientRect();
+  const containerRect = container.getBoundingClientRect();
+
+  const x = elRect.left - containerRect.left;
+  const y = elRect.top - containerRect.top;
+
+  return { x, y };
+}
