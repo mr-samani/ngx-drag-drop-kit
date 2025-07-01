@@ -139,16 +139,13 @@ export class NgxDraggableDirective implements OnDestroy, OnInit {
     if (!this.dragging) {
       return;
     }
-
-    // ev.preventDefault();
-    // ev.stopPropagation();
     let position = getPointerPosition(ev);
 
     const offsetX = position.x - this.previousXY.x;
     const offsetY = position.y - this.previousXY.y;
-    this.updatePosition(offsetX, offsetY, position);
     this._autoScroll.handleAutoScroll(ev);
     this._dragService.dragMove(this, ev);
+    this.updatePosition(offsetX, offsetY, position);
     this.dragMove.emit({ x: this.x, y: this.y });
   }
 

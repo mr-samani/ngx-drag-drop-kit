@@ -96,7 +96,6 @@ export class NgxDragDropService {
   }
 
   enterDropList(drop: NgxDropListDirective) {
-    // drop._el.style.border = '1px red solid';
     this.dragOverItem = undefined;
     if (!this.isDragging) return;
     this.placeholderService.updatePlaceholderPosition$.next({
@@ -107,7 +106,6 @@ export class NgxDragDropService {
     });
   }
   leaveDropList(drop: NgxDropListDirective) {
-    //  drop._el.style.border = '';
     this.placeholderService.hidePlaceholder();
   }
 
@@ -123,18 +121,22 @@ export class NgxDragDropService {
   }
 
   dragMove(drag: NgxDraggableDirective, ev: MouseEvent | TouchEvent) {
-    if (!this._activeDragInstances.length || !this.dragElementInBody) return;
+    if (!this._activeDragInstances.length || !this.dragElementInBody) {
+      return;
+    }
     this._renderer.setStyle(this.dragElementInBody, 'transform', drag.el.style.transform);
     if (this.dragOverItem) {
       const position = getPointerPosition(ev);
-      if (this.dragOverItem.containerDropList?.direction === 'horizontal') {
-        let xInEL = position.x - this.dragOverItem.el.getBoundingClientRect().left;
-        this.isAfter = xInEL > this.dragOverItem.el.getBoundingClientRect().width / 2;
-      } else {
-        let yInEL = position.y - this.dragOverItem.el.getBoundingClientRect().top;
-        this.isAfter = yInEL > this.dragOverItem.el.getBoundingClientRect().height / 2;
-      }
+      const dragOverItemRec = this.dragOverItem.el.getBoundingClientRect();
 
+      if (this.dragOverItem.containerDropList?.direction === 'horizontal') {
+        let xInEL = position.x - (dragOverItemRec.left + window.scrollX);
+        this.isAfter = xInEL > dragOverItemRec.width / 2;
+      } else {
+        let yInEL = position.y - (dragOverItemRec.top + window.scrollY);
+        this.isAfter = yInEL > dragOverItemRec.height / 2;
+        console.log('isAfter', this.isAfter, this.dragOverItem.el.id, yInEL, dragOverItemRec.height / 2);
+      }
       this.initDrag(this.dragOverItem);
     }
   }
