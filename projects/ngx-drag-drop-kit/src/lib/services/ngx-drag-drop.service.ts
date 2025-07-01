@@ -85,18 +85,21 @@ export class NgxDragDropService {
     if (index > -1) {
       drag.el.style.display = '';
       this.dragElementInBody?.remove();
-      this.placeholderService.hidePlaceholder();
       this._activeDragInstances?.forEach((el) => {
         this._renderer.removeStyle(el.el, 'transform');
       });
       this._activeDragInstances.splice(index, 1);
 
-      this.droped(drag);
+      if (this.placeholderService.isShown) {
+        this.droped(drag);
+      }
+      this.placeholderService.hidePlaceholder();
     }
   }
 
   enterDropList(drop: NgxDropListDirective) {
-    this.dragOverItem = undefined;
+    //TODO:  این خط توی ایتم های تو در تو مشکل داره  اگر نباشه  باشه هم قبلش نمیره
+    //  this.dragOverItem = undefined;
     if (!this.isDragging) return;
     this.placeholderService.updatePlaceholderPosition$.next({
       currentDrag: this._activeDragInstances[0],
@@ -110,14 +113,14 @@ export class NgxDragDropService {
   }
 
   enterDrag(drag: NgxDraggableDirective) {
-    //  console.log('enter', drag.el);
+    //console.log('enter', drag.el.id);
     this.dragOverItem = drag;
     this.initDrag(drag);
   }
 
   leaveDrag(drag: NgxDraggableDirective) {
     this.dragOverItem = undefined;
-    // console.log('leave', drag.el);
+    //console.log('leave', drag.el.id);
   }
 
   dragMove(drag: NgxDraggableDirective, ev: MouseEvent | TouchEvent) {
@@ -135,7 +138,6 @@ export class NgxDragDropService {
       } else {
         let yInEL = position.y - (dragOverItemRec.top + window.scrollY);
         this.isAfter = yInEL > dragOverItemRec.height / 2;
-        console.log('isAfter', this.isAfter, this.dragOverItem.el.id, yInEL, dragOverItemRec.height / 2);
       }
       this.initDrag(this.dragOverItem);
     }

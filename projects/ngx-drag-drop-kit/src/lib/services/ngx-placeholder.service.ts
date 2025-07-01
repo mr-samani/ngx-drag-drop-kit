@@ -17,10 +17,11 @@ export interface IUpdatePlaceholderPosition {
 })
 export class NgxDragPlaceholderService {
   private _renderer: Renderer2;
-  _placeholder: HTMLElement | undefined;
-  _placeHolderIndex = 0;
+  private _placeholder: HTMLElement | undefined;
+  public _placeHolderIndex = 0;
   public updatePlaceholderPosition$ = new Subject<IUpdatePlaceholderPosition>();
   public _activeDropListInstances?: NgxDropListDirective;
+  public isShown: boolean = false;
 
   constructor(rendererFactory: RendererFactory2, @Inject(DOCUMENT) private _document: Document) {
     this._renderer = rendererFactory.createRenderer(null, null);
@@ -54,6 +55,7 @@ export class NgxDragPlaceholderService {
     } else {
       dropList._el.insertAdjacentElement('afterbegin', this._placeholder);
     }
+    this.isShown = true;
   }
 
   public hidePlaceholder() {
@@ -65,6 +67,7 @@ export class NgxDragPlaceholderService {
         this._renderer.removeStyle(el.el, 'transform');
       });
     }
+    this.isShown = false;
   }
 
   /*--------------------------------------------*/
