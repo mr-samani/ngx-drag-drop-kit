@@ -19,13 +19,12 @@ export class TreeViewerComponent {
     transferArrayItem(event.previousContainer.data, event.container.data, event.previousIndex, event.currentIndex);
   }
 
-
-  enter(item:TreeModel,ev:IPosition){
-    console.log('Entered:', item.name, 'at', ev);
+  enter(item: TreeModel, ev: IPosition) {
+    // console.log('Entered:', item.name, 'at', ev);
     item.entered = true;
   }
-  exited(item:TreeModel,ev:IPosition){
-    console.log('Exited:', item.name, 'at', ev);
+  exited(item: TreeModel, ev: IPosition) {
+    //console.log('Exited:', item.name, 'at', ev);
     item.entered = false;
   }
 }

@@ -25,11 +25,6 @@
   .children {
     width: 100%;
     margin-left: 20px;
-    transition: all 300ms;
-    &.entered {
-      border: 1px red dotted;
-      min-height: 100px;
-    }
   }
 }
 

@@ -1,4 +1,6 @@
 import {
+  AfterViewInit,
+  ContentChildren,
   Directive,
   ElementRef,
   EventEmitter,
@@ -8,7 +10,10 @@ import {
   OnDestroy,
   OnInit,
   Output,
+  QueryList,
   Renderer2,
+  ViewChild,
+  viewChild,
 } from '@angular/core';
 import { Subscription, fromEvent } from 'rxjs';
 import { getPointerPosition } from '../../utils/get-position';
@@ -40,7 +45,7 @@ export interface IPosition {
   standalone: true,
   exportAs: 'NgxDraggable',
 })
-export class NgxDraggableDirective implements OnDestroy, OnInit {
+export class NgxDraggableDirective implements OnDestroy, OnInit, AfterViewInit {
   private _boundary?: HTMLElement;
   @Input() set boundary(val: HTMLElement) {
     this._boundary = val;
@@ -51,6 +56,12 @@ export class NgxDraggableDirective implements OnDestroy, OnInit {
 
   @Output() entered = new EventEmitter<IPosition>();
   @Output() exited = new EventEmitter<IPosition>();
+
+  @ContentChildren(NgxDropListDirective) innerDropLists!: QueryList<NgxDropListDirective>;
+
+  public get hasInnerDropList(): boolean {
+    return this.innerDropLists.length > 0;
+  }
 
   dragging = false;
   isTouched = false;
@@ -72,6 +83,9 @@ export class NgxDraggableDirective implements OnDestroy, OnInit {
 
   ngOnInit(): void {
     this.initXY();
+  }
+  ngAfterViewInit(): void {
+    // console.log('innerDropList', this.innerDropLists.length);
   }
 
   ngOnDestroy() {

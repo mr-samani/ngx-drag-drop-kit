@@ -72,7 +72,7 @@ export class NgxDragDropService {
     this.dragElementInBody.style.pointerEvents = 'none';
     this._document.body.appendChild(this.dragElementInBody);
     if (drag.containerDropList.disableSort == false) {
-      this.placeholderService.showPlaceholder({
+      this.placeholderService.updatePlaceholderPosition$.next({
         currentDrag: this._activeDragInstances[0],
         dropAction: this.dropAction,
         activeDragDomRec: this._activeDragDomRect,
@@ -143,13 +143,21 @@ export class NgxDragDropService {
       const dragOverItemRec = this.dragOverItem.el.getBoundingClientRect();
 
       if (this.dragOverItem.containerDropList?.direction === 'horizontal') {
+        const oneThird = dragOverItemRec.width / 3;
         let xInEL = position.x - (dragOverItemRec.left + window.scrollX);
-        this.dropAction = xInEL > dragOverItemRec.width / 2 ? 'after' : 'before';
+        if (xInEL < oneThird) this.dropAction = 'before';
+        else if (xInEL < 2 * oneThird) this.dropAction = 'after';
+        else if (this.dragOverItem.hasInnerDropList) this.dropAction = 'inside';
+        else this.dropAction = 'after';
       } else {
+        const oneThird = dragOverItemRec.height / 3;
         let yInEL = position.y - (dragOverItemRec.top + window.scrollY);
-        this.dropAction = yInEL > dragOverItemRec.height / 2 ? 'after' : 'before';
+        if (yInEL < oneThird) this.dropAction = 'before';
+        else if (yInEL < 2 * oneThird) this.dropAction = 'after';
+        else if (this.dragOverItem.hasInnerDropList) this.dropAction = 'inside';
+        else this.dropAction = 'after';
       }
-      console.log(this.dropAction, 'over', this.dragOverItem.el.id);
+      console.log(this.dropAction, 'over', this.dragOverItem.el.id, 'hasInner', this.dragOverItem.hasInnerDropList);
       this.initDrag(this.dragOverItem);
     }
   }
@@ -159,16 +167,21 @@ export class NgxDragDropService {
     // console.log(this._dropList);
   }
 
-  private initDrag(enteredDrag: NgxDraggableDirective) {
-    if (!this.isDragging || !enteredDrag.containerDropList) {
+  private initDrag(dragOverItem: NgxDraggableDirective) {
+    if (!this.isDragging || !dragOverItem.containerDropList) {
       return;
+    }
+    if (this.dropAction === 'inside') {
     }
     this.placeholderService.updatePlaceholderPosition$.next({
       currentDrag: this._activeDragInstances[0],
-      enteredDrag,
+      dragOverItem,
       dropAction: this.dropAction,
       activeDragDomRec: this._activeDragDomRect,
-      dropList: enteredDrag.containerDropList,
+      dropList:
+        this.dropAction == 'inside' && dragOverItem.innerDropLists
+          ? dragOverItem.innerDropLists.first
+          : dragOverItem.containerDropList,
     });
   }
 

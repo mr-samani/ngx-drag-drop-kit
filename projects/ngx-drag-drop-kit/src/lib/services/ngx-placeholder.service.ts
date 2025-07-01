@@ -6,10 +6,17 @@ import { NgxDropListDirective } from '../directives/ngx-drop-list.directive';
 import { DropActionType } from '../../models/DropActionType';
 
 export interface IUpdatePlaceholderPosition {
+  /** drop list container */
   dropList: NgxDropListDirective;
+  /** current dragging item */
   currentDrag: NgxDraggableDirective;
+  /** drop action type
+   * - after , before , inside
+   */
   dropAction: DropActionType;
-  enteredDrag?: NgxDraggableDirective;
+  /** drag over of this item */
+  dragOverItem?: NgxDraggableDirective;
+  /** dragging element's bounding rectangle */
   activeDragDomRec?: DOMRect;
 }
 
@@ -40,8 +47,8 @@ export class NgxDragPlaceholderService {
       });
   }
 
-  public showPlaceholder(input: IUpdatePlaceholderPosition) {
-    const { activeDragDomRec, dropAction, enteredDrag, dropList } = input;
+  private showPlaceholder(input: IUpdatePlaceholderPosition) {
+    let { activeDragDomRec, dropAction, dragOverItem, dropList } = input;
     this._activeDropListInstances = dropList;
     this.hidePlaceholder();
     this._placeholder = this._document.createElement('div');
@@ -53,10 +60,21 @@ export class NgxDragPlaceholderService {
       this._renderer.setStyle(this._placeholder, 'width', activeDragDomRec.width + 'px');
       this._renderer.setStyle(this._placeholder, 'height', activeDragDomRec.height + 'px');
     }
-    if (enteredDrag) {
-      enteredDrag.el.insertAdjacentElement(dropAction === 'after' ? 'afterend' : 'beforebegin', this._placeholder);
-    } else {
-      dropList._el.insertAdjacentElement('afterbegin', this._placeholder);
+
+    if (!dragOverItem) {
+      dropAction = 'inside';
+    }
+
+    switch (dropAction) {
+      case 'after':
+        dragOverItem!.el.insertAdjacentElement('afterend', this._placeholder);
+        break;
+      case 'before':
+        dragOverItem!.el.insertAdjacentElement('beforebegin', this._placeholder);
+        break;
+      case 'inside':
+        dropList._el.insertAdjacentElement('afterbegin', this._placeholder);
+        break;
     }
     this.isShown = true;
   }
@@ -78,7 +96,7 @@ export class NgxDragPlaceholderService {
   private updatePlaceholderPosition(input: IUpdatePlaceholderPosition) {
     this.showPlaceholder(input);
     //TODO if placeholder after draged elemet was decrement index
-    let els = input.enteredDrag?.containerDropList?._el.querySelectorAll(
+    let els = input.dragOverItem?.containerDropList?._el.querySelectorAll(
       '.ngx-draggable ,.ngx-drag-placeholder,.ngx-draggable.dragging'
     );
     if (els) {
