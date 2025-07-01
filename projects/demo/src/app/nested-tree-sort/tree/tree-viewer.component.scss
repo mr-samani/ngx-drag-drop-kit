@@ -23,12 +23,12 @@
   background: white;
   font-size: 14px;
   .children {
-    //   border: 1px rgb(151, 151, 253) dotted;
-    padding: 2px;
     width: 100%;
+    margin-left: 20px;
+    transition: all 300ms;
     &.entered {
       border: 1px red dotted;
-      padding: 10px;
+      min-height: 100px;
     }
   }
 }

@@ -49,8 +49,8 @@ export class NgxDraggableDirective implements OnDestroy, OnInit {
   @Output() dragMove = new EventEmitter<IPosition>();
   @Output() dragEnd = new EventEmitter<IPosition>();
 
-  @Output() entered = new EventEmitter<void>();
-  @Output() exited = new EventEmitter<void>();
+  @Output() entered = new EventEmitter<IPosition>();
+  @Output() exited = new EventEmitter<IPosition>();
 
   dragging = false;
   isTouched = false;
@@ -91,15 +91,17 @@ export class NgxDraggableDirective implements OnDestroy, OnInit {
       fromEvent<MouseEvent>(this.el, 'mousedown').subscribe((ev) => this.onMouseDown(ev)),
       fromEvent<TouchEvent>(this.el, 'touchstart').subscribe((ev) => this.onMouseDown(ev)),
 
-      fromEvent<TouchEvent>(this.el, 'mouseenter').subscribe((ev) => {
+      fromEvent<PointerEvent>(this.el, 'pointerenter').subscribe((ev) => {
         if (!this._dragService.isDragging) return;
         this._dragService.enterDrag(this);
-        this.entered.emit();
+        let position = getPointerPosition(ev);
+        this.entered.emit(position);
       }),
-      fromEvent<TouchEvent>(this.el, 'mouseleave').subscribe((ev) => {
+      fromEvent<PointerEvent>(this.el, 'pointerleave').subscribe((ev) => {
         if (!this._dragService.isDragging) return;
         this._dragService.leaveDrag(this);
-        this.exited.emit();
+        let position = getPointerPosition(ev);
+        this.exited.emit(position);
       })
     );
   }

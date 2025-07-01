@@ -3,8 +3,8 @@
   <div
     class="example-box"
     ngxDraggable
-    (entered)="item.entered = true"
-    (exited)="item.entered = false"
+    (entered)="enter(item, $event)"
+    (exited)="exited(item, $event)"
     [id]="item.name">
     <div>{{ item.name }}</div>
     <div class="children" [class.entered]="item.entered" ngxDropList (drop)="drop($event)" [data]="item.children">

@@ -3,7 +3,7 @@ import { TreeModel } from '../nested-tree-sort.component';
 import { transferArrayItem } from '../../../../../ngx-drag-drop-kit/src/drag-utils';
 import { IDropEvent } from '../../../../../ngx-drag-drop-kit/src/models/IDropEvent';
 import { CommonModule } from '@angular/common';
-import { NgxDragDropKitModule } from '../../../../../ngx-drag-drop-kit/src/public-api';
+import { IPosition, NgxDragDropKitModule } from '../../../../../ngx-drag-drop-kit/src/public-api';
 
 @Component({
   selector: 'tree',
@@ -17,5 +17,15 @@ export class TreeViewerComponent {
   @Input() items: TreeModel[] = [];
   drop(event: IDropEvent) {
     transferArrayItem(event.previousContainer.data, event.container.data, event.previousIndex, event.currentIndex);
+  }
+
+
+  enter(item:TreeModel,ev:IPosition){
+    console.log('Entered:', item.name, 'at', ev);
+    item.entered = true;
+  }
+  exited(item:TreeModel,ev:IPosition){
+    console.log('Exited:', item.name, 'at', ev);
+    item.entered = false;
   }
 }

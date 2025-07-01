@@ -12,6 +12,7 @@ import { NgxDragDropService } from '../services/ngx-drag-drop.service';
 import { NgxDraggableDirective } from './ngx-draggable.directive';
 import { Subscription, fromEvent } from 'rxjs';
 import { IDropEvent } from '../../models/IDropEvent';
+
 @Directive({
   selector: '[ngxDropList]',
   host: {
@@ -48,12 +49,12 @@ export class NgxDropListDirective<T = any> implements AfterViewInit {
     });
     // console.log(this._draggables);
     this.subscriptions.push(
-      fromEvent<TouchEvent>(this._el, 'mouseenter').subscribe((ev) => {
+      fromEvent<PointerEvent>(this._el, 'pointerenter').subscribe((ev) => {
         if (!this._dragDropService.isDragging) return;
         this._dragDropService.enterDropList(this);
         this.entered.emit();
       }),
-      fromEvent<TouchEvent>(this._el, 'mouseleave').subscribe((ev) => {
+      fromEvent<PointerEvent>(this._el, 'pointerleave').subscribe((ev) => {
         if (!this._dragDropService.isDragging) return;
         this._dragDropService.leaveDropList(this);
         this.exited.emit();

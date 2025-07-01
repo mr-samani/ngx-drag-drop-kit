@@ -5,7 +5,7 @@ import { NgxDraggableDirective } from '../directives/ngx-draggable.directive';
 import { DOCUMENT } from '@angular/common';
 import { getPointerPosition } from '../../utils/get-position';
 import { NgxDragPlaceholderService } from './ngx-placeholder.service';
-
+import { DropActionType } from '../../models/DropActionType';
 @Injectable({
   providedIn: 'root',
 })
@@ -22,8 +22,12 @@ export class NgxDragDropService {
    * on drag enter element
    * - add before or after hovered element
    */
-  private isAfter = true;
-  private dragOverItem?: NgxDraggableDirective;
+  private dropAction: DropActionType = 'after';
+  private get dragOverItem(): NgxDraggableDirective {
+    return this.dragOverItemList[this.dragOverItemList.length - 1];
+  }
+
+  private dragOverItemList: NgxDraggableDirective[] = [];
   constructor(
     rendererFactory: RendererFactory2,
     @Inject(DOCUMENT) private _document: Document,
@@ -70,7 +74,7 @@ export class NgxDragDropService {
     if (drag.containerDropList.disableSort == false) {
       this.placeholderService.showPlaceholder({
         currentDrag: this._activeDragInstances[0],
-        isAfter: this.isAfter,
+        dropAction: this.dropAction,
         activeDragDomRec: this._activeDragDomRect,
         dropList: drag.containerDropList,
       });
@@ -99,28 +103,34 @@ export class NgxDragDropService {
 
   enterDropList(drop: NgxDropListDirective) {
     //TODO:  این خط توی ایتم های تو در تو مشکل داره  اگر نباشه  باشه هم قبلش نمیره
+    // this.dragOverItemList.pop();
     //  this.dragOverItem = undefined;
     if (!this.isDragging) return;
     this.placeholderService.updatePlaceholderPosition$.next({
       currentDrag: this._activeDragInstances[0],
-      isAfter: this.isAfter,
+      dropAction: this.dropAction,
       activeDragDomRec: this._activeDragDomRect,
       dropList: drop,
     });
   }
+
   leaveDropList(drop: NgxDropListDirective) {
     this.placeholderService.hidePlaceholder();
   }
 
   enterDrag(drag: NgxDraggableDirective) {
-    //console.log('enter', drag.el.id);
-    this.dragOverItem = drag;
+    this.dragOverItemList.push(drag);
+    // console.log('enter', this.dragOverItem?.el?.id);
+
     this.initDrag(drag);
   }
 
   leaveDrag(drag: NgxDraggableDirective) {
-    this.dragOverItem = undefined;
-    //console.log('leave', drag.el.id);
+    let f = this.dragOverItemList.findIndex((x) => x == drag);
+    if (f > -1) {
+      this.dragOverItemList.splice(f, 1);
+    }
+    // console.log('leave', this.dragOverItem?.el?.id);
   }
 
   dragMove(drag: NgxDraggableDirective, ev: MouseEvent | TouchEvent) {
@@ -134,11 +144,12 @@ export class NgxDragDropService {
 
       if (this.dragOverItem.containerDropList?.direction === 'horizontal') {
         let xInEL = position.x - (dragOverItemRec.left + window.scrollX);
-        this.isAfter = xInEL > dragOverItemRec.width / 2;
+        this.dropAction = xInEL > dragOverItemRec.width / 2 ? 'after' : 'before';
       } else {
         let yInEL = position.y - (dragOverItemRec.top + window.scrollY);
-        this.isAfter = yInEL > dragOverItemRec.height / 2;
+        this.dropAction = yInEL > dragOverItemRec.height / 2 ? 'after' : 'before';
       }
+      console.log(this.dropAction, 'over', this.dragOverItem.el.id);
       this.initDrag(this.dragOverItem);
     }
   }
@@ -155,7 +166,7 @@ export class NgxDragDropService {
     this.placeholderService.updatePlaceholderPosition$.next({
       currentDrag: this._activeDragInstances[0],
       enteredDrag,
-      isAfter: this.isAfter,
+      dropAction: this.dropAction,
       activeDragDomRec: this._activeDragDomRect,
       dropList: enteredDrag.containerDropList,
     });

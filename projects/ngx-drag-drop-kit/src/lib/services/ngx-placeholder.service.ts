@@ -3,11 +3,12 @@ import { NgxDraggableDirective } from '../directives/ngx-draggable.directive';
 import { Subject, debounceTime, distinctUntilChanged, map } from 'rxjs';
 import { DOCUMENT } from '@angular/common';
 import { NgxDropListDirective } from '../directives/ngx-drop-list.directive';
+import { DropActionType } from '../../models/DropActionType';
 
 export interface IUpdatePlaceholderPosition {
   dropList: NgxDropListDirective;
   currentDrag: NgxDraggableDirective;
-  isAfter: boolean;
+  dropAction: DropActionType;
   enteredDrag?: NgxDraggableDirective;
   activeDragDomRec?: DOMRect;
 }
@@ -28,7 +29,9 @@ export class NgxDragPlaceholderService {
     this.updatePlaceholderPosition$
       .pipe(
         distinctUntilChanged((prev, curr) => {
-          return prev.currentDrag == curr.currentDrag && prev.isAfter == curr.isAfter && prev.dropList == curr.dropList;
+          return (
+            prev.currentDrag == curr.currentDrag && prev.dropAction == curr.dropAction && prev.dropList == curr.dropList
+          );
         })
         // debounceTime(10)
       )
@@ -38,7 +41,7 @@ export class NgxDragPlaceholderService {
   }
 
   public showPlaceholder(input: IUpdatePlaceholderPosition) {
-    const { activeDragDomRec, isAfter, enteredDrag, dropList } = input;
+    const { activeDragDomRec, dropAction, enteredDrag, dropList } = input;
     this._activeDropListInstances = dropList;
     this.hidePlaceholder();
     this._placeholder = this._document.createElement('div');
@@ -51,7 +54,7 @@ export class NgxDragPlaceholderService {
       this._renderer.setStyle(this._placeholder, 'height', activeDragDomRec.height + 'px');
     }
     if (enteredDrag) {
-      enteredDrag.el.insertAdjacentElement(isAfter ? 'afterend' : 'beforebegin', this._placeholder);
+      enteredDrag.el.insertAdjacentElement(dropAction === 'after' ? 'afterend' : 'beforebegin', this._placeholder);
     } else {
       dropList._el.insertAdjacentElement('afterbegin', this._placeholder);
     }
