@@ -3,7 +3,7 @@ import { copyArrayItem, moveItemInArray } from '../../../../ngx-drag-drop-kit/sr
 import { CommonModule } from '@angular/common';
 import { Corner } from '../../../../ngx-drag-drop-kit/src/utils/corner-type';
 import { NgxDragDropKitModule } from '../../../../ngx-drag-drop-kit/src/public-api';
-import { IDropEvent } from '../../../../ngx-drag-drop-kit/src/lib/directives/ngx-drop-list.directive';
+import { IDropEvent } from '../../../../ngx-drag-drop-kit/src/models/IDropEvent';
 
 @Component({
   selector: 'app-copy-to-zone',

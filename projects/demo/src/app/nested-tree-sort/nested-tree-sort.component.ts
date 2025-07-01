@@ -6,6 +6,7 @@ import { NgxDragDropKitModule } from '../../../../ngx-drag-drop-kit/src/public-a
 export interface TreeModel {
   name: string;
   children: TreeModel[];
+  entered?: boolean;
 }
 
 @Component({
