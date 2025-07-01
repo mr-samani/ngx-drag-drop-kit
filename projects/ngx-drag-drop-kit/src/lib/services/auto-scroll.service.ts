@@ -141,7 +141,7 @@ export class AutoScroll {
   }
 
   /** Stops any currently-running auto-scroll sequences. */
-  private _stopScrolling() {
+  _stopScrolling() {
     this._stopScrollTimers.next();
   }
 }

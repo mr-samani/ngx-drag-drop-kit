@@ -3,18 +3,21 @@ import { GridLayoutModule } from '../../../../ngx-drag-drop-kit/src/lib/grid-lay
 import { IGridLayoutOptions } from '../../../../ngx-drag-drop-kit/src/lib/grid-layout/options/options';
 import { GridItemConfig } from '../../../../ngx-drag-drop-kit/src/lib/grid-layout/options/gride-item-config';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-grid-layout',
   standalone: true,
-  imports: [CommonModule, GridLayoutModule],
+  imports: [CommonModule, FormsModule, GridLayoutModule],
   templateUrl: './grid-layout.component.html',
   styleUrl: './grid-layout.component.scss',
 })
 export class GridLayoutComponent {
+  showLayout = true;
   options: IGridLayoutOptions = {
     cols: 12,
     gap: 10,
+    //pushOnDrag: false,
     gridBackgroundConfig: {
       borderWidth: 1,
     },
@@ -57,10 +60,16 @@ export class GridLayoutComponent {
     this.layouts = [];
   }
 
+  addInFirst() {
+    let config = new GridItemConfig(0, 0, 2, 3);
+    this.layouts.push({ config });
+  }
 
-  addInFirst(){
-  let config = new GridItemConfig(0, 0, 2, 3);
-  this.layouts.push({ config });
+  rerenderLayout() {
+    this.showLayout = false;
+    setTimeout(() => {
+      this.showLayout = true;
+    }, 10);
   }
 }
 

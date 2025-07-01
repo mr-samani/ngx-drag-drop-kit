@@ -136,6 +136,8 @@ export class GridLayoutService {
     this.updateGridItem(item);
     this._renderer.setStyle(item.el, 'transform', '');
     this.placeHolder = undefined;
+    // todo: if pushOnDrag config is on -> no need to checkCollisson in end drag
+    this.cehckCollesions({ ...item.config, id: item.id });
     this.compactGridItems();
     console.log(this._gridItems.map((x) => x.id));
   }
@@ -164,8 +166,9 @@ export class GridLayoutService {
    */
   private updatePlaceholderPosition(fakeItem: FakeItem) {
     // console.log(input);
-
-    this.cehckCollesions(fakeItem);
+    if (this._options.pushOnDrag) {
+      this.cehckCollesions(fakeItem);
+    }
 
     if (!this.placeHolderRef || !this.placeHolder) {
       this.placeHolderRef = this._placeholderContainerRef.createComponent(GridItemComponent);

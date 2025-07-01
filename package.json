@@ -1,10 +1,10 @@
 {
   "name": "ngx-drag-drop-kit",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "scripts": {
     "ng": "ng",
     "start": "ng serve --open --port=8545",
-    "build": "ng build",
+    "build": "ng build --project=demo",
 
     "link:lib": "cd dist/ngx-drag-drop-kit && npm link",
     "link:app": "cd projects/sandbox && npm link ngx-drag-drop-kit",

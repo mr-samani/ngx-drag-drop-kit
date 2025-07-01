@@ -1,10 +1,9 @@
-<div ngxDropList class="example-list" (drop)="drop($event)">
-    @for (item of items; track item) {
-      <div class="example-box" ngxDraggable>
-        <div class="example-custom-placeholder" *cdkDragPlaceholder></div>
-        {{item}}
-      </div>
-    }
+<div ngxDropList class="example-list" (drop)="drop($event)" [direction]="'horizontal'">
+  @for (item of items; track item) {
+  <div class="example-box" ngxDraggable>
+    {{ item }}
   </div>
+  }
+</div>
 
-  <button (click)="add()">add</button>
+<button (click)="add()">add</button>

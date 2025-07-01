@@ -2,7 +2,12 @@
 <button (click)="add()">add</button>
 <button (click)="add10()">add 10</button>
 <button (click)="clear()">clear</button>
-<grid-layout [options]="options">
+<button (click)="rerenderLayout()">rerenderLayout</button>
+<label>
+  <input type="checkbox" [(ngModel)]="options.pushOnDrag"  name="pushOnDrag"/>
+  pushOnDrag
+</label>
+<grid-layout [options]="options" *ngIf="showLayout">
   @for(item of layouts;track item){
   <grid-item [config]="item.config" class="grid-item">
     {{ item.title }}
@@ -10,3 +15,7 @@
 
   }
 </grid-layout>
+
+
+config:
+<pre>{{options|json}}</pre>

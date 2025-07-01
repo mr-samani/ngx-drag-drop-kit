@@ -1,5 +1,6 @@
 import { Inject, Injectable, Renderer2, RendererFactory2, RendererStyleFlags2 } from '@angular/core';
-import { IDropEvent, NgxDropListDirective } from '../directives/ngx-drop-list.directive';
+import { NgxDropListDirective } from '../directives/ngx-drop-list.directive';
+import { IDropEvent } from '../../models/IDropEvent';
 import { NgxDraggableDirective } from '../directives/ngx-draggable.directive';
 import { DOCUMENT } from '@angular/common';
 import { getPointerPosition } from '../../utils/get-position';
@@ -36,10 +37,10 @@ export class NgxDragDropService {
       return;
     }
     this.isDragging = true;
+    drag.containerDropList.isDragging = true;
     this._activeDragDomRect = drag.el.getBoundingClientRect();
     this._activeDragInstances.push(drag);
     let previousIndex = 0;
-    // this._activeDropListInstances.dragging = true;
     drag.containerDropList?._draggables?.forEach((el, i) => {
       if (el.el == drag.el) {
         previousIndex = i;
@@ -79,23 +80,26 @@ export class NgxDragDropService {
 
   stopDrag(drag: NgxDraggableDirective) {
     this.isDragging = false;
+    if (drag.containerDropList) drag.containerDropList.isDragging = true;
     const index = this._activeDragInstances.indexOf(drag);
     if (index > -1) {
       drag.el.style.display = '';
       this.dragElementInBody?.remove();
-      this.placeholderService.hidePlaceholder();
       this._activeDragInstances?.forEach((el) => {
         this._renderer.removeStyle(el.el, 'transform');
       });
       this._activeDragInstances.splice(index, 1);
 
-      this.droped(drag);
+      if (this.placeholderService.isShown) {
+        this.droped(drag);
+      }
+      this.placeholderService.hidePlaceholder();
     }
   }
 
   enterDropList(drop: NgxDropListDirective) {
-    // drop._el.style.border = '1px red solid';
-    this.dragOverItem = undefined;
+    //TODO:  این خط توی ایتم های تو در تو مشکل داره  اگر نباشه  باشه هم قبلش نمیره
+    //  this.dragOverItem = undefined;
     if (!this.isDragging) return;
     this.placeholderService.updatePlaceholderPosition$.next({
       currentDrag: this._activeDragInstances[0],
@@ -105,28 +109,36 @@ export class NgxDragDropService {
     });
   }
   leaveDropList(drop: NgxDropListDirective) {
-    //  drop._el.style.border = '';
     this.placeholderService.hidePlaceholder();
   }
 
   enterDrag(drag: NgxDraggableDirective) {
-    //  console.log('enter', drag.el);
+    //console.log('enter', drag.el.id);
     this.dragOverItem = drag;
     this.initDrag(drag);
   }
 
   leaveDrag(drag: NgxDraggableDirective) {
     this.dragOverItem = undefined;
-    // console.log('leave', drag.el);
+    //console.log('leave', drag.el.id);
   }
 
   dragMove(drag: NgxDraggableDirective, ev: MouseEvent | TouchEvent) {
-    if (!this._activeDragInstances.length || !this.dragElementInBody) return;
+    if (!this._activeDragInstances.length || !this.dragElementInBody) {
+      return;
+    }
     this._renderer.setStyle(this.dragElementInBody, 'transform', drag.el.style.transform);
     if (this.dragOverItem) {
       const position = getPointerPosition(ev);
-      let yInEL = position.y - this.dragOverItem.el.getBoundingClientRect().top;
-      this.isAfter = yInEL > this.dragOverItem.el.getBoundingClientRect().height / 2;
+      const dragOverItemRec = this.dragOverItem.el.getBoundingClientRect();
+
+      if (this.dragOverItem.containerDropList?.direction === 'horizontal') {
+        let xInEL = position.x - (dragOverItemRec.left + window.scrollX);
+        this.isAfter = xInEL > dragOverItemRec.width / 2;
+      } else {
+        let yInEL = position.y - (dragOverItemRec.top + window.scrollY);
+        this.isAfter = yInEL > dragOverItemRec.height / 2;
+      }
       this.initDrag(this.dragOverItem);
     }
   }
@@ -156,6 +168,5 @@ export class NgxDragDropService {
     this._dropEvent.container = this.placeholderService._activeDropListInstances;
     this._dropEvent.currentIndex = this.placeholderService._placeHolderIndex;
     this.placeholderService._activeDropListInstances.onDrop(this._dropEvent);
-    this.placeholderService._activeDropListInstances.dragging = false;
   }
 }

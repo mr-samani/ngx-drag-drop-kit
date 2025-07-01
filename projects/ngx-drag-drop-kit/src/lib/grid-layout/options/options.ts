@@ -1,4 +1,4 @@
-export type CompactType = ('horizontal' | 'vertical') | null | undefined;
+export type CompactType = ('horizontal' | 'vertical' | 'both') | null | undefined;
 
 export interface IGridLayoutOptions {
   cols: number;
@@ -6,6 +6,16 @@ export interface IGridLayoutOptions {
   gap?: number;
   gridBackgroundConfig?: IGridBackgroundCfg;
   compactType?: CompactType;
+  pushOnDrag?: boolean;
+
+  //TODO : add responsive layout
+  // breakpoints={{ lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 }}
+  // cols={{ lg: 12, md: 10, sm: 6, xs: 4, xxs: 2 }}
+
+  /* If true, grid can be placed one over the other.
+   * If set, implies `preventCollision`.
+   */
+  // allowOverlap: ?boolean = false,
 }
 export class GridLayoutOptions implements IGridLayoutOptions {
   cols = 12;
@@ -20,6 +30,7 @@ export class GridLayoutOptions implements IGridLayoutOptions {
     columnColor: 'rgba(128, 128, 128, 0.10)',
   };
   compactType: CompactType = 'vertical';
+  pushOnDrag: boolean = false;
 }
 
 export interface IGridBackgroundCfg {

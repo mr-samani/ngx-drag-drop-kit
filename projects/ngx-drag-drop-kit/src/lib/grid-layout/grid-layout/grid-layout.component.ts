@@ -5,6 +5,7 @@ import {
   Component,
   ContentChildren,
   ElementRef,
+  HostListener,
   Input,
   OnInit,
   QueryList,
@@ -27,17 +28,22 @@ import { getFirstCollision } from '../utils/grid.utils';
   host: {
     '[style.boxSizing]': '"border-box"',
     '[style.height.px]': '_gridService.getGridHeight',
+    '[style.user-select]': '"none"',
   },
-  // changeDetection: ChangeDetectionStrategy.OnPush,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
 })
 export class GridLayoutComponent implements OnInit, AfterViewInit {
-  @Input() set options(val: IGridLayoutOptions) {
+  @Input()
+  get options() {
+    return this._gridService._options;
+  }
+  set options(val: IGridLayoutOptions) {
     if (val) {
       this._gridService._options = mergeDeep(DEFAULT_GRID_LAYOUT_CONFIG, val);
     }
   }
-  loading = true;
+
   el: HTMLElement;
   @ContentChildren(GridItemComponent) set items(value: QueryList<GridItemComponent>) {
     log('Change grid items in main layout.');
@@ -50,7 +56,6 @@ export class GridLayoutComponent implements OnInit, AfterViewInit {
       this.initGridItems();
     }
   }
-
 
   @ViewChild('placeholder', { read: ViewContainerRef, static: false }) private set placeholderRef(
     val: ViewContainerRef
@@ -102,7 +107,7 @@ export class GridLayoutComponent implements OnInit, AfterViewInit {
     }
   }
 
-  initGridItems() {
+  private initGridItems() {
     for (let i = 0; i < this._gridService._gridItems.length; i++) {
       let item = this._gridService._gridItems[i];
       item.id = 'GRID_ITEM_' + (i + 1);
@@ -119,9 +124,17 @@ export class GridLayoutComponent implements OnInit, AfterViewInit {
     logEndTime('StartInit');
     setTimeout(() => {
       this._changeDetection.detectChanges();
-      this.loading = false;
     }, 0);
 
     console.log(this._gridService._gridItems.map((x) => x.id));
   }
+
+  @HostListener('window:resize')
+  public updateGridLayout() {
+    this.setBackgroundCssVariables();
+    this.initGridItems();
+  }
+
+  // todo : clone changed grid items
+  public getRenderedColumns() {}
 }

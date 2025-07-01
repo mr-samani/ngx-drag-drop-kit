@@ -2,22 +2,21 @@
   <div ngxDropList class="example-list" [data]="sourceList" [disableSort]="true">
     @for (item of sourceList; track item) {
     <div class="example-box" ngxDraggable>
-      <div class="example-custom-placeholder" *cdkDragPlaceholder></div>
       {{ item }}
     </div>
     }
   </div>
 
   <div class="target-container">
-    <div class="inner" ngxDropList [data]="targetList" (drop)="drop($event)">
+    <div class="inner" ngxDropList [data]="targetList" (drop)="drop($event)" [direction]="'horizontal'">
       <div
         class="example-box"
         *ngFor="let item of targetList"
         ngxDraggable
         ngxResizable
         [disableTransform]="true"
-        [corners]="resizeCorner">
-        <div class="example-custom-placeholder" *cdkDragPlaceholder></div>
+        [corners]="resizeCorner"
+        (click)="onClick(item)">
         {{ item }}
       </div>
     </div>
