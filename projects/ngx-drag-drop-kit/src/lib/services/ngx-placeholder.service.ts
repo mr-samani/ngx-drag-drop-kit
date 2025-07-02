@@ -101,7 +101,12 @@ export class NgxDragPlaceholderService {
           offsetY = i >= dragOverIndex ? placeholderHeight : 0;
         }
       } else {
-        // افقی
+        const isSameRow =
+          dragItems[i].getBoundingClientRect().top === dragItems[dragOverIndex].getBoundingClientRect().top;
+        if (!isSameRow) {
+          this._renderer.setStyle(dragItems[i], 'transform', '');
+          continue;
+        }
         if (isAfter) {
           offsetX = i > dragOverIndex ? placeholderWidth : 0;
         } else {
@@ -131,6 +136,7 @@ export class NgxDragPlaceholderService {
 
     const placeholderTransform = `translate(${placeholderX}px, ${placeholderY}px)`;
     this._renderer.setStyle(this._placeholder, 'transform', placeholderTransform);
+    this._renderer.setStyle(this._placeholder, 'transition', 'transform 250ms ease');
     this._placeHolderIndex = isAfter ? dragOverIndex : dragOverIndex - 1;
     // console.log(
     //   'isAfter:',

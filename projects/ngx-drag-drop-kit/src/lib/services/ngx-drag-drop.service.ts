@@ -5,6 +5,7 @@ import { NgxDraggableDirective } from '../directives/ngx-draggable.directive';
 import { DOCUMENT } from '@angular/common';
 import { getPointerPosition } from '../../utils/get-position';
 import { NgxDragPlaceholderService } from './ngx-placeholder.service';
+import { copyEssentialStyles } from '../../utils/clone-style';
 
 @Injectable({
   providedIn: 'root',
@@ -57,6 +58,7 @@ export class NgxDragDropService {
     const dragElRec = drag.el.getBoundingClientRect();
     this._renderer.setStyle(drag.el, 'display', 'none', RendererStyleFlags2.Important);
     this.dragElementInBody = this._document.createElement(drag.el.tagName);
+    copyEssentialStyles(drag.el, this.dragElementInBody);
     this.dragElementInBody.innerHTML = drag.el.innerHTML;
     this.dragElementInBody.className = drag.el.className + ' ngx-drag-drop';
     this.dragElementInBody.style.display = 'block';
