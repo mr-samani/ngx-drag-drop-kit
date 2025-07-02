@@ -43,6 +43,9 @@ export class NgxDragPlaceholderService {
 
     const { currentDragRec, dropList } = input;
     this._activeDropListInstances = dropList;
+    if (!dropList._el.querySelector('.ngx-drag-placeholder')) {
+      this.hidePlaceholder();
+    }
     if (!this._placeholder) {
       this._placeholder = this._document.createElement('div');
       this._placeholder.style.display = 'inline-block';
