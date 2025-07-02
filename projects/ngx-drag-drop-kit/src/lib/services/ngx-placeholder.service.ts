@@ -1,18 +1,9 @@
 import { Inject, Injectable, Renderer2, RendererFactory2 } from '@angular/core';
-import { NgxDraggableDirective } from '../directives/ngx-draggable.directive';
-import { Subject, debounceTime, distinctUntilChanged, map } from 'rxjs';
+import { Subject, distinctUntilChanged } from 'rxjs';
 import { DOCUMENT } from '@angular/common';
 import { NgxDropListDirective } from '../directives/ngx-drop-list.directive';
 import { getRelativePosition } from '../../utils/get-position';
-
-export interface IUpdatePlaceholderPosition {
-  dropList: NgxDropListDirective;
-  currentDrag: NgxDraggableDirective;
-  isAfter: boolean;
-  dragOverItem?: NgxDraggableDirective;
-  currentDragRec?: DOMRect;
-  direction: 'horizontal' | 'vertical';
-}
+import { IUpdatePlaceholderPosition } from '../../models/update-placeholder-position';
 
 @Injectable({
   providedIn: 'root',
@@ -39,12 +30,25 @@ export class NgxDragPlaceholderService {
       });
   }
 
+  private checkIsFlexibleAndWrap(dropList: NgxDropListDirective): boolean {
+    const styles = window.getComputedStyle(dropList._el);
+    return styles.display == 'flex' && styles.flexWrap == 'wrap';
+  }
+
   private showPlaceholder(input: IUpdatePlaceholderPosition) {
+    if (this.checkIsFlexibleAndWrap(input.dropList)) {
+      this.inPlaceShowPlaceholder(input);
+      return;
+    }
+
     const { currentDragRec, dropList } = input;
     this._activeDropListInstances = dropList;
     if (!this._placeholder) {
       this._placeholder = this._document.createElement('div');
       this._placeholder.style.display = 'inline-block';
+      this._placeholder.style.position = 'absolute';
+      this._placeholder.style.top = '0px';
+      this._placeholder.style.left = '0px';
       this._placeholder.style.pointerEvents = 'none';
       this._placeholder.className = 'ngx-drag-placeholder';
       dropList._el.insertAdjacentElement('beforeend', this._placeholder);
@@ -73,6 +77,11 @@ export class NgxDragPlaceholderService {
   /*--------------------------------------------*/
 
   private updatePlaceholderPosition(input: IUpdatePlaceholderPosition) {
+    if (this.checkIsFlexibleAndWrap(input.dropList)) {
+      this.inPlaceUpdatePlaceholderPosition(input);
+      return;
+    }
+
     this.showPlaceholder(input);
     let { dragOverItem, currentDrag, dropList, isAfter, direction } = input;
     if (!dragOverItem) {
@@ -101,12 +110,12 @@ export class NgxDragPlaceholderService {
           offsetY = i >= dragOverIndex ? placeholderHeight : 0;
         }
       } else {
-        const isSameRow =
-          dragItems[i].getBoundingClientRect().top === dragItems[dragOverIndex].getBoundingClientRect().top;
-        if (!isSameRow) {
-          this._renderer.setStyle(dragItems[i], 'transform', '');
-          continue;
-        }
+        // const isSameRow =
+        //   dragItems[i].getBoundingClientRect().top === dragItems[dragOverIndex].getBoundingClientRect().top;
+        // if (!isSameRow) {
+        //   this._renderer.setStyle(dragItems[i], 'transform', '');
+        //   continue;
+        // }
         if (isAfter) {
           offsetX = i > dragOverIndex ? placeholderWidth : 0;
         } else {
@@ -147,5 +156,50 @@ export class NgxDragPlaceholderService {
     //   this._placeHolderIndex,
     //   direction
     // );
+  }
+
+  /*------------------------------------when in place codes... ----------------------------------------------------*/
+
+  public inPlaceShowPlaceholder(input: IUpdatePlaceholderPosition) {
+    const { currentDragRec, dropList, isAfter, dragOverItem } = input;
+
+    this._activeDropListInstances = dropList;
+    this.hidePlaceholder();
+    this._placeholder = this._document.createElement('div');
+    this._placeholder.style.display = 'inline-block';
+    this._placeholder.style.pointerEvents = 'none';
+
+    this._placeholder.className = 'ngx-drag-placeholder';
+    if (currentDragRec) {
+      this._renderer.setStyle(this._placeholder, 'width', currentDragRec.width + 'px');
+      this._renderer.setStyle(this._placeholder, 'height', currentDragRec.height + 'px');
+    }
+    if (dragOverItem) {
+      dragOverItem.el.insertAdjacentElement(isAfter ? 'afterend' : 'beforebegin', this._placeholder);
+    } else {
+      dropList._el.insertAdjacentElement('afterbegin', this._placeholder);
+    }
+    this.isShown = true;
+  }
+
+  /*--------------------------------------------*/
+
+  private inPlaceUpdatePlaceholderPosition(input: IUpdatePlaceholderPosition) {
+    this.showPlaceholder(input);
+    //TODO if placeholder after draged elemet was decrement index
+    let els = input.dragOverItem?.containerDropList?._el.querySelectorAll(
+      '.ngx-draggable ,.ngx-drag-placeholder,.ngx-draggable.dragging'
+    );
+    if (els) {
+      const draggingPosition = Array.from(els).findIndex((x) => x.className.includes('dragging'));
+      this._placeHolderIndex = Array.from(els).findIndex((x) => x == this._placeholder);
+      if (draggingPosition > -1 && draggingPosition < this._placeHolderIndex) {
+        this._placeHolderIndex--;
+      }
+    } else {
+      this._placeHolderIndex = 0;
+    }
+    //  console.log(this._placeHolderIndex);
+    // this._placeHolderIndex = dragOverItem?.containerDropList?._draggables
   }
 }
