@@ -22,7 +22,7 @@ export enum AutoScrollHorizontalDirection {
 })
 export class AutoScroll {
   private scrollSpeed = 5;
-  private scrollThreshold = 30;
+  private scrollThreshold = 130;
 
   /** Used to signal to the current auto-scroll sequence when to stop. */
   private readonly _stopScrollTimers = new Subject<void>();
