@@ -31,6 +31,10 @@ export class CopyToZoneComponent {
       moveItemInArray(event.container.data, event.previousIndex, event.currentIndex);
     }
   }
+
+  dropToDelete(event: IDropEvent) {
+    event.container.data.splice(event.previousIndex, 1);
+  }
   onClick(item: string) {
     console.log('Clicked item:', item);
   }
