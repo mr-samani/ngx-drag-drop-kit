@@ -11,7 +11,7 @@ import { IUpdatePlaceholderPosition } from '../../models/update-placeholder-posi
 export class NgxDragPlaceholderService {
   private _renderer: Renderer2;
   private _placeholder: HTMLElement | undefined;
-  public _placeHolderIndex = 0;
+  public index = 0;
   public updatePlaceholderPosition$ = new Subject<IUpdatePlaceholderPosition>();
   public _activeDropListInstances?: NgxDropListDirective;
   public isShown: boolean = false;
@@ -84,17 +84,21 @@ export class NgxDragPlaceholderService {
       this.inPlaceUpdatePlaceholderPosition(input);
       return;
     }
-
+    this.index = 0;
     this.showPlaceholder(input);
     let { dragOverItem, currentDrag, dropList, isAfter, direction } = input;
     if (!dragOverItem) {
-      dragOverItem = currentDrag;
+      if (dropList._draggables?.length) {
+        dragOverItem = dropList._draggables.last;
+        isAfter = true;
+      } else {
+        return;
+      }
     }
 
     const placeholderRect = this._placeholder!.getBoundingClientRect();
     const placeholderHeight = placeholderRect.height;
     const placeholderWidth = placeholderRect.width;
-
     const dragItems = Array.from(dropList._el.querySelectorAll('.ngx-draggable'));
     const dragOverIndex = dragItems.findIndex((x) => x === dragOverItem?.el);
 
@@ -149,16 +153,18 @@ export class NgxDragPlaceholderService {
     const placeholderTransform = `translate(${placeholderX}px, ${placeholderY}px)`;
     this._renderer.setStyle(this._placeholder, 'transform', placeholderTransform);
     this._renderer.setStyle(this._placeholder, 'transition', 'transform 250ms ease');
-    this._placeHolderIndex = isAfter ? dragOverIndex : dragOverIndex - 1;
-    // console.log(
-    //   'isAfter:',
-    //   isAfter,
-    //   'overItem',
-    //   dragOverItem.el.id,
-    //   'placeholderIndex:',
-    //   this._placeHolderIndex,
-    //   direction
-    // );
+
+    this.index = isAfter ? dragOverIndex + 1 : dragOverIndex;
+
+    console.log(
+      'isAfter:',
+      isAfter,
+      'overItem',
+      dragOverItem.el.id,
+      'placeholderIndex:',
+      this.index,
+      direction
+    );
   }
 
   /*------------------------------------when in place codes... ----------------------------------------------------*/
@@ -195,14 +201,14 @@ export class NgxDragPlaceholderService {
     );
     if (els) {
       const draggingPosition = Array.from(els).findIndex((x) => x.className.includes('dragging'));
-      this._placeHolderIndex = Array.from(els).findIndex((x) => x == this._placeholder);
-      if (draggingPosition > -1 && draggingPosition < this._placeHolderIndex) {
-        this._placeHolderIndex--;
+      this.index = Array.from(els).findIndex((x) => x == this._placeholder);
+      if (draggingPosition > -1 && draggingPosition < this.index) {
+        this.index--;
       }
     } else {
-      this._placeHolderIndex = 0;
+      this.index = 0;
     }
-    //  console.log(this._placeHolderIndex);
-    // this._placeHolderIndex = dragOverItem?.containerDropList?._draggables
+    //  console.log(this.index);
+    // this.index = dragOverItem?.containerDropList?._draggables
   }
 }

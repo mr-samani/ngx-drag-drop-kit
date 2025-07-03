@@ -5,8 +5,7 @@
   height: var(--pointerSize);
   margin: 0px;
   visibility: hidden;
-  transition: margin 300ms;
-  border: 1px solid darksalmon;
+  transition: margin 300ms; 
   &.topLeft {
     top: 0px;
     left: 0px;

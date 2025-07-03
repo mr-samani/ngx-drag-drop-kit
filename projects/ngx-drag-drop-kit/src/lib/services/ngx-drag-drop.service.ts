@@ -68,6 +68,7 @@ export class NgxDragDropService {
     this.dragElementInBody.style.width = dragElRec.width + 'px';
     this.dragElementInBody.style.height = dragElRec.height + 'px';
     this.dragElementInBody.style.pointerEvents = 'none';
+    this.dragElementInBody.style.opacity = '0.8';
     this._document.body.appendChild(this.dragElementInBody);
     if (drag.containerDropList.disableSort == false) {
       this.placeholderService.updatePlaceholderPosition$.next({
@@ -106,7 +107,7 @@ export class NgxDragDropService {
     if (!this.isDragging) return;
     this.placeholderService.updatePlaceholderPosition$.next({
       currentDrag: this._activeDragInstances[0],
-      isAfter: this.isAfter,
+      isAfter: false,
       currentDragRec: this._currentDragRect,
       dropList: drop,
       direction: drop.direction,
@@ -171,11 +172,15 @@ export class NgxDragDropService {
       return;
     }
     this._dropEvent.container = this.placeholderService._activeDropListInstances;
-    if (this._dropEvent.previousIndex < this.placeholderService._placeHolderIndex) {
-      this._dropEvent.currentIndex = this.placeholderService._placeHolderIndex;
-    } else {
-      this._dropEvent.currentIndex = this.placeholderService._placeHolderIndex + 1;
+    this._dropEvent.currentIndex = this.placeholderService.index;
+    // is sorting
+    if (this._dropEvent.container == this._dropEvent.previousContainer) {
+      // move to up/first
+      if (this._dropEvent.previousIndex < this.placeholderService.index) {
+        this._dropEvent.currentIndex = this.placeholderService.index - 1;
+      }
     }
+
     this.placeholderService._activeDropListInstances.onDrop(this._dropEvent);
   }
 }

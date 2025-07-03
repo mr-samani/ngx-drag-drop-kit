@@ -1,4 +1,4 @@
-import { NgxDropListDirective, NgxDraggableDirective } from "../public-api";
+import { NgxDropListDirective, NgxDraggableDirective } from '../public-api';
 
 export interface IUpdatePlaceholderPosition {
   dropList: NgxDropListDirective;

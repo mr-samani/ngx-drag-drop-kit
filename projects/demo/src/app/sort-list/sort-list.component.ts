@@ -41,6 +41,7 @@ export class SortListComponent {
   }
 
   drop(ev: IDropEvent) {
+    console.log(ev);
     moveItemInArray(this.items, ev.previousIndex, ev.currentIndex);
   }
 }
