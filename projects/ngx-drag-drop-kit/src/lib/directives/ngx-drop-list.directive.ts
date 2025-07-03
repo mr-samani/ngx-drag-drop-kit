@@ -27,6 +27,16 @@ export class NgxDropListDirective<T = any> implements AfterViewInit {
   @Input() disableSort: boolean = false;
   @Input() direction: 'horizontal' | 'vertical' = 'vertical';
 
+  connectedTo: HTMLElement[] = [];
+  @Input('connectedTo') set connections(list: HTMLElement[]) {
+    if (Array.isArray(list)) {
+      this.connectedTo = list;
+    } else {
+      console.warn('NgxDropList', 'connectedTo must be array!');
+      this.connectedTo = [];
+    }
+  }
+
   @Output() drop = new EventEmitter<IDropEvent>();
   @Output() entered = new EventEmitter<void>();
   @Output() exited = new EventEmitter<void>();
@@ -34,9 +44,12 @@ export class NgxDropListDirective<T = any> implements AfterViewInit {
   _draggables?: QueryList<NgxDraggableDirective>;
   _el: HTMLElement;
   isDragging = false;
+
+  previousCursor = '';
   private subscriptions: Subscription[] = [];
   constructor(public _dragDropService: NgxDragDropService, elRef: ElementRef<HTMLElement>) {
     this._el = elRef.nativeElement;
+    this.previousCursor = this._el.style.cursor;
     _dragDropService.registerDropList(this);
   }
 
@@ -50,13 +63,20 @@ export class NgxDropListDirective<T = any> implements AfterViewInit {
     this.subscriptions.push(
       fromEvent<TouchEvent>(this._el, 'mouseenter').subscribe((ev) => {
         if (!this._dragDropService.isDragging) return;
-        this._dragDropService.enterDropList(this);
-        this.entered.emit();
+        if (this.checkAllowedConnections() == true) {
+          this._el.style.cursor = this.previousCursor;
+          this._dragDropService.enterDropList(this);
+          this.entered.emit();
+        } else {
+          this._el.style.cursor = 'no-drop';
+        }
       }),
       fromEvent<TouchEvent>(this._el, 'mouseleave').subscribe((ev) => {
         if (!this._dragDropService.isDragging) return;
-        this._dragDropService.leaveDropList(this);
-        this.exited.emit();
+        if (this.checkAllowedConnections()) {
+          this._dragDropService.leaveDropList(this);
+          this.exited.emit();
+        }
       })
     );
   }
@@ -77,15 +97,16 @@ export class NgxDropListDirective<T = any> implements AfterViewInit {
     this.subscriptions = [];
   }
 
-
-
-
-
-
-
-
-
-
-
-
+  checkAllowedConnections(): boolean {
+    let currentDragItem = this._dragDropService._activeDragInstances[0];
+    if (
+      currentDragItem &&
+      currentDragItem.containerDropList &&
+      currentDragItem.containerDropList.connectedTo.length > 0 &&
+      currentDragItem.containerDropList._el !== this._el
+    ) {
+      return currentDragItem.containerDropList.connectedTo.indexOf(this._el) > -1;
+    }
+    return true;
+  }
 }

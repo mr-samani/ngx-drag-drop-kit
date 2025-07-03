@@ -14,7 +14,7 @@ export class NgxDragDropService {
   isDragging = false;
 
   _dropList = new Set<NgxDropListDirective>();
-  private _activeDragInstances: NgxDraggableDirective[] = [];
+  public _activeDragInstances: NgxDraggableDirective[] = [];
   private _currentDragRect?: DOMRect;
   private _renderer: Renderer2;
   private _dropEvent: IDropEvent | null = null;
