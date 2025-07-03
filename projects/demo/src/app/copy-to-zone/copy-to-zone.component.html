@@ -1,5 +1,5 @@
 <div class="form-container">
-  <div ngxDropList class="example-list" [data]="sourceList" [disableSort]="true">
+  <div ngxDropList class="example-list" [data]="sourceList" [disableSort]="true" [connectedTo]="[copyZone]">
     @for (item of sourceList; track item) {
     <div class="example-box" ngxDraggable>
       {{ item }}
@@ -8,8 +8,15 @@
   </div>
 
   <div class="target-container">
-    <div class="inner" ngxDropList [data]="targetList" (drop)="drop($event)" [direction]="'horizontal'">
-      Copy to this
+    Copy zone
+    <div
+      class="inner"
+      #copyZone
+      ngxDropList
+      [data]="targetList"
+      (drop)="drop($event)"
+      [direction]="'horizontal'"
+      [connectedTo]="[deleteZone]">
       <div
         class="example-box"
         *ngFor="let item of targetList"
@@ -24,8 +31,15 @@
   </div>
 
   <div class="target-container">
-    <div class="inner" ngxDropList [data]="targetList" (drop)="dropToDelete($event)" [direction]="'horizontal'">
-      Delete zone
+    Delete zone
+    <div
+      class="inner"
+      #deleteZone
+      ngxDropList
+      [data]="targetList"
+      (drop)="dropToDelete($event)"
+      [direction]="'horizontal'">
+      drag here for delete
     </div>
   </div>
 </div>
