@@ -6,8 +6,6 @@
   display: block;
   background: white;
   border-radius: 4px;
-  overflow: auto;
-  max-height: 1000px;
 }
 
 .example-box {
@@ -26,9 +24,11 @@
     //   border: 1px rgb(151, 151, 253) dotted;
     padding: 2px;
     width: 100%;
-    &.entered {
-      border: 1px red dotted;
-      padding: 10px;
+  }
+  &.entered:hover {
+    .children {
+      min-height: 50px;
+      border: 1px #4322ff dashed;
     }
   }
 }

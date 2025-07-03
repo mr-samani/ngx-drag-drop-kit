@@ -5,9 +5,10 @@
     ngxDraggable
     (entered)="item.entered = true"
     (exited)="item.entered = false"
+    [class.entered]="item.entered"
     [id]="item.name">
     <div>{{ item.name }}</div>
-    <div class="children" [class.entered]="item.entered" ngxDropList (drop)="drop($event)" [data]="item.children">
+    <div class="children" ngxDropList (drop)="drop($event)" [data]="item.children" [id]="'child_' + item.name">
       <tree *ngIf="item.children" [items]="item.children"></tree>
     </div>
   </div>

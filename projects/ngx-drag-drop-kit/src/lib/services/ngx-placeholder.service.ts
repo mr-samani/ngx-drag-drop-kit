@@ -49,9 +49,6 @@ export class NgxDragPlaceholderService {
     if (!this._placeholder) {
       this._placeholder = this._document.createElement('div');
       this._placeholder.style.display = 'inline-block';
-      this._placeholder.style.position = 'absolute';
-      this._placeholder.style.top = '0px';
-      this._placeholder.style.left = '0px';
       this._placeholder.style.pointerEvents = 'none';
       this._placeholder.className = 'ngx-drag-placeholder';
       dropList._el.insertAdjacentElement('beforeend', this._placeholder);
@@ -95,7 +92,6 @@ export class NgxDragPlaceholderService {
         return;
       }
     }
-
     const placeholderRect = this._placeholder!.getBoundingClientRect();
     const placeholderHeight = placeholderRect.height;
     const placeholderWidth = placeholderRect.width;
@@ -134,23 +130,23 @@ export class NgxDragPlaceholderService {
       this._renderer.setStyle(dragItems[i], 'transform', transform);
       this._renderer.setStyle(dragItems[i], 'transition', 'transform 250ms ease');
     }
-
     // update placeholder position
     const containerEl = dropList._el;
     const { x, y } = getRelativePosition(dragOverItem.el, containerEl);
-
+    const overItemRec = dragOverItem.el.getBoundingClientRect();
     let placeholderX = x;
     let placeholderY = y;
 
     if (direction === 'vertical') {
-      placeholderY = isAfter ? y + placeholderHeight : y;
+      placeholderY = isAfter ? y + overItemRec.height : y;
       placeholderX = x;
     } else {
-      placeholderX = isAfter ? x + placeholderWidth : x;
+      placeholderX = isAfter ? x + overItemRec.width : x;
       placeholderY = y;
     }
+    const plcPosition = getRelativePosition(this._placeholder!, containerEl);
 
-    const placeholderTransform = `translate(${placeholderX}px, ${placeholderY}px)`;
+    const placeholderTransform = `translate(${placeholderX - plcPosition.x}px, ${placeholderY - plcPosition.y}px)`;
     this._renderer.setStyle(this._placeholder, 'transform', placeholderTransform);
     this._renderer.setStyle(this._placeholder, 'transition', 'transform 250ms ease');
 
