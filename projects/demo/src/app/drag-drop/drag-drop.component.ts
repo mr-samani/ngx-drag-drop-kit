@@ -1,4 +1,4 @@
-import { Component } from '@angular/core'; 
+import { Component } from '@angular/core';
 import { IDropEvent } from '../../../../ngx-drag-drop-kit/src/models/IDropEvent';
 import { moveItemInArray, transferArrayItem } from '../../../../ngx-drag-drop-kit/src/drag-utils';
 import { NgxDragDropKitModule } from '../../../../ngx-drag-drop-kit/src/public-api';
@@ -34,6 +34,7 @@ export class DragDropComponent {
   }
 
   drop(event: IDropEvent) {
+    console.log(event);
     if (event.previousContainer === event.container) {
       moveItemInArray(event.container.data, event.previousIndex, event.currentIndex);
     } else {

@@ -5,6 +5,7 @@ import { NgxDraggableDirective } from '../directives/ngx-draggable.directive';
 import { DOCUMENT } from '@angular/common';
 import { getPointerPosition } from '../../utils/get-position';
 import { NgxDragPlaceholderService } from './ngx-placeholder.service';
+import { copyEssentialStyles } from '../../utils/clone-style';
 
 @Injectable({
   providedIn: 'root',
@@ -14,7 +15,7 @@ export class NgxDragDropService {
 
   _dropList = new Set<NgxDropListDirective>();
   private _activeDragInstances: NgxDraggableDirective[] = [];
-  private _activeDragDomRect?: DOMRect;
+  private _currentDragRect?: DOMRect;
   private _renderer: Renderer2;
   private _dropEvent: IDropEvent | null = null;
   private dragElementInBody?: HTMLElement;
@@ -22,7 +23,7 @@ export class NgxDragDropService {
    * on drag enter element
    * - add before or after hovered element
    */
-  private isAfter = true;
+  private isAfter = false;
   private dragOverItem?: NgxDraggableDirective;
   constructor(
     rendererFactory: RendererFactory2,
@@ -38,7 +39,7 @@ export class NgxDragDropService {
     }
     this.isDragging = true;
     drag.containerDropList.isDragging = true;
-    this._activeDragDomRect = drag.el.getBoundingClientRect();
+    this._currentDragRect = drag.el.getBoundingClientRect();
     this._activeDragInstances.push(drag);
     let previousIndex = 0;
     drag.containerDropList?._draggables?.forEach((el, i) => {
@@ -57,6 +58,7 @@ export class NgxDragDropService {
     const dragElRec = drag.el.getBoundingClientRect();
     this._renderer.setStyle(drag.el, 'display', 'none', RendererStyleFlags2.Important);
     this.dragElementInBody = this._document.createElement(drag.el.tagName);
+    copyEssentialStyles(drag.el, this.dragElementInBody);
     this.dragElementInBody.innerHTML = drag.el.innerHTML;
     this.dragElementInBody.className = drag.el.className + ' ngx-drag-drop';
     this.dragElementInBody.style.display = 'block';
@@ -66,13 +68,15 @@ export class NgxDragDropService {
     this.dragElementInBody.style.width = dragElRec.width + 'px';
     this.dragElementInBody.style.height = dragElRec.height + 'px';
     this.dragElementInBody.style.pointerEvents = 'none';
+    this.dragElementInBody.style.opacity = '0.8';
     this._document.body.appendChild(this.dragElementInBody);
     if (drag.containerDropList.disableSort == false) {
-      this.placeholderService.showPlaceholder({
+      this.placeholderService.updatePlaceholderPosition$.next({
         currentDrag: this._activeDragInstances[0],
         isAfter: this.isAfter,
-        activeDragDomRec: this._activeDragDomRect,
+        currentDragRec: this._currentDragRect,
         dropList: drag.containerDropList,
+        direction: drag.containerDropList.direction,
       });
     }
     this.initDrag(drag);
@@ -103,9 +107,10 @@ export class NgxDragDropService {
     if (!this.isDragging) return;
     this.placeholderService.updatePlaceholderPosition$.next({
       currentDrag: this._activeDragInstances[0],
-      isAfter: this.isAfter,
-      activeDragDomRec: this._activeDragDomRect,
+      isAfter: false,
+      currentDragRec: this._currentDragRect,
       dropList: drop,
+      direction: drop.direction,
     });
   }
   leaveDropList(drop: NgxDropListDirective) {
@@ -148,16 +153,17 @@ export class NgxDragDropService {
     // console.log(this._dropList);
   }
 
-  private initDrag(enteredDrag: NgxDraggableDirective) {
-    if (!this.isDragging || !enteredDrag.containerDropList) {
+  private initDrag(dragOverItem: NgxDraggableDirective) {
+    if (!this.isDragging || !dragOverItem.containerDropList) {
       return;
     }
     this.placeholderService.updatePlaceholderPosition$.next({
       currentDrag: this._activeDragInstances[0],
-      enteredDrag,
+      dragOverItem,
       isAfter: this.isAfter,
-      activeDragDomRec: this._activeDragDomRect,
-      dropList: enteredDrag.containerDropList,
+      currentDragRec: this._currentDragRect,
+      dropList: dragOverItem.containerDropList,
+      direction: dragOverItem.containerDropList.direction,
     });
   }
 
@@ -166,7 +172,15 @@ export class NgxDragDropService {
       return;
     }
     this._dropEvent.container = this.placeholderService._activeDropListInstances;
-    this._dropEvent.currentIndex = this.placeholderService._placeHolderIndex;
+    this._dropEvent.currentIndex = this.placeholderService.index;
+    // is sorting
+    if (this._dropEvent.container == this._dropEvent.previousContainer) {
+      // move to up/first
+      if (this._dropEvent.previousIndex < this.placeholderService.index) {
+        this._dropEvent.currentIndex = this.placeholderService.index - 1;
+      }
+    }
+
     this.placeholderService._activeDropListInstances.onDrop(this._dropEvent);
   }
 }

@@ -11,16 +11,17 @@ import { NgxDragDropKitModule } from '../../../../ngx-drag-drop-kit/src/public-a
   styleUrl: './horizontal-list.component.scss',
 })
 export class HorizontalListComponent {
-  items = [
-    'Episode I - The Phantom Menace',
-    'Episode II - Attack of the Clones',
-    'Episode III - Revenge of the Sith',
-    'Episode IV - A New Hope',
-    'Episode V - The Empire Strikes Back',
-    'Episode VI - Return of the Jedi',
-    'Episode VII - The Force Awakens',
-    'Episode VIII - The Last Jedi',
-    'Episode IX - The Rise of Skywalker',
+  items: string[] = [];
+  simpleItems = [
+    'Episode I',
+    'Episode II',
+    'Episode III',
+    'Episode IV',
+    'Episode V',
+    'Episode VI',
+    'Episode VII',
+    'Episode VIII',
+    'Episode IX',
   ];
 
   constructor() {
@@ -40,7 +41,7 @@ export class HorizontalListComponent {
     this.items.splice(rndPosition, 0, rndName);
   }
 
-  drop(ev: IDropEvent) {
-    moveItemInArray(this.items, ev.previousIndex, ev.currentIndex);
+  drop(ev: IDropEvent, list: string[]) {
+    moveItemInArray(list, ev.previousIndex, ev.currentIndex);
   }
 }

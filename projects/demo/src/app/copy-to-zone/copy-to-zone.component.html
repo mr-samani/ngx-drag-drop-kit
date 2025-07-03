@@ -9,6 +9,7 @@
 
   <div class="target-container">
     <div class="inner" ngxDropList [data]="targetList" (drop)="drop($event)" [direction]="'horizontal'">
+      Copy to this
       <div
         class="example-box"
         *ngFor="let item of targetList"
@@ -19,6 +20,12 @@
         (click)="onClick(item)">
         {{ item }}
       </div>
+    </div>
+  </div>
+
+  <div class="target-container">
+    <div class="inner" ngxDropList [data]="targetList" (drop)="dropToDelete($event)" [direction]="'horizontal'">
+      Delete zone
     </div>
   </div>
 </div>

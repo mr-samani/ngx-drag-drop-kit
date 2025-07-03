@@ -24,17 +24,16 @@ export class CopyToZoneComponent {
   }
 
   drop(event: IDropEvent) {
-    // if (event.previousContainer === event.container) {
-    //   moveItemInArray(event.container.data, event.previousIndex, event.currentIndex);
-    // } else {
-    //   transferArrayItem(event.previousContainer.data, event.container.data, event.previousIndex, event.currentIndex);
-    // }
-    // console.log(event);
+    console.log(event);
     if (event.previousContainer !== event.container) {
       copyArrayItem(event.previousContainer.data, event.container.data, event.previousIndex, event.currentIndex);
     } else {
       moveItemInArray(event.container.data, event.previousIndex, event.currentIndex);
     }
+  }
+
+  dropToDelete(event: IDropEvent) {
+    event.container.data.splice(event.previousIndex, 1);
   }
   onClick(item: string) {
     console.log('Clicked item:', item);
