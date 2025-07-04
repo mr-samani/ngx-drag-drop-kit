@@ -7,6 +7,7 @@ export interface TreeModel {
   name: string;
   children: TreeModel[];
   entered?: boolean;
+  readyToDrag?: boolean;
 }
 
 @Component({

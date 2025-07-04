@@ -1,4 +1,4 @@
-<div ngxDropList class="example-list" (drop)="drop($event)" [data]="items" *ngIf="items && items.length > 0">
+<div ngxDropList class="example-list" (drop)="drop($event)" [data]="items" *ngIf="items && items.length > 0" id="base">
   @for (item of items; track item) {
   <div
     class="example-box"
@@ -8,7 +8,15 @@
     [class.entered]="item.entered"
     [id]="item.name">
     <div>{{ item.name }}</div>
-    <div class="children" ngxDropList (drop)="drop($event)" [data]="item.children" [id]="'child_' + item.name">
+    <div
+      class="children"
+      (entered)="item.readyToDrag = true"
+      (exited)="item.readyToDrag = false"
+      [class.readyToDrag]="item.readyToDrag"
+      ngxDropList
+      (drop)="drop($event)"
+      [data]="item.children"
+      [id]="'child_' + item.name">
       <tree *ngIf="item.children" [items]="item.children"></tree>
     </div>
   </div>

@@ -1,4 +1,4 @@
-<div ngxDropList class="example-list" (drop)="drop($event)">
+<div ngxDropList class="example-list" (drop)="drop($event)" id="baseList">
   @for (item of items; track item;let i = $index) {
   <div class="example-box" ngxDraggable [id]="item">{{ i }}-🧊 {{ item }}</div>
   }

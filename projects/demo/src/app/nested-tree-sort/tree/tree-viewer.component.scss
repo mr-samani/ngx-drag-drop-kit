@@ -22,13 +22,17 @@
   font-size: 14px;
   .children {
     //   border: 1px rgb(151, 151, 253) dotted;
-    padding: 2px;
+    padding: 10px;
     width: 100%;
+    background-color: #999;
+    transition: all 300ms;
   }
   &.entered:hover {
     .children {
-      min-height: 50px;
-      border: 1px #4322ff dashed;
+      //min-height: 50px;
+      &.readyToDrag {
+        border: 1px #4322ff dashed;
+      }
     }
   }
 }

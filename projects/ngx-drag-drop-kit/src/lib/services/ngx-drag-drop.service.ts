@@ -13,7 +13,7 @@ import { copyEssentialStyles } from '../../utils/clone-style';
 export class NgxDragDropService {
   isDragging = false;
 
-  _dropList = new Set<NgxDropListDirective>();
+  _dropList = new WeakMap<Element, NgxDropListDirective>();
   public _activeDragInstances: NgxDraggableDirective[] = [];
   private _currentDragRect?: DOMRect;
   private _renderer: Renderer2;
@@ -70,16 +70,16 @@ export class NgxDragDropService {
     this.dragElementInBody.style.pointerEvents = 'none';
     this.dragElementInBody.style.opacity = '0.8';
     this._document.body.appendChild(this.dragElementInBody);
-    if (drag.containerDropList.disableSort == false) {
-      this.placeholderService.updatePlaceholderPosition$.next({
-        currentDrag: this._activeDragInstances[0],
-        isAfter: this.isAfter,
-        currentDragRec: this._currentDragRect,
-        dropList: drag.containerDropList,
-        direction: drag.containerDropList.direction,
-      });
-    }
-    this.initDrag(drag);
+    // if (drag.containerDropList.disableSort == false) {
+    //   this.placeholderService.updatePlaceholderPosition$.next({
+    //     currentDrag: this._activeDragInstances[0],
+    //     isAfter: this.isAfter,
+    //     currentDragRec: this._currentDragRect,
+    //     dropList: this.getClosestDropList(drag),
+    //     direction: drag.containerDropList.direction,
+    //   });
+    // }
+    // this.initDrag(drag);
   }
 
   stopDrag(drag: NgxDraggableDirective) {
@@ -101,26 +101,26 @@ export class NgxDragDropService {
     }
   }
 
-  enterDropList(drop: NgxDropListDirective) {
-    //TODO:  این خط توی ایتم های تو در تو مشکل داره  اگر نباشه  باشه هم قبلش نمیره
-    //  this.dragOverItem = undefined;
-    if (!this.isDragging) return;
-    this.placeholderService.updatePlaceholderPosition$.next({
-      currentDrag: this._activeDragInstances[0],
-      isAfter: false,
-      currentDragRec: this._currentDragRect,
-      dropList: drop,
-      direction: drop.direction,
-    });
-  }
-  leaveDropList(drop: NgxDropListDirective) {
-    this.placeholderService.hidePlaceholder();
-  }
+  // enterDropList(drop: NgxDropListDirective) {
+  //   //TODO:  این خط توی ایتم های تو در تو مشکل داره  اگر نباشه  باشه هم قبلش نمیره
+  //   this.dragOverItem = undefined;
+  //   if (!this.isDragging) return;
+  //   this.placeholderService.updatePlaceholderPosition$.next({
+  //     currentDrag: this._activeDragInstances[0],
+  //     isAfter: false,
+  //     currentDragRec: this._currentDragRect,
+  //     dropList: drop,
+  //     direction: drop.direction,
+  //   });
+  // }
+  // leaveDropList(drop: NgxDropListDirective) {
+  //   this.placeholderService.hidePlaceholder();
+  // }
 
   enterDrag(drag: NgxDraggableDirective) {
     //console.log('enter', drag.el.id);
     this.dragOverItem = drag;
-    this.initDrag(drag);
+    // this.initDrag(drag);
   }
 
   leaveDrag(drag: NgxDraggableDirective) {
@@ -144,17 +144,17 @@ export class NgxDragDropService {
         let yInEL = position.y - (dragOverItemRec.top + window.scrollY);
         this.isAfter = yInEL > dragOverItemRec.height / 2;
       }
-      this.initDrag(this.dragOverItem);
     }
+    this.initDrag(ev, this.dragOverItem);
   }
 
   registerDropList(dropList: NgxDropListDirective) {
-    this._dropList.add(dropList);
+    this._dropList.set(dropList._el, dropList);
     // console.log(this._dropList);
   }
 
-  private initDrag(dragOverItem: NgxDraggableDirective) {
-    if (!this.isDragging || !dragOverItem.containerDropList) {
+  private initDrag(ev: MouseEvent | TouchEvent, dragOverItem?: NgxDraggableDirective) {
+    if (!this.isDragging) {
       return;
     }
     this.placeholderService.updatePlaceholderPosition$.next({
@@ -162,8 +162,7 @@ export class NgxDragDropService {
       dragOverItem,
       isAfter: this.isAfter,
       currentDragRec: this._currentDragRect,
-      dropList: dragOverItem.containerDropList,
-      direction: dragOverItem.containerDropList.direction,
+      dropList: this.getClosestDropList(ev)!, 
     });
   }
 
@@ -182,5 +181,15 @@ export class NgxDragDropService {
     }
 
     this.placeholderService._activeDropListInstances.onDrop(this._dropEvent);
+  }
+
+  private getClosestDropList(ev: MouseEvent | TouchEvent): NgxDropListDirective | undefined {
+    const { x, y } = getPointerPosition(ev);
+    let elements: Element[] = document.elementsFromPoint(x, y).filter((x) => x.hasAttribute('NgxDropList'));
+    if (elements.length > 0) {
+      let found = this._dropList.get(elements[0]);
+      return found;
+    }
+    return undefined;
   }
 }

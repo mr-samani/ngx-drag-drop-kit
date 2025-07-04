@@ -60,25 +60,27 @@ export class NgxDropListDirective<T = any> implements AfterViewInit {
       //console.log('_draggables', 'change', r);
     });
     // console.log(this._draggables);
-    this.subscriptions.push(
-      fromEvent<TouchEvent>(this._el, 'mouseenter').subscribe((ev) => {
-        if (!this._dragDropService.isDragging) return;
-        if (this.checkAllowedConnections() == true) {
-          this._el.style.cursor = this.previousCursor;
-          this._dragDropService.enterDropList(this);
-          this.entered.emit();
-        } else {
-          this._el.style.cursor = 'no-drop';
-        }
-      }),
-      fromEvent<TouchEvent>(this._el, 'mouseleave').subscribe((ev) => {
-        if (!this._dragDropService.isDragging) return;
-        if (this.checkAllowedConnections()) {
-          this._dragDropService.leaveDropList(this);
-          this.exited.emit();
-        }
-      })
-    );
+    // this.subscriptions.push(
+    //   fromEvent<TouchEvent>(this._el, 'mouseenter').subscribe((ev) => {
+    //     console.log('entered', this._el.id);
+    //     if (!this._dragDropService.isDragging) return;
+    //     if (this.checkAllowedConnections() == true) {
+    //       this._el.style.cursor = this.previousCursor;
+    //       this._dragDropService.enterDropList(this);
+    //       this.entered.emit();
+    //     } else {
+    //       this._el.style.cursor = 'no-drop';
+    //     }
+    //   }),
+    //   fromEvent<TouchEvent>(this._el, 'mouseleave').subscribe((ev) => {
+    //     console.log('leaved', this._el.id);
+    //     if (!this._dragDropService.isDragging) return;
+    //     if (this.checkAllowedConnections()) {
+    //       this._dragDropService.leaveDropList(this);
+    //       this.exited.emit();
+    //     }
+    //   })
+    // );
   }
 
   ngOnDestroy() {

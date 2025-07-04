@@ -1,5 +1,11 @@
 <div class="form-container">
-  <div ngxDropList class="example-list" [data]="sourceList" [disableSort]="true" [connectedTo]="[copyZone]">
+  <div
+    ngxDropList
+    class="example-list"
+    [data]="sourceList"
+    [disableSort]="true"
+    [connectedTo]="[copyZone]"
+    id="baseList">
     @for (item of sourceList; track item) {
     <div class="example-box" ngxDraggable>
       {{ item }}
@@ -11,6 +17,7 @@
     Copy zone
     <div
       class="inner"
+      id="copyZone"
       #copyZone
       ngxDropList
       [data]="targetList"
@@ -34,6 +41,7 @@
     Delete zone
     <div
       class="inner"
+      id="deleteZone"
       #deleteZone
       ngxDropList
       [data]="targetList"
