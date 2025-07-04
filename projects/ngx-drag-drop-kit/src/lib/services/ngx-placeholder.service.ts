@@ -13,7 +13,7 @@ export class NgxDragPlaceholderService {
   private _placeholder: HTMLElement | undefined;
   public index = 0;
   public updatePlaceholderPosition$ = new Subject<IUpdatePlaceholderPosition>();
-  public _activeDropListInstances?: NgxDropListDirective;
+  public activeDropList?: NgxDropListDirective;
   public isShown: boolean = false;
 
   constructor(rendererFactory: RendererFactory2, @Inject(DOCUMENT) private _document: Document) {
@@ -46,9 +46,9 @@ export class NgxDragPlaceholderService {
     if (!dropList.el.querySelector('.ngx-drag-placeholder')) {
       this.hidePlaceholder();
     }
-    if (this._activeDropListInstances != dropList) {
+    if (this.activeDropList != dropList) {
       this.hidePlaceholder();
-      this._activeDropListInstances = dropList;
+      this.activeDropList = dropList;
     }
     if (!this._placeholder) {
       this._placeholder = dropList.addPlaceholder(currentDragRec?.width, currentDragRec?.height);
@@ -80,10 +80,11 @@ export class NgxDragPlaceholderService {
     }
     this.index = 0;
     this.showPlaceholder(input);
-    let { dragOverItem, currentDrag, dropList, isAfter } = input;
+    let { dragOverItem, currentDrag, dropList, isAfter, overItemRec } = input;
     if (!dragOverItem) {
       if (dropList._draggables?.length) {
         dragOverItem = dropList._draggables.last;
+        overItemRec = dragOverItem.el.getBoundingClientRect();
         isAfter = true;
       } else {
         // return;
@@ -128,12 +129,10 @@ export class NgxDragPlaceholderService {
     }
     // update placeholder position
     const containerEl = dropList.el;
-
     let placeholderX = 0;
     let placeholderY = 0;
-    if (dragOverItem && dragOverItem.el.parentElement == containerEl) {
+    if (dragOverItem && overItemRec && dragOverItem.el.parentElement == containerEl) {
       const { x, y } = getRelativePosition(dragOverItem.el, containerEl);
-      const overItemRec = dragOverItem.el.getBoundingClientRect();
 
       if (dropList.direction === 'vertical') {
         placeholderY = isAfter ? y + overItemRec.height : y;
@@ -169,7 +168,7 @@ export class NgxDragPlaceholderService {
   public inPlaceShowPlaceholder(input: IUpdatePlaceholderPosition) {
     const { currentDragRec, dropList, isAfter, dragOverItem } = input;
 
-    this._activeDropListInstances = dropList;
+    this.activeDropList = dropList;
     this.hidePlaceholder();
     this._placeholder = this._document.createElement('div');
     this._placeholder.style.display = 'inline-block';

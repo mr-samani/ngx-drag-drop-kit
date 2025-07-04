@@ -5,5 +5,6 @@ export interface IUpdatePlaceholderPosition {
   currentDrag: NgxDraggableDirective;
   isAfter: boolean;
   dragOverItem?: NgxDraggableDirective;
-  currentDragRec?: DOMRect; 
+  currentDragRec: DOMRect;
+  overItemRec?: DOMRect;
 }
