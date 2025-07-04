@@ -21,19 +21,13 @@
   background: white;
   font-size: 14px;
   .children {
-    //   border: 1px rgb(151, 151, 253) dotted;
-    padding: 10px;
     width: 100%;
-    background-color: #999;
-    transition: all 300ms;
+    background-color: #c4c4c4;
+    transition: all 1000ms;
+
   }
-  &.entered:hover {
-    .children {
-      //min-height: 50px;
-      &.readyToDrag {
-        border: 1px #4322ff dashed;
-      }
-    }
+  &.entered:hover > .children {
+    min-height: 50px;
   }
 }
 

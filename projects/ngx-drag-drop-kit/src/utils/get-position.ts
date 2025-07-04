@@ -1,3 +1,5 @@
+import { IPosition } from 'ngx-drag-drop-kit';
+
 export function getOffsetPosition(evt: MouseEvent | TouchEvent, parent?: HTMLElement) {
   if (evt instanceof MouseEvent) {
     return {
@@ -19,7 +21,7 @@ export function getOffsetPosition(evt: MouseEvent | TouchEvent, parent?: HTMLEle
   return position;
 }
 
-export function getPointerPosition(evt: MouseEvent | TouchEvent) {
+export function getPointerPosition(evt: MouseEvent | TouchEvent): IPosition {
   if (evt instanceof MouseEvent) {
     return {
       x: evt.pageX,
@@ -41,8 +43,11 @@ export function getRelativePosition(el: HTMLElement, container: HTMLElement): { 
 
   // جمع کردن offset های والدها تا زمانی که به container برسیم یا null بشه
   while (current && current !== container) {
-    elX += current.offsetLeft - current.scrollLeft + current.clientLeft;
-    elY += current.offsetTop - current.scrollTop + current.clientTop;
+    const currentStyles = getComputedStyle(current);
+    const bl: number = parseFloat(currentStyles.borderLeftWidth || '0');
+    const bt: number = parseFloat(currentStyles.borderTopWidth || '0');
+    elX += current.offsetLeft - current.scrollLeft + current.clientLeft - bl;
+    elY += current.offsetTop - current.scrollTop + current.clientTop - bt;
     current = current.offsetParent as HTMLElement;
   }
 

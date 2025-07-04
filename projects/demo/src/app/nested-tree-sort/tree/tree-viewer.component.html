@@ -3,20 +3,14 @@
   <div
     class="example-box"
     ngxDraggable
-    (entered)="item.entered = true"
-    (exited)="item.entered = false"
+    #drgItem
+    (dragStart)="currentDragItem = drgItem"
+    (dragend)="currentDragItem = undefined"
+    (mousemove)="handleEnterd($event, item, drgItem)"
     [class.entered]="item.entered"
     [id]="item.name">
     <div>{{ item.name }}</div>
-    <div
-      class="children"
-      (entered)="item.readyToDrag = true"
-      (exited)="item.readyToDrag = false"
-      [class.readyToDrag]="item.readyToDrag"
-      ngxDropList
-      (drop)="drop($event)"
-      [data]="item.children"
-      [id]="'child_' + item.name">
+    <div class="children" ngxDropList (drop)="drop($event)" [data]="item.children" [id]="'child_' + item.name">
       <tree *ngIf="item.children" [items]="item.children"></tree>
     </div>
   </div>
