@@ -42,6 +42,7 @@ export class NgxDragPlaceholderService {
     }
 
     const { currentDragRec, dropList } = input;
+    // hide other placeholder in other drop lists
     if (!dropList.el.querySelector('.ngx-drag-placeholder')) {
       this.hidePlaceholder();
     }
@@ -50,16 +51,10 @@ export class NgxDragPlaceholderService {
       this._activeDropListInstances = dropList;
     }
     if (!this._placeholder) {
-      this._placeholder = this._document.createElement('div');
-      this._placeholder.style.display = 'inline-block';
-      this._placeholder.style.pointerEvents = 'none';
-      this._placeholder.className = 'ngx-drag-placeholder';
+      this._placeholder = dropList.addPlaceholder(currentDragRec?.width, currentDragRec?.height);
       dropList.el.insertAdjacentElement('beforeend', this._placeholder);
+
       console.log('placeholder created on:', dropList.el.id);
-    }
-    if (currentDragRec) {
-      this._renderer.setStyle(this._placeholder, 'width', currentDragRec.width + 'px');
-      this._renderer.setStyle(this._placeholder, 'height', currentDragRec.height + 'px');
     }
 
     this.isShown = true;

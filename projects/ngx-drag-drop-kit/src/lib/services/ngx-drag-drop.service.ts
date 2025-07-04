@@ -68,7 +68,7 @@ export class NgxDragDropService {
     this.dragElementInBody.style.width = dragElRec.width + 'px';
     this.dragElementInBody.style.height = dragElRec.height + 'px';
     this.dragElementInBody.style.pointerEvents = 'none';
-    this.dragElementInBody.style.opacity = '0.8';
+    this.dragElementInBody.style.opacity = '0.9';
     this._document.body.appendChild(this.dragElementInBody);
   }
 

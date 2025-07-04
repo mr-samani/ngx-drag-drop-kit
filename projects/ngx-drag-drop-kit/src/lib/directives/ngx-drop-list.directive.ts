@@ -1,17 +1,22 @@
 import {
   AfterViewInit,
+  ApplicationRef,
+  ContentChild,
   ContentChildren,
   Directive,
   ElementRef,
+  EmbeddedViewRef,
   EventEmitter,
   Input,
   Output,
   QueryList,
+  Renderer2,
 } from '@angular/core';
 import { NgxDragDropService } from '../services/ngx-drag-drop.service';
 import { NgxDraggableDirective } from './ngx-draggable.directive';
 import { Subscription, fromEvent } from 'rxjs';
 import { IDropEvent } from '../../models/IDropEvent';
+import { NgxPlaceholderDirective } from './ngx-place-holder.directive';
 @Directive({
   selector: '[ngxDropList]',
   host: {
@@ -26,7 +31,8 @@ export class NgxDropListDirective<T = any> implements AfterViewInit {
   @Input() data?: T;
   @Input() disableSort: boolean = false;
   @Input() direction: 'horizontal' | 'vertical' = 'vertical';
-
+  @ContentChild(NgxPlaceholderDirective, { static: false }) userPlaceholder?: NgxPlaceholderDirective;
+  private placeholderView?: EmbeddedViewRef<any>;
   connectedTo: HTMLElement[] = [];
   @Input('connectedTo') set connections(list: HTMLElement[]) {
     if (Array.isArray(list)) {
@@ -45,7 +51,13 @@ export class NgxDropListDirective<T = any> implements AfterViewInit {
 
   initCursor = '';
   private subscriptions: Subscription[] = [];
-  constructor(public _dragDropService: NgxDragDropService, elRef: ElementRef<HTMLElement>) {
+  constructor(
+    public _dragDropService: NgxDragDropService,
+    elRef: ElementRef<HTMLElement>,
+    private appRef: ApplicationRef,
+
+    private renderer: Renderer2
+  ) {
     this.el = elRef.nativeElement;
     this.initCursor = this.el.style.cursor;
     _dragDropService.registerDropList(this);
@@ -84,6 +96,7 @@ export class NgxDropListDirective<T = any> implements AfterViewInit {
   ngOnDestroy() {
     this.subscriptions.forEach((sub) => sub.unsubscribe());
     this._draggables?.reset([]);
+    this.disposePlaceholder();
   }
 
   onChangeDragChilds() {
@@ -95,5 +108,34 @@ export class NgxDropListDirective<T = any> implements AfterViewInit {
   onDrop(event: IDropEvent) {
     this.drop.emit(event);
     this.subscriptions = [];
+  }
+
+  addPlaceholder(width?: number, height?: number): HTMLElement {
+    if (this.userPlaceholder) {
+      const ctx = { width, height };
+      this.placeholderView = this.userPlaceholder.tpl.createEmbeddedView(ctx);
+      this.appRef.attachView(this.placeholderView);
+
+      // اولین ریشهٔ واقعی درخت view عنصر placeholder است
+      const el = this.placeholderView.rootNodes[0] as HTMLElement;
+      return el;
+    }
+    // 2) در غیر این صورت placeholder پیش‌فرض
+    const el = this.renderer.createElement('div');
+    this.renderer.addClass(el, 'ngx-drag-placeholder');
+    this.renderer.setStyle(el, 'pointer-events', 'none');
+    this.renderer.setStyle(el, 'display', 'inline-block');
+    if (width) this.renderer.setStyle(el, 'width', `${width}px`);
+    if (height) this.renderer.setStyle(el, 'height', `${height}px`);
+    return el;
+  }
+
+  /** سرویس موقع hide صدا می‌زند تا view جدا شود */
+  disposePlaceholder() {
+    if (this.placeholderView) {
+      this.appRef.detachView(this.placeholderView);
+      this.placeholderView.destroy();
+      this.placeholderView = undefined!;
+    }
   }
 }
