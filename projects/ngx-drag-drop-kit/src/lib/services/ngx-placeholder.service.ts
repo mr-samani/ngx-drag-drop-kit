@@ -97,7 +97,7 @@ export class NgxDragPlaceholderService {
     const placeholderRect = this._placeholder!.getBoundingClientRect();
     const placeholderHeight = placeholderRect.height;
     const placeholderWidth = placeholderRect.width;
-    const dragItems = Array.from(dropList.el.querySelectorAll('[NgxDraggable]'));
+    const dragItems = Array.from(dropList.el.querySelectorAll(':scope > [NgxDraggable]'));
     const dragOverIndex = dragItems.findIndex((x) => x === dragOverItem?.el);
     // جابجایی سایر آیتم‌ها
     for (let i = 0; i < dragItems.length; i++) {
