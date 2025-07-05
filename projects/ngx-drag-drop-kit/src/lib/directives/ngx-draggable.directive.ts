@@ -17,12 +17,8 @@ import { NgxDropListDirective } from './ngx-drop-list.directive';
 import { NgxDragDropService } from '../services/ngx-drag-drop.service';
 import { getXYfromTransform } from '../../utils/get-transform';
 import { AutoScroll } from '../services/auto-scroll.service';
+import { IPosition } from '../../models/IPosition';
 export const NGX_DROP_LIST = new InjectionToken<NgxDropListDirective>('NgxDropList');
-
-export interface IPosition {
-  x: number;
-  y: number;
-}
 
 @Directive({
   selector: '[ngxDraggable]',

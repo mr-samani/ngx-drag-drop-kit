@@ -125,7 +125,7 @@ export class NgxDragPlaceholderService {
 
       const transform = `translate(${offsetX}px, ${offsetY}px)`;
       this._renderer.setStyle(dragItems[i], 'transform', transform);
-      this._renderer.setStyle(dragItems[i], 'transition', 'transform 250ms ease');
+      this._renderer.setStyle(dragItems[i], 'transition', 'transform 250ms cubic-bezier(0, 0, 0.2, 1)');
     }
     // update placeholder position
     const containerEl = dropList.el;

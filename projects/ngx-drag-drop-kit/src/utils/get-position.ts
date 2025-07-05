@@ -1,4 +1,4 @@
-import { IPosition } from 'ngx-drag-drop-kit';
+import { IPosition } from '../models/IPosition';
 
 export function getOffsetPosition(evt: MouseEvent | TouchEvent, parent?: HTMLElement) {
   if (evt instanceof MouseEvent) {
