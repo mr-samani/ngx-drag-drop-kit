@@ -42,7 +42,7 @@ export class NgxDragDropService {
     this._currentDragRect = drag.el.getBoundingClientRect();
     this._activeDragInstances.push(drag);
     let previousIndex = 0;
-    drag.containerDropList?._draggables?.forEach((el, i) => {
+    drag.containerDropList._draggables?.forEach((el, i) => {
       if (el.el == drag.el) {
         previousIndex = i;
       }
@@ -70,14 +70,16 @@ export class NgxDragDropService {
     this.dragElementInBody.style.pointerEvents = 'none';
     this.dragElementInBody.style.opacity = '0.9';
     this._document.body.appendChild(this.dragElementInBody);
-    // this.placeholderService.updatePlaceholderPosition$.next({
-    //   currentDrag: drag,
-    //   dropList: drag.containerDropList,
-    //   isAfter: false,
-    //   currentDragRec: this._currentDragRect,
-    //   overItemRec: this._currentDragRect,
-    //   dragOverItem: drag,
-    // });
+    if (drag.containerDropList._draggables)
+      this.dragOverItem = drag.containerDropList._draggables.get(previousIndex + 1);
+    this.placeholderService.updatePlaceholderPosition$.next({
+      currentDrag: drag,
+      dropList: drag.containerDropList,
+      isAfter: false,
+      currentDragRec: this._currentDragRect,
+      overItemRec: this.dragOverItem?.el.getBoundingClientRect(),
+      dragOverItem: this.dragOverItem,
+    });
   }
 
   stopDrag(drag: NgxDraggableDirective) {
@@ -131,7 +133,7 @@ export class NgxDragDropService {
     // init drag drop
 
     const dropList = this.getClosestDropList(ev);
-    console.log('getClosestDropList', dropList?.el?.id);
+    // console.log('getClosestDropList', dropList?.el?.id, 'dragover', this.dragOverItem);
     if (!dropList || this.checkAllowedConnections(dropList) == false) {
       return;
     }

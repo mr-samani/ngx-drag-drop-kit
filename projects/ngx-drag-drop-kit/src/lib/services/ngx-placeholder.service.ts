@@ -148,7 +148,7 @@ export class NgxDragPlaceholderService {
     // const placeholderTransform = `translate(${placeholderX}px, ${placeholderY}px)`;
     const placeholderTransform = `translate(${placeholderX - plcPosition.x}px, ${placeholderY - plcPosition.y}px)`;
     this._renderer.setStyle(this._placeholder, 'transform', placeholderTransform);
-    this._renderer.setStyle(this._placeholder, 'transition', 'transform 250ms ease');
+    // this._renderer.setStyle(this._placeholder, 'transition', 'transform 250ms ease');
 
     this.index = isAfter ? dragOverIndex + 1 : dragOverIndex;
 

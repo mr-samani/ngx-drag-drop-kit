@@ -39,7 +39,7 @@ export class GridLayoutComponent {
       w = Math.max(1, Math.min(12 - x, this.getRandomH())),
       h = Math.max(1, Math.min(10 - y, this.getRandomV()));
     let config = new GridItemConfig(x, y, w, h);
-    console.log('MUST ADD:', config);
+    // console.log('MUST ADD:', config);
     this.layouts.push({ config });
   }
 
