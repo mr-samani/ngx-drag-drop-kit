@@ -1,4 +1,4 @@
-import { IPosition } from '../models/IPosition';
+import { IPosition } from '../interfaces/IPosition';
 
 export function getOffsetPosition(evt: MouseEvent | TouchEvent, parent?: HTMLElement) {
   if (evt instanceof MouseEvent) {

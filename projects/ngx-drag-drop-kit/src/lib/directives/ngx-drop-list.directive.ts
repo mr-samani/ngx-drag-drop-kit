@@ -15,7 +15,7 @@ import {
 import { NgxDragDropService } from '../services/ngx-drag-drop.service';
 import { NgxDraggableDirective } from './ngx-draggable.directive';
 import { Subscription, fromEvent } from 'rxjs';
-import { IDropEvent } from '../../models/IDropEvent';
+import { IDropEvent } from '../../interfaces/IDropEvent';
 import { NgxPlaceholderDirective } from './ngx-place-holder.directive';
 @Directive({
   selector: '[ngxDropList]',

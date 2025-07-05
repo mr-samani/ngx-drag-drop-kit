@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { NgxDragDropKitModule, transferArrayItem } from '../../../../ngx-drag-drop-kit/src/public-api';
-import { IDropEvent } from '../../../../ngx-drag-drop-kit/src/models/IDropEvent';
+import { IDropEvent } from '../../../../ngx-drag-drop-kit/src/interfaces/IDropEvent';
 import { getPointerPosition } from '../../../../ngx-drag-drop-kit/src/utils/get-position';
 
 export interface TreeModel {

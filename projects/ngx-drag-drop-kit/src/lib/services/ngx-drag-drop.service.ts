@@ -1,6 +1,6 @@
 import { Inject, Injectable, Renderer2, RendererFactory2, RendererStyleFlags2 } from '@angular/core';
 import { NgxDropListDirective } from '../directives/ngx-drop-list.directive';
-import { IDropEvent } from '../../models/IDropEvent';
+import { IDropEvent } from '../../interfaces/IDropEvent';
 import { NgxDraggableDirective } from '../directives/ngx-draggable.directive';
 import { DOCUMENT } from '@angular/common';
 import { getPointerPosition } from '../../utils/get-position';

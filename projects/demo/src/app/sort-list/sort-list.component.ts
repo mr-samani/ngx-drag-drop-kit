@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { moveItemInArray } from '../../../../ngx-drag-drop-kit/src/drag-utils';
-import { IDropEvent } from '../../../../ngx-drag-drop-kit/src/models/IDropEvent';
+import { IDropEvent } from '../../../../ngx-drag-drop-kit/src/interfaces/IDropEvent';
 import { NgxDragDropKitModule } from '../../../../ngx-drag-drop-kit/src/public-api';
 
 @Component({
