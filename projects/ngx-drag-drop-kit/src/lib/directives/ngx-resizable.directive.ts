@@ -53,18 +53,21 @@ export class NgxResizableDirective implements OnInit {
 
   resizing = false;
   el: HTMLElement;
+  isRtl: boolean;
   constructor(
     elRef: ElementRef<HTMLElement>,
     private renderer: Renderer2,
     @Inject(DOCUMENT) private document: Document
   ) {
     this.el = elRef.nativeElement;
+    this.isRtl = getComputedStyle(this.el).direction === 'rtl';
   }
 
   ngOnInit(): void {
     this.addCornerDiv();
     this.initXY();
   }
+
   initXY() {
     const xy = getXYfromTransform(this.el);
     this.x = xy.x;
@@ -118,6 +121,8 @@ export class NgxResizableDirective implements OnInit {
 
   private onCornerClick(event: MouseEvent | TouchEvent, resizer: Function) {
     this.resizing = true;
+    this.isRtl = getComputedStyle(this.el).direction === 'rtl';
+
     this.px = event instanceof MouseEvent ? event.clientX : event.touches[0].clientX;
     this.py = event instanceof MouseEvent ? event.clientY : event.touches[0].clientY;
 
@@ -196,8 +201,10 @@ export class NgxResizableDirective implements OnInit {
   /*--------------RESIZE FUNCTIONS--------------------------*/
   private topLeftResize(offsetX: number, offsetY: number) {
     if (checkBoundX(this._boundary, this.el, offsetX, true, false)) {
-      this.x += offsetX;
       this.width -= offsetX;
+      if (!this.isRtl) {
+        this.x += offsetX;
+      }
     }
     if (checkBoundY(this._boundary, this.el, offsetY)) {
       this.y += offsetY;
@@ -208,6 +215,9 @@ export class NgxResizableDirective implements OnInit {
   private topRightResize(offsetX: number, offsetY: number) {
     if (checkBoundX(this._boundary, this.el, offsetX, false, true)) {
       this.width += offsetX;
+      if (this.isRtl) {
+        this.x += offsetX;
+      }
     }
     if (checkBoundY(this._boundary, this.el, offsetY, true, false)) {
       this.y += offsetY;
@@ -217,8 +227,10 @@ export class NgxResizableDirective implements OnInit {
 
   private bottomLeftResize(offsetX: number, offsetY: number) {
     if (checkBoundX(this._boundary, this.el, offsetX, true, false)) {
-      this.x += offsetX;
       this.width -= offsetX;
+      if (!this.isRtl) {
+        this.x += offsetX;
+      }
     }
     if (checkBoundY(this._boundary, this.el, offsetY, false)) {
       this.height += offsetY;
@@ -228,6 +240,9 @@ export class NgxResizableDirective implements OnInit {
   private bottomRightResize(offsetX: number, offsetY: number) {
     if (checkBoundX(this._boundary, this.el, offsetX, false)) {
       this.width += offsetX;
+      if (this.isRtl) {
+        this.x += offsetX;
+      }
     }
     if (checkBoundY(this._boundary, this.el, offsetY, false)) {
       this.height += offsetY;
@@ -242,6 +257,9 @@ export class NgxResizableDirective implements OnInit {
   private rightResize(offsetX: number, offsetY: number) {
     if (checkBoundX(this._boundary, this.el, offsetX, false)) {
       this.width += offsetX;
+      if (this.isRtl) {
+        this.x += offsetX;
+      }
     }
   }
   private bottomResize(offsetX: number, offsetY: number) {
@@ -251,8 +269,10 @@ export class NgxResizableDirective implements OnInit {
   }
   private leftResize(offsetX: number, offsetY: number) {
     if (checkBoundX(this._boundary, this.el, offsetX, true, false)) {
-      this.x += offsetX;
       this.width -= offsetX;
+      if (!this.isRtl) {
+        this.x += offsetX;
+      }
     }
   }
 }
