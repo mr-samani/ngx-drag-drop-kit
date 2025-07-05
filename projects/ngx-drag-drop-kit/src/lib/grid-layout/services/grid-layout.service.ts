@@ -139,7 +139,7 @@ export class GridLayoutService {
     // todo: if pushOnDrag config is on -> no need to checkCollisson in end drag
     this.cehckCollesions({ ...item.config, id: item.id });
     this.compactGridItems();
-    console.log(this._gridItems.map((x) => x.id));
+    // console.log(this._gridItems.map((x) => x.id));
   }
 
   convertPointToCell(x: number, y: number, width: number, height: number) {
@@ -232,7 +232,7 @@ export class GridLayoutService {
               id: this.placeHolder.id,
             }))
         ) {
-          console.log('has collission with placehlder');
+          // console.log('has collission with placehlder');
           break;
         }
         log('shift up');

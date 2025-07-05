@@ -1,17 +1,22 @@
 import {
   AfterViewInit,
+  ApplicationRef,
+  ContentChild,
   ContentChildren,
   Directive,
   ElementRef,
+  EmbeddedViewRef,
   EventEmitter,
   Input,
   Output,
   QueryList,
+  Renderer2,
 } from '@angular/core';
 import { NgxDragDropService } from '../services/ngx-drag-drop.service';
 import { NgxDraggableDirective } from './ngx-draggable.directive';
 import { Subscription, fromEvent } from 'rxjs';
 import { IDropEvent } from '../../models/IDropEvent';
+import { NgxPlaceholderDirective } from './ngx-place-holder.directive';
 @Directive({
   selector: '[ngxDropList]',
   host: {
@@ -26,7 +31,8 @@ export class NgxDropListDirective<T = any> implements AfterViewInit {
   @Input() data?: T;
   @Input() disableSort: boolean = false;
   @Input() direction: 'horizontal' | 'vertical' = 'vertical';
-
+  @ContentChild(NgxPlaceholderDirective, { static: false }) userPlaceholder?: NgxPlaceholderDirective;
+  private placeholderView?: EmbeddedViewRef<any>;
   connectedTo: HTMLElement[] = [];
   @Input('connectedTo') set connections(list: HTMLElement[]) {
     if (Array.isArray(list)) {
@@ -38,18 +44,22 @@ export class NgxDropListDirective<T = any> implements AfterViewInit {
   }
 
   @Output() drop = new EventEmitter<IDropEvent>();
-  @Output() entered = new EventEmitter<void>();
-  @Output() exited = new EventEmitter<void>();
   @ContentChildren(NgxDraggableDirective)
   _draggables?: QueryList<NgxDraggableDirective>;
-  _el: HTMLElement;
+  el: HTMLElement;
   isDragging = false;
 
-  previousCursor = '';
+  initCursor = '';
   private subscriptions: Subscription[] = [];
-  constructor(public _dragDropService: NgxDragDropService, elRef: ElementRef<HTMLElement>) {
-    this._el = elRef.nativeElement;
-    this.previousCursor = this._el.style.cursor;
+  constructor(
+    public _dragDropService: NgxDragDropService,
+    elRef: ElementRef<HTMLElement>,
+    private appRef: ApplicationRef,
+
+    private renderer: Renderer2
+  ) {
+    this.el = elRef.nativeElement;
+    this.initCursor = this.el.style.cursor;
     _dragDropService.registerDropList(this);
   }
 
@@ -60,30 +70,33 @@ export class NgxDropListDirective<T = any> implements AfterViewInit {
       //console.log('_draggables', 'change', r);
     });
     // console.log(this._draggables);
-    this.subscriptions.push(
-      fromEvent<TouchEvent>(this._el, 'mouseenter').subscribe((ev) => {
-        if (!this._dragDropService.isDragging) return;
-        if (this.checkAllowedConnections() == true) {
-          this._el.style.cursor = this.previousCursor;
-          this._dragDropService.enterDropList(this);
-          this.entered.emit();
-        } else {
-          this._el.style.cursor = 'no-drop';
-        }
-      }),
-      fromEvent<TouchEvent>(this._el, 'mouseleave').subscribe((ev) => {
-        if (!this._dragDropService.isDragging) return;
-        if (this.checkAllowedConnections()) {
-          this._dragDropService.leaveDropList(this);
-          this.exited.emit();
-        }
-      })
-    );
+    // this.subscriptions.push(
+    //   fromEvent<TouchEvent>(this.el, 'mouseenter').subscribe((ev) => {
+    //     console.log('entered', this.el.id);
+    //     if (!this._dragDropService.isDragging) return;
+    //     if (this.checkAllowedConnections() == true) {
+    //       this.el.style.cursor = this.previousCursor;
+    //       this._dragDropService.enterDropList(this);
+    //       this.entered.emit();
+    //     } else {
+    //       this.el.style.cursor = 'no-drop';
+    //     }
+    //   }),
+    //   fromEvent<TouchEvent>(this.el, 'mouseleave').subscribe((ev) => {
+    //     console.log('leaved', this.el.id);
+    //     if (!this._dragDropService.isDragging) return;
+    //     if (this.checkAllowedConnections()) {
+    //       this._dragDropService.leaveDropList(this);
+    //       this.exited.emit();
+    //     }
+    //   })
+    // );
   }
 
   ngOnDestroy() {
     this.subscriptions.forEach((sub) => sub.unsubscribe());
     this._draggables?.reset([]);
+    this.disposePlaceholder();
   }
 
   onChangeDragChilds() {
@@ -97,16 +110,32 @@ export class NgxDropListDirective<T = any> implements AfterViewInit {
     this.subscriptions = [];
   }
 
-  checkAllowedConnections(): boolean {
-    let currentDragItem = this._dragDropService._activeDragInstances[0];
-    if (
-      currentDragItem &&
-      currentDragItem.containerDropList &&
-      currentDragItem.containerDropList.connectedTo.length > 0 &&
-      currentDragItem.containerDropList._el !== this._el
-    ) {
-      return currentDragItem.containerDropList.connectedTo.indexOf(this._el) > -1;
+  addPlaceholder(width?: number, height?: number): HTMLElement {
+    if (this.userPlaceholder) {
+      const ctx = { width, height };
+      this.placeholderView = this.userPlaceholder.tpl.createEmbeddedView(ctx);
+      this.appRef.attachView(this.placeholderView);
+
+      // اولین ریشهٔ واقعی درخت view عنصر placeholder است
+      const el = this.placeholderView.rootNodes[0] as HTMLElement;
+      return el;
     }
-    return true;
+    // 2) در غیر این صورت placeholder پیش‌فرض
+    const el = this.renderer.createElement('div');
+    this.renderer.addClass(el, 'ngx-drag-placeholder');
+    this.renderer.setStyle(el, 'pointer-events', 'none');
+    this.renderer.setStyle(el, 'display', 'inline-block');
+    if (width) this.renderer.setStyle(el, 'width', `${width}px`);
+    if (height) this.renderer.setStyle(el, 'height', `${height}px`);
+    return el;
+  }
+
+  /** سرویس موقع hide صدا می‌زند تا view جدا شود */
+  disposePlaceholder() {
+    if (this.placeholderView) {
+      this.appRef.detachView(this.placeholderView);
+      this.placeholderView.destroy();
+      this.placeholderView = undefined!;
+    }
   }
 }
