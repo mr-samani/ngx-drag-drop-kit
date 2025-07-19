@@ -10,7 +10,7 @@
     <li><a [routerLink]="['/resizable-layout']">resizable-layout</a></li>
   </ul>
   <label>
-    <input type="checkbox" name="direction" [(ngModel)]="isRtl" (change)="changeDirection()" />
+    <input type="checkbox" name="direction" [(ngModel)]="isRtl" (change)="changeDirection(true)" />
     {{ isRtl ? 'RTL' : 'LTR' }}
   </label>
 </nav>

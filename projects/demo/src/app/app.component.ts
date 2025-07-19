@@ -24,11 +24,16 @@ export class AppComponent {
   isRtl = false;
 
   constructor(@Inject(DOCUMENT) private _document: Document) {
+    this.isRtl = localStorage.getItem('ngxDirection') === 'rtl';
     this.changeDirection();
   }
-  changeDirection() {
+  changeDirection(userChange = false) {
     const dir = this.isRtl ? 'rtl' : 'ltr';
     this._document.dir = dir;
     this._document.body.dir = dir;
+    localStorage.setItem('ngxDirection', dir);
+    if (userChange) {
+      window.location.reload();
+    }
   }
 }
