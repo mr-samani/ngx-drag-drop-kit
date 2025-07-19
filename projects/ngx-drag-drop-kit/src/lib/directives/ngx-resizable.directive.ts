@@ -13,6 +13,7 @@ import {
 import { Corner } from '../../utils/corner-type';
 import { checkBoundX, checkBoundY } from '../../utils/check-boundary';
 import { getXYfromTransform } from '../../utils/get-transform';
+import { IResizableOutput } from '../../interfaces/IResizableOutput';
 
 @Directive({
   selector: '[ngxResizable]',
@@ -37,8 +38,8 @@ export class NgxResizableDirective implements OnInit {
   @Input() disableTransform = false;
   @Input() corners: Corner[] = ['top', 'right', 'left', 'bottom', 'topLeft', 'topRight', 'bottomLeft', 'bottomRight'];
   @Output() resizeStart = new EventEmitter();
-  @Output() resize = new EventEmitter();
-  @Output() resizeEnd = new EventEmitter();
+  @Output() resize = new EventEmitter<IResizableOutput>();
+  @Output() resizeEnd = new EventEmitter<IResizableOutput>();
   protected resizer!: Function;
   protected px: number = 0;
   protected py: number = 0;
@@ -74,6 +75,16 @@ export class NgxResizableDirective implements OnInit {
     this.y = xy.y;
   }
 
+  private getRealPosition() {
+    const rect = this.el.getBoundingClientRect();
+    return {
+      realLeft: rect.left,
+      realTop: rect.top,
+      offsetLeft: this.el.offsetLeft,
+      offsetTop: this.el.offsetTop,
+    };
+  }
+
   @HostListener('document:mousemove', ['$event'])
   private onCornerMouseMove(event: MouseEvent) {
     if (!this.resizing) {
@@ -99,7 +110,15 @@ export class NgxResizableDirective implements OnInit {
   @HostListener('document:touchend', ['$event'])
   private onCornerRelease(event: MouseEvent) {
     if (this.resizing) {
-      this.resizeEnd.emit();
+      const realPos = this.getRealPosition();
+      this.resizeEnd.emit({
+        width: this.width,
+        height: this.height,
+        moveLeft: this.x,
+        moveTop: this.y,
+        left: realPos.realLeft,
+        top: realPos.realTop,
+      });
     }
     this.resizing = false;
   }
@@ -195,7 +214,16 @@ export class NgxResizableDirective implements OnInit {
     this.px = clientX;
     this.py = clientY;
     this.setElPosition();
-    this.resize.emit();
+
+    const realPos = this.getRealPosition();
+    this.resize.emit({
+      width: this.width,
+      height: this.height,
+      moveLeft: this.x,
+      moveTop: this.y,
+      left: realPos.realLeft,
+      top: realPos.realTop,
+    });
   }
 
   /*--------------RESIZE FUNCTIONS--------------------------*/

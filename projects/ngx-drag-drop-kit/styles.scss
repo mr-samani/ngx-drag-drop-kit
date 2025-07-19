@@ -1,17 +1,17 @@
 .ngx-corner-resize {
   position: absolute;
-  --pointerSize: 8px;
+  --pointerSize: 10px;
   width: var(--pointerSize);
   height: var(--pointerSize);
   margin: 0px;
   visibility: hidden;
-  transition: margin 300ms; 
+  transition: margin 300ms;
   &.topLeft {
     top: 0px;
     left: 0px;
     cursor: nw-resize;
     border: 2px var(--pointerColor) solid;
-    border-radius: 50px;
+
     margin: 3px;
   }
   &.topRight {
@@ -19,21 +19,18 @@
     right: 0px;
     cursor: nesw-resize;
     border: 2px var(--pointerColor) solid;
-    border-radius: 50px;
   }
   &.bottomLeft {
     bottom: 0px;
     left: 0px;
     cursor: nesw-resize;
     border: 2px var(--pointerColor) solid;
-    border-radius: 50px;
   }
   &.bottomRight {
     bottom: 0px;
     right: 0px;
     cursor: nwse-resize;
     border: 2px var(--pointerColor) solid;
-    border-radius: 50px;
   }
   &.top {
     top: 0;
@@ -66,10 +63,15 @@
 
 .ngx-resizable {
   --pointerColor: #005aff;
+  transition: none !important;
   &.resizing {
     transition-property: none !important;
   }
   &:hover {
+    outline: 2px solid var(--pointerColor);
+    outline-offset: -2px;
+    border-radius: 0px !important;
+
     .ngx-corner-resize {
       visibility: visible;
       z-index: 1;
@@ -78,12 +80,13 @@
     .topLeft,
     .bottomRight,
     .bottomLeft {
-      margin: -4px;
+      margin: -8px;
     }
   }
 }
 
 .ngx-draggable {
+  transition: none !important;
   &.dragging {
     transition-property: none !important;
   }

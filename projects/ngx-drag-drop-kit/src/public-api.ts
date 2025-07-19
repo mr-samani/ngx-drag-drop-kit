@@ -15,6 +15,7 @@ export * from './drag-utils';
 
 export * from './interfaces/IDropEvent';
 export * from './interfaces/IPosition';
+export * from './interfaces/IResizableOutput';
 
 export * from './lib/grid-layout/grid-layout.module';
 export * from './lib/grid-layout/grid-layout/grid-layout.component';

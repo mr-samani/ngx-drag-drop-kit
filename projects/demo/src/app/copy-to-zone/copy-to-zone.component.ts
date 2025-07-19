@@ -24,7 +24,7 @@ export class CopyToZoneComponent {
   }
 
   drop(event: IDropEvent) {
-    console.log(event);
+    // console.log(event);
     if (event.previousContainer !== event.container) {
       copyArrayItem(event.previousContainer.data, event.container.data, event.previousIndex, event.currentIndex);
     } else {
@@ -36,6 +36,6 @@ export class CopyToZoneComponent {
     event.container.data.splice(event.previousIndex, 1);
   }
   onClick(item: string) {
-    console.log('Clicked item:', item);
+    //console.log('Clicked item:', item);
   }
 }

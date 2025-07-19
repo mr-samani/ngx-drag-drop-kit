@@ -13,7 +13,7 @@
   left: 0px;
   cursor: nw-resize;
   border: 2px var(--pointerColor) solid;
-  border-radius: 50px;
+  
   margin: 3px;
 }
 .ngx-corner-resize.topRight {
@@ -21,21 +21,21 @@
   right: 0px;
   cursor: nesw-resize;
   border: 2px var(--pointerColor) solid;
-  border-radius: 50px;
+  
 }
 .ngx-corner-resize.bottomLeft {
   bottom: 0px;
   left: 0px;
   cursor: nesw-resize;
   border: 2px var(--pointerColor) solid;
-  border-radius: 50px;
+  
 }
 .ngx-corner-resize.bottomRight {
   bottom: 0px;
   right: 0px;
   cursor: nwse-resize;
   border: 2px var(--pointerColor) solid;
-  border-radius: 50px;
+  
 }
 .ngx-corner-resize.top {
   top: 0;
@@ -69,6 +69,9 @@
 }
 .ngx-resizable.resizing {
   transition-property: none !important;
+}
+.ngx-resizable:hover{
+  outline: 1px solid #005aff;
 }
 .ngx-resizable:hover .ngx-corner-resize {
   visibility: visible;

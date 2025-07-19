@@ -126,7 +126,7 @@ export class GridLayoutComponent implements OnInit, AfterViewInit {
       this._changeDetection.detectChanges();
     }, 0);
 
-    console.log(this._gridService._gridItems.map((x) => x.id));
+    // console.log(this._gridService._gridItems.map((x) => x.id));
   }
 
   @HostListener('window:resize')

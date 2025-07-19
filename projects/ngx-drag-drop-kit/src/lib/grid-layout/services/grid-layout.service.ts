@@ -189,7 +189,7 @@ export class GridLayoutService {
     const allCollisions = getAllCollisions(this._gridItems, fakeItem);
     for (let c of allCollisions) {
       let movedElement = this.moveGridItem(c, fakeItem.x + fakeItem.w, fakeItem.y + fakeItem.h);
-      console.log('must move down :', movedElement.id);
+      // console.log('must move down :', movedElement.id);
       let fakeItemMoved: FakeItem = {
         x: movedElement.config.x,
         y: movedElement.config.y,

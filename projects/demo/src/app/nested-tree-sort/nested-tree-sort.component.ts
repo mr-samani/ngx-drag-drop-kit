@@ -75,6 +75,6 @@ export class NestedTreeSortComponent {
     // یا می‌تونی emit کنی:
     // this.onDragPositionChanged.emit({ item, action });
 
-    console.log(`[${item.name}] - action:`, action, 'offsetY:', offsetY);
+    // console.log(`[${item.name}] - action:`, action, 'offsetY:', offsetY);
   }
 }

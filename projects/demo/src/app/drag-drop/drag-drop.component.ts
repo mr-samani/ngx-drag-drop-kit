@@ -34,7 +34,7 @@ export class DragDropComponent {
   }
 
   drop(event: IDropEvent) {
-    console.log(event);
+    // console.log(event);
     if (event.previousContainer === event.container) {
       moveItemInArray(event.container.data, event.previousIndex, event.currentIndex);
     } else {

@@ -54,7 +54,7 @@ export class NgxDragPlaceholderService {
       this._placeholder = dropList.addPlaceholder(currentDragRec?.width, currentDragRec?.height);
       dropList.el.insertAdjacentElement('beforeend', this._placeholder);
 
-      console.log('placeholder created on:', dropList.el.id);
+     // console.log('placeholder created on:', dropList.el.id);
     }
 
     this.isShown = true;
@@ -152,15 +152,15 @@ export class NgxDragPlaceholderService {
 
     this.index = isAfter ? dragOverIndex + 1 : dragOverIndex;
 
-    console.log(
-      'isAfter:',
-      isAfter,
-      'overItem',
-      dragOverItem?.el?.id,
-      'placeholderIndex:',
-      this.index,
-      dropList.direction
-    );
+    // console.log(
+    //   'isAfter:',
+    //   isAfter,
+    //   'overItem',
+    //   dragOverItem?.el?.id,
+    //   'placeholderIndex:',
+    //   this.index,
+    //   dropList.direction
+    // );
   }
 
   /*------------------------------------when in place codes... ----------------------------------------------------*/
