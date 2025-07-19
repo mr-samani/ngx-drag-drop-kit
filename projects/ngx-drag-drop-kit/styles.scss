@@ -68,9 +68,9 @@
     transition-property: none !important;
   }
   &:hover {
-    outline: 2px solid var(--pointerColor);
-    outline-offset: -2px;
-    border-radius: 0px !important;
+    // outline: 2px solid var(--pointerColor);
+    // outline-offset: -2px;
+    // border-radius: 0px !important;
 
     .ngx-corner-resize {
       visibility: visible;
@@ -80,7 +80,7 @@
     .topLeft,
     .bottomRight,
     .bottomLeft {
-      margin: -8px;
+      margin: -4px;
     }
   }
 }

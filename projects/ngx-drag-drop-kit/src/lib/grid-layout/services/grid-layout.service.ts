@@ -56,10 +56,10 @@ export class GridLayoutService {
 
   public updateGridItem(item: GridItemComponent) {
     item.config = mergeDeep(DEFAULT_GRID_ITEM_CONFIG, item.config);
-    item.left = gridXToScreenX(this.cellWidth, item.config.x, this._options.gap);
-    item.top = gridYToScreenY(this.cellHeight, item.config.y, this._options.gap);
     item.width = gridWToScreenWidth(this.cellWidth, item.config.w, this._options.gap);
     item.height = gridHToScreenHeight(this.cellHeight, item.config.h, this._options.gap);
+    item.left = gridXToScreenX(this.cellWidth, item.config.x, this._options.gap);
+    item.top = gridYToScreenY(this.cellHeight, item.config.y, this._options.gap);
     item.updateView();
   }
 
