@@ -26,6 +26,7 @@ import { getFirstCollision } from '../utils/grid.utils';
   templateUrl: './grid-layout.component.html',
   styleUrls: ['./grid-layout.component.scss'],
   host: {
+    '[style.position]': '"relative !important"',
     '[style.boxSizing]': '"border-box"',
     '[style.height.px]': '_gridService.getGridHeight',
     '[style.user-select]': '"none"',

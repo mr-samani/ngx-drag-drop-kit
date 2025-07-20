@@ -11,6 +11,6 @@ export function getPositionFromElement(el: HTMLElement, useTransform: boolean = 
     return getXYfromTransform(el);
   } else {
     const rec = el.getBoundingClientRect();
-    return { x: rec.left + window.scrollX, y: rec.top + window.scrollY };
+    return { x: window.scrollX + rec.left, y: window.scrollY + rec.top };
   }
 }

@@ -18,7 +18,7 @@ import { IResizableOutput } from '../../interfaces/IResizableOutput';
 @Directive({
   selector: '[ngxResizable]',
   host: {
-    '[style.position]': '"relative"',
+    '[style.position]': '"relative !important"',
     '[style.transition-property]': 'resizing ? "none" : ""',
     '[style.user-select]': 'resizing ? "none" : ""',
     '[style.z-index]': 'resizing ? "999999" : ""',
