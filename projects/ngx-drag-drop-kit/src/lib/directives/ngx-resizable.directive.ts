@@ -35,7 +35,6 @@ export class NgxResizableDirective implements OnInit {
   }
   @Input() minWidth = 20;
   @Input() minHeight = 20;
-  @Input() disableTransform = false;
   @Input() corners: Corner[] = ['top', 'right', 'left', 'bottom', 'topLeft', 'topRight', 'bottomLeft', 'bottomRight'];
   @Output() resizeStart = new EventEmitter();
   @Output() resize = new EventEmitter<IResizableOutput>();
@@ -148,7 +147,8 @@ export class NgxResizableDirective implements OnInit {
     this.resizer = resizer;
     event.preventDefault();
     event.stopPropagation();
-    
+    this.initXY();
+
     this.initSize();
     this.checkFlexibale();
     this.resizeStart.emit();
@@ -158,32 +158,17 @@ export class NgxResizableDirective implements OnInit {
     const elRec = this.el.getBoundingClientRect();
     this.width = elRec.width;
     this.height = elRec.height;
-    
-    if (this.disableTransform) {
-      // وقتی transform غیرفعال است، از computed style استفاده می‌کنیم
-      const computedStyle = getComputedStyle(this.el);
-      this.left = parseFloat(computedStyle.left) || 0;
-      this.top = parseFloat(computedStyle.top) || 0;
-      // در حالت disableTransform، x و y را صفر می‌کنیم
-      this.x = 0;
-      this.y = 0;
-    } else {
-      this.left = this.el.offsetLeft;
-      this.top = this.el.offsetTop;
-      this.initXY();
-    }
-    
+    this.left = this.el.offsetLeft;
+    this.top = this.el.offsetTop;
+    // this.el.style.top = this.top + 'px';
+    // this.el.style.left = this.left + 'px';
     this.setElPosition();
   }
 
   public setElPosition() {
-    if (!this.disableTransform) {
-      this.el.style.transform = `translate(${this.x}px,${this.y}px)`;
-    } else {
-      // وقتی transform غیرفعال است، left و top را با تغییرات x و y ترکیب می‌کنیم
-      this.el.style.left = (this.left + this.x) + 'px';
-      this.el.style.top = (this.top + this.y) + 'px';
-    }
+    this.el.style.transform = `translate(${this.x}px,${this.y}px)`;
+    //this.el.style.removeProperty('position');
+    // this.el.style.position = 'fixed';
     this.el.style.width = this.width + 'px';
     this.el.style.height = this.height + 'px';
   }

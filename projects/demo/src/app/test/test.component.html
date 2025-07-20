@@ -1,5 +1,5 @@
 <div class="demo-container">
-  <h2>NgxDraggable Directive - disableTransform Demo</h2>
+  <h2>NgxDraggable Directive </h2>
 
   <div class="demo-section">
     <h3>With Transform (Default)</h3>
@@ -15,20 +15,7 @@
     </div>
   </div>
 
-  <div class="demo-section">
-    <h3>With Left/Top Positioning (disableTransform = true)</h3>
-    <div class="demo-area">
-      <div
-        class="draggable-item left-top-enabled"
-        ngxDraggable
-        [disableTransform]="true"
-        (dragStart)="onDragStart($event)"
-        (dragMove)="onDragMove($event)"
-        (dragEnd)="onDragEnd($event)">
-        Left/Top Enabled
-      </div>
-    </div>
-  </div>
+ 
 
   <div class="demo-section">
     <h3>With Boundary Constraint</h3>
@@ -46,12 +33,11 @@
   </div>
 
   <div class="demo-section">
-    <h3>With Boundary + disableTransform</h3>
+    <h3>With Boundary </h3>
     <div class="demo-area boundary-container" #boundaryContainer2>
       <div
         class="draggable-item boundary-transform-disabled"
         ngxDraggable
-        [disableTransform]="true"
         [boundary]="boundaryContainer2"
         (dragStart)="onDragStart($event)"
         (dragMove)="onDragMove($event)"

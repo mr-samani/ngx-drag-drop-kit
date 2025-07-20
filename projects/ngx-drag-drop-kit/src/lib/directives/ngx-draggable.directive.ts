@@ -15,7 +15,7 @@ import { getPointerPosition } from '../../utils/get-position';
 import { checkBoundX, checkBoundY } from '../../utils/check-boundary';
 import { NgxDropListDirective } from './ngx-drop-list.directive';
 import { NgxDragDropService } from '../services/ngx-drag-drop.service';
-import { getPositionFromElement } from '../../utils/get-transform';
+import { getPositionFromElement, getXYfromTransform } from '../../utils/get-transform';
 import { AutoScroll } from '../services/auto-scroll.service';
 import { IPosition } from '../../interfaces/IPosition';
 export const NGX_DROP_LIST = new InjectionToken<NgxDropListDirective>('NgxDropList');
@@ -31,7 +31,6 @@ export const NGX_DROP_LIST = new InjectionToken<NgxDropListDirective>('NgxDropLi
     '[style.touch-action]': 'dragging ? "none" : ""',
     '[style.-webkit-user-drag]': 'dragging ? "none" : ""',
     '[style.-webkit-tap-highlight-color]': 'dragging ? "transparent" : ""',
-    '[style.position]': 'disableTransform ? "absolute" : ""',
     class: 'ngx-draggable',
   },
   standalone: true,
@@ -42,7 +41,6 @@ export class NgxDraggableDirective implements OnDestroy, OnInit {
   @Input() set boundary(val: HTMLElement) {
     this._boundary = val;
   }
-  @Input() disableTransform = false;
 
   @Output() dragStart = new EventEmitter<IPosition>();
   @Output() dragMove = new EventEmitter<IPosition>();
@@ -58,7 +56,6 @@ export class NgxDraggableDirective implements OnDestroy, OnInit {
   protected y: number = 0;
   private previousXY: IPosition = { x: 0, y: 0 };
   private subscriptions: Subscription[] = [];
-  private originalPosition: { left: string; top: string; transform: string } = { left: '', top: '', transform: '' };
   containerDropList?: NgxDropListDirective;
 
   constructor(
@@ -82,28 +79,9 @@ export class NgxDraggableDirective implements OnDestroy, OnInit {
   }
 
   initXY() {
-    const xy = getPositionFromElement(this.el, true);
+    const xy = getXYfromTransform(this.el);
     this.x = xy.x;
     this.y = xy.y;
-
-    if (this.disableTransform) {
-      // Get position using the appropriate method based on disableTransform setting
-      const position = getPositionFromElement(this.el, !this.disableTransform);
-      this.x = position.x;
-      this.y = position.y;
-      // Store original position styles when using left/top positioning
-      const computedStyle = getComputedStyle(this.el);
-      this.originalPosition.left = computedStyle.left;
-      this.originalPosition.top = computedStyle.top;
-      this.originalPosition.transform = computedStyle.transform;
-
-      // Ensure element has absolute positioning when disableTransform is true
-      if (computedStyle.position !== 'absolute') {
-        this._renderer.setStyle(this.el, 'position', 'absolute');
-      }
-    }
-
-    console.log('initXY', this.x, this.y, 'disableTransform:', this.disableTransform);
   }
 
   initDrag() {
@@ -183,47 +161,8 @@ export class NgxDraggableDirective implements OnDestroy, OnInit {
       this.previousXY.y = position.y;
     }
 
-    console.log('offsetX', offsetX, 'offsetY', offsetY, 'x', this.x, 'y', this.y);
-
-    if (this.disableTransform) {
-      // Use left/top positioning when transform is disabled
-      this._renderer.setStyle(this.el, 'left', this.x + 'px');
-      this._renderer.setStyle(this.el, 'top', this.y + 'px');
-      // Clear any existing transform to avoid conflicts
-      this._renderer.setStyle(this.el, 'transform', 'none');
-    } else {
-      // Use transform positioning when transform is enabled
-      let transform = `translate(${this.x}px, ${this.y}px)`;
-      this._renderer.setStyle(this.el, 'transform', transform);
-      // Clear left/top styles to avoid conflicts
-      this._renderer.setStyle(this.el, 'left', '');
-      this._renderer.setStyle(this.el, 'top', '');
-    }
-  }
-
-  /**
-   * Reset the element's position to its original state
-   */
-  resetPosition() {
-    if (this.disableTransform) {
-      this._renderer.setStyle(this.el, 'left', this.originalPosition.left);
-      this._renderer.setStyle(this.el, 'top', this.originalPosition.top);
-      this._renderer.setStyle(this.el, 'transform', this.originalPosition.transform);
-    } else {
-      this._renderer.setStyle(this.el, 'transform', 'translate(0px, 0px)');
-      this._renderer.setStyle(this.el, 'left', '');
-      this._renderer.setStyle(this.el, 'top', '');
-    }
-    this.x = 0;
-    this.y = 0;
-  }
-
-  /**
-   * Set the element's position manually
-   */
-  setPosition(x: number, y: number) {
-    this.x = x;
-    this.y = y;
-    this.updatePosition(0, 0, { x: 0, y: 0 });
+    // Use transform positioning when transform is enabled
+    let transform = `translate(${this.x}px, ${this.y}px)`;
+    this._renderer.setStyle(this.el, 'transform', transform);
   }
 }
