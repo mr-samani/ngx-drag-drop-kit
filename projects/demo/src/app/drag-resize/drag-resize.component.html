@@ -1,6 +1,12 @@
 <div class="drag-item" ngxDraggable>1</div>
 <div class="drag-item" ngxResizable>resizable</div>
-<div class="drag-item" ngxResizable ngxDraggable (resizeEnd)="onResizeEnd($event)" (dragEnd)="onDragEnd($event)">
+<div
+  class="drag-item"
+  ngxResizable
+  ngxDraggable
+  [disableTransform]="true"
+  (resizeEnd)="onResizeEnd($event)"
+  (dragEnd)="onDragEnd($event)">
   resizable and dragable
 </div>
 
