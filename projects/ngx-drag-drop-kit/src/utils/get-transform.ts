@@ -5,3 +5,12 @@ export function getXYfromTransform(el: HTMLElement) {
   const y = parseFloat(matrix.length > 6 ? matrix[13] : matrix[5]) || 0;
   return { x, y };
 }
+
+export function getPositionFromElement(el: HTMLElement, useTransform: boolean = true) {
+  if (useTransform) {
+    return getXYfromTransform(el);
+  } else {
+    const rec = el.getBoundingClientRect();
+    return { x: rec.left + window.scrollX, y: rec.top + window.scrollY };
+  }
+}

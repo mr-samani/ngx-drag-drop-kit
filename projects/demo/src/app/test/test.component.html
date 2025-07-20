@@ -1,14 +1,73 @@
-<p>test works!</p>
-<ul>
-@for (item of list; track item)
-{
-    <ol>{{item.Title}}</ol>
-}
-</ul>
+<div class="demo-container">
+  <h2>NgxDraggable Directive - disableTransform Demo</h2>
 
+  <div class="demo-section">
+    <h3>With Transform (Default)</h3>
+    <div class="demo-area">
+      <div
+        class="draggable-item transform-enabled"
+        ngxDraggable
+        (dragStart)="onDragStart($event)"
+        (dragMove)="onDragMove($event)"
+        (dragEnd)="onDragEnd($event)">
+        Transform Enabled
+      </div>
+    </div>
+  </div>
 
-<div class="d-flex align-items-center justify-content-between">
-    <button (click)="LoadDta()" class="btn btn-primary">
-        add
-    </button>
+  <div class="demo-section">
+    <h3>With Left/Top Positioning (disableTransform = true)</h3>
+    <div class="demo-area">
+      <div
+        class="draggable-item left-top-enabled"
+        ngxDraggable
+        [disableTransform]="true"
+        (dragStart)="onDragStart($event)"
+        (dragMove)="onDragMove($event)"
+        (dragEnd)="onDragEnd($event)">
+        Left/Top Enabled
+      </div>
+    </div>
+  </div>
+
+  <div class="demo-section">
+    <h3>With Boundary Constraint</h3>
+    <div class="demo-area boundary-container" #boundaryContainer>
+      <div
+        class="draggable-item boundary-constrained"
+        ngxDraggable
+        [boundary]="boundaryContainer"
+        (dragStart)="onDragStart($event)"
+        (dragMove)="onDragMove($event)"
+        (dragEnd)="onDragEnd($event)">
+        Boundary Constrained
+      </div>
+    </div>
+  </div>
+
+  <div class="demo-section">
+    <h3>With Boundary + disableTransform</h3>
+    <div class="demo-area boundary-container" #boundaryContainer2>
+      <div
+        class="draggable-item boundary-transform-disabled"
+        ngxDraggable
+        [disableTransform]="true"
+        [boundary]="boundaryContainer2"
+        (dragStart)="onDragStart($event)"
+        (dragMove)="onDragMove($event)"
+        (dragEnd)="onDragEnd($event)">
+        Boundary + Left/Top
+      </div>
+    </div>
+  </div>
+
+  <div class="info-panel">
+    <h3>Drag Events Log</h3>
+    <div class="event-log">
+      <div *ngFor="let event of dragEvents" class="event-item">
+        <span class="event-type">{{ event.type }}</span>
+        <span class="event-position">X: {{ event.x }}, Y: {{ event.y }}</span>
+      </div>
+    </div>
+  </div>
 </div>
