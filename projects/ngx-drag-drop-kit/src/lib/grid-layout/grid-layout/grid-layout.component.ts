@@ -47,12 +47,11 @@ export class GridLayoutComponent implements OnInit, AfterViewInit {
 
   el: HTMLElement;
   @ContentChildren(GridItemComponent) set items(value: QueryList<GridItemComponent>) {
-    log('Change grid items in main layout.');
+    // log('Change grid items in main layout.');
     if (value) {
       value.changes.subscribe((_) => {
         // log('Add new item to grid:', _);
       });
-      logStartTime('StartInit');
       this._gridService._gridItems = Array.from(value);
       this.initGridItems();
     }
@@ -74,6 +73,9 @@ export class GridLayoutComponent implements OnInit, AfterViewInit {
   ngOnInit(): void {
     this.setBackgroundCssVariables();
     this._gridService._mainEl = this.el;
+    // تشخیص جهت RTL یا LTR
+    const dir = getComputedStyle(this.el).direction;
+    this._gridService.isRtl = dir === 'rtl';
   }
 
   ngAfterViewInit(): void {}
@@ -122,7 +124,6 @@ export class GridLayoutComponent implements OnInit, AfterViewInit {
     log('Initialize gridItems done.', this._gridService._gridItems.length);
     this._gridService.compactGridItems();
 
-    logEndTime('StartInit');
     setTimeout(() => {
       this._changeDetection.detectChanges();
     }, 0);

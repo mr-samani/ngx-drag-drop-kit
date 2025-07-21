@@ -36,31 +36,4 @@ export function getPointerPosition(evt: MouseEvent | TouchEvent): IPosition {
   }
 }
 
-export function getRelativePosition(el: HTMLElement, container: HTMLElement): { x: number; y: number } {
-  let elX = 0,
-    elY = 0;
-  let current: HTMLElement | null = el;
 
-  // جمع کردن offset های والدها تا زمانی که به container برسیم یا null بشه
-  while (current && current !== container) {
-    const currentStyles = getComputedStyle(current);
-    const bl: number = parseFloat(currentStyles.borderLeftWidth || '0');
-    const bt: number = parseFloat(currentStyles.borderTopWidth || '0');
-    elX += current.offsetLeft - current.scrollLeft + current.clientLeft - bl;
-    elY += current.offsetTop - current.scrollTop + current.clientTop - bt;
-    current = current.offsetParent as HTMLElement;
-  }
-
-  if (current !== container) {
-    // اگه container اصلاً توی مسیر offsetParent نبود، باید fallback کنیم
-    const elRect = el.getBoundingClientRect();
-    const containerRect = container.getBoundingClientRect();
-
-    return {
-      x: elRect.left - containerRect.left,
-      y: elRect.top - containerRect.top,
-    };
-  }
-
-  return { x: elX, y: elY };
-}

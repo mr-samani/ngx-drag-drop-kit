@@ -38,8 +38,7 @@ grid-layout {
 .grid-item-placeholder {
   position: absolute;
   z-index: 0;
-  transition-property: transform;
-  transition: all 150ms ease !important;
+  transition: transform 150ms ease !important;
 
   &-default {
     opacity: 0.5;

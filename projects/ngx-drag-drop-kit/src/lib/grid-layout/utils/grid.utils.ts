@@ -19,7 +19,7 @@ export function screenYToGridY(screenYPos: number, rowHeight: number, gap: numbe
   return Math.round(screenYPos / (rowHeight + gap));
 }
 
-export function gridXToScreenX(cellWidth: number, x: number, gap: number) {
+export function gridXToScreenX(cellWidth: number, x: number, gap: number, cols?: number, w?: number, rtl?: boolean) {
   const gridX = cellWidth * x + gap * (x + 1);
   return gridX;
 }

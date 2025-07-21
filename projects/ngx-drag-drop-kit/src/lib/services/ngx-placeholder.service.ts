@@ -2,8 +2,8 @@ import { Inject, Injectable, Renderer2, RendererFactory2 } from '@angular/core';
 import { Subject, distinctUntilChanged } from 'rxjs';
 import { DOCUMENT } from '@angular/common';
 import { NgxDropListDirective } from '../directives/ngx-drop-list.directive';
-import { getRelativePosition } from '../../utils/get-position';
-import { IUpdatePlaceholderPosition } from '../../models/update-placeholder-position';
+ import { IUpdatePlaceholderPosition } from '../../models/update-placeholder-position';
+import { getRelativePosition } from '../../utils/get-relative-position';
 
 @Injectable({
   providedIn: 'root',

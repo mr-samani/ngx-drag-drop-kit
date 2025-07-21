@@ -20,6 +20,7 @@ import {
 import { FakeItem, GridItemConfig } from '../options/gride-item-config';
 import { mergeDeep } from '../../../utils/deep-merge';
 import { log } from '../utils/log';
+import { getRelativePosition } from '../../../utils/get-relative-position';
 
 export const DEFAULT_GRID_ITEM_CONFIG = new GridItemConfig();
 export const DEFAULT_GRID_LAYOUT_CONFIG = new GridLayoutOptions();
@@ -29,6 +30,7 @@ export class GridLayoutService {
   public _options: GridLayoutOptions = DEFAULT_GRID_LAYOUT_CONFIG;
   public _mainEl!: HTMLElement;
   public _gridItems: GridItemComponent[] = [];
+  public isRtl: boolean = false;
 
   public _placeholderContainerRef!: ViewContainerRef;
   private placeHolder?: GridItemComponent;
@@ -55,14 +57,18 @@ export class GridLayoutService {
   }
 
   public updateGridItem(item: GridItemComponent) {
-    console.log('previous', item.left);
     item.config = mergeDeep(DEFAULT_GRID_ITEM_CONFIG, item.config);
     item.width = gridWToScreenWidth(this.cellWidth, item.config.w, this._options.gap);
     item.height = gridHToScreenHeight(this.cellHeight, item.config.h, this._options.gap);
-    item.left = gridXToScreenX(this.cellWidth, item.config.x, this._options.gap);
+    item.left = gridXToScreenX(
+      this.cellWidth,
+      item.config.x,
+      this._options.gap,
+      this._options.cols,
+      item.config.w,
+      this.isRtl
+    );
     item.top = gridYToScreenY(this.cellHeight, item.config.y, this._options.gap);
-    // console.log('updateGridItem', item.left, item.top);
-    console.log('after', item.left);
     item.updateView();
   }
 
@@ -115,9 +121,15 @@ export class GridLayoutService {
   }
 
   onMoveOrResize(item: GridItemComponent) {
-    const gridItemRec = item.el.getBoundingClientRect();
-    // console.log(item.el, gridItemRec);
-    let plcInfo = this.convertPointToCell(gridItemRec.left, gridItemRec.top, gridItemRec.width, gridItemRec.height);
+    if (!this._mainEl) return;
+    const itemRect = item.el.getBoundingClientRect();
+    const position = item.el.getBoundingClientRect();
+    if (this.isRtl) {
+      position.x = this.mainWidth - position.x - itemRect.width;
+      position.y = this.mainHeight - position.y - itemRect.height;
+    }
+
+    let plcInfo = this.convertPointToCell(position.x, position.y, itemRect.width, itemRect.height);
     const fakeItem: FakeItem = {
       x: plcInfo.cellX,
       y: plcInfo.cellY,
@@ -125,6 +137,7 @@ export class GridLayoutService {
       h: plcInfo.cellH,
       id: item.id,
     };
+    console.log('placeholder', position, fakeItem);
     this.updatePlaceholderPosition$.next(fakeItem);
   }
 
@@ -147,8 +160,8 @@ export class GridLayoutService {
 
   convertPointToCell(x: number, y: number, width: number, height: number) {
     const mainRec = this._mainEl.getBoundingClientRect();
-    const newX = x - mainRec.left;
-    const newY = y - mainRec.top;
+    const newX = x;
+    const newY = y;
     let cellX = screenXToGridX(newX, this._options.cols, mainRec.width, this._options.gap);
     let cellY = screenYToGridY(newY, this.cellHeight, this._options.gap);
     let cellW = screenWidthToGridWidth(width, this._options.cols, mainRec.width, this._options.gap);
@@ -242,6 +255,7 @@ export class GridLayoutService {
         fakeItem.y--;
         gridItem.config.y--;
       }
+
       this.updateGridItem(gridItem);
     }
     // todo:perhaps  must sort after compact
