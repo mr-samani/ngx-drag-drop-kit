@@ -12,13 +12,12 @@ import {
 } from '@angular/core';
 import { Corner } from '../../utils/corner-type';
 import { checkBoundX, checkBoundY } from '../../utils/check-boundary';
-import { getXYfromTransform } from '../../utils/get-transform';
 import { IResizableOutput } from '../../interfaces/IResizableOutput';
+import { getRelativePosition } from '../../utils/get-position';
 
 @Directive({
   selector: '[ngxResizable]',
   host: {
-    '[style.position]': '"relative !important"',
     '[style.transition-property]': 'resizing ? "none" : ""',
     '[style.user-select]': 'resizing ? "none" : ""',
     '[style.z-index]': 'resizing ? "999999" : ""',
@@ -39,39 +38,34 @@ export class NgxResizableDirective implements OnInit {
   @Output() resizeStart = new EventEmitter();
   @Output() resize = new EventEmitter<IResizableOutput>();
   @Output() resizeEnd = new EventEmitter<IResizableOutput>();
+
   protected resizer!: Function;
   protected px: number = 0;
   protected py: number = 0;
 
-  protected x: number = 0;
-  protected y: number = 0;
+  protected left: number = 0;
+  protected top: number = 0;
 
   protected width!: number;
   protected height!: number;
-  protected left!: number;
-  protected top!: number;
 
   resizing = false;
   el: HTMLElement;
-  isRtl: boolean;
+  isRtl: boolean = false;
+
   constructor(
     elRef: ElementRef<HTMLElement>,
     private renderer: Renderer2,
     @Inject(DOCUMENT) private document: Document
   ) {
     this.el = elRef.nativeElement;
-    this.isRtl = getComputedStyle(this.el).direction === 'rtl';
   }
 
   ngOnInit(): void {
+    this.isRtl = getComputedStyle(this.el).direction === 'rtl';
+    console.log(this.isRtl);
     this.addCornerDiv();
     this.initXY();
-  }
-
-  initXY() {
-    const xy = getXYfromTransform(this.el);
-    this.x = xy.x;
-    this.y = xy.y;
   }
 
   private getRealPosition() {
@@ -86,9 +80,7 @@ export class NgxResizableDirective implements OnInit {
 
   @HostListener('document:mousemove', ['$event'])
   private onCornerMouseMove(event: MouseEvent) {
-    if (!this.resizing) {
-      return;
-    }
+    if (!this.resizing) return;
     let offsetX = event.clientX - this.px;
     let offsetY = event.clientY - this.py;
     this.onCornerMove(offsetX, offsetY, event.clientX, event.clientY);
@@ -96,25 +88,24 @@ export class NgxResizableDirective implements OnInit {
 
   @HostListener('document:touchmove', ['$event'])
   private onCornerTouchMove(event: TouchEvent) {
-    if (!this.resizing) {
-      return;
-    }
+    if (!this.resizing) return;
     let offsetX = event.touches[0].clientX - this.px;
     let offsetY = event.touches[0].clientY - this.py;
     let clientX = event.touches[0].clientX;
     let clientY = event.touches[0].clientY;
     this.onCornerMove(offsetX, offsetY, clientX, clientY);
   }
+
   @HostListener('document:mouseup', ['$event'])
   @HostListener('document:touchend', ['$event'])
-  private onCornerRelease(event: MouseEvent) {
+  private onCornerRelease() {
     if (this.resizing) {
       const realPos = this.getRealPosition();
       this.resizeEnd.emit({
         width: this.width,
         height: this.height,
-        moveLeft: this.x,
-        moveTop: this.y,
+        moveLeft: this.left,
+        moveTop: this.top,
         left: realPos.realLeft,
         top: realPos.realTop,
       });
@@ -123,6 +114,11 @@ export class NgxResizableDirective implements OnInit {
   }
 
   private addCornerDiv() {
+    const selfStyle = getComputedStyle(this.el);
+    if (selfStyle.position !== 'absolute' && selfStyle.position !== 'relative' && selfStyle.position !== 'fixed') {
+      this.renderer.setStyle(this.el, 'position', 'relative');
+    }
+
     for (const corner of this.corners) {
       const child = this.document.createElement('div');
       child.classList.add('ngx-corner-resize', corner);
@@ -141,6 +137,8 @@ export class NgxResizableDirective implements OnInit {
     this.resizing = true;
     this.isRtl = getComputedStyle(this.el).direction === 'rtl';
 
+    this.el.style.setProperty('right', 'unset');
+
     this.px = event instanceof MouseEvent ? event.clientX : event.touches[0].clientX;
     this.py = event instanceof MouseEvent ? event.clientY : event.touches[0].clientY;
 
@@ -148,64 +146,56 @@ export class NgxResizableDirective implements OnInit {
     event.preventDefault();
     event.stopPropagation();
     this.initXY();
-
-    this.initSize();
     this.checkFlexibale();
     this.resizeStart.emit();
   }
 
-  private initSize() {
+  initXY() {
     const elRec = this.el.getBoundingClientRect();
+    const position = getRelativePosition(this.el, this.el.offsetParent as HTMLElement);
+    //const computed = getComputedStyle(this.el);
+    //this.x = parseFloat(computed.left || '0');
+    //this.y = parseFloat(computed.top || '0');
     this.width = elRec.width;
     this.height = elRec.height;
-    this.left = this.el.offsetLeft;
-    this.top = this.el.offsetTop;
-    // this.el.style.top = this.top + 'px';
-    // this.el.style.left = this.left + 'px';
+    this.left = position.x;
+    this.top = position.y;
     this.setElPosition();
   }
 
-  public setElPosition() {
-    this.el.style.transform = `translate(${this.x}px,${this.y}px)`;
-    //this.el.style.removeProperty('position');
-    // this.el.style.position = 'fixed';
-    this.el.style.width = this.width + 'px';
-    this.el.style.height = this.height + 'px';
+  private setElPosition() {
+    this.renderer.setStyle(this.el, 'left', `${this.left}px`);
+    this.renderer.setStyle(this.el, 'top', `${this.top}px`);
+    this.renderer.setStyle(this.el, 'width', `${this.width}px`);
+    this.renderer.setStyle(this.el, 'height', `${this.height}px`);
   }
 
-  // TODO : resize material dialog
-  // TODO not working in rtl
   private checkFlexibale() {
-    // if (!document.defaultView || !this.el.parentElement) {
-    //   return;
-    // }
-    // let parentStyle = document.defaultView.getComputedStyle(
-    //   this.el.parentElement
-    // );
-    // if (
-    //   (parentStyle.alignItems && parentStyle.alignItems !== 'normal') ||
-    //   (parentStyle.justifyContent && parentStyle.justifyContent !== 'normal')
-    // ) {
-    //   this.el.parentElement.style.display = 'block';
-    //   this.el.parentElement.style.alignItems = 'unset';
-    //   this.el.parentElement.style.justifyContent = 'unset';
-    //   this.el.style.position = 'unset !important';
-    // }
+    // اگر داخل parent فلکسی هست و باعث پرش می‌شه، تغییرات لازم را بده
+    const parent = this.el.parentElement;
+    if (!parent) return;
+    const style = getComputedStyle(parent);
+
+    if (['flex', 'inline-flex'].includes(style.display)) {
+      this.renderer.setStyle(this.el, 'position', 'absolute');
+    }
   }
 
   private onCornerMove(offsetX: number, offsetY: number, clientX: number, clientY: number) {
-    let lastX = this.x;
-    let lastY = this.y;
-    let pWidth = this.width;
-    let pHeight = this.height;
+    const lastLeft = this.left;
+    const lastTop = this.top;
+    const lastWidth = this.width;
+    const lastHeight = this.height;
+
     this.resizer(offsetX, offsetY);
+
     if (this.width < this.minWidth) {
-      this.x = lastX;
-      this.width = pWidth;
+      this.left = lastLeft;
+      this.width = lastWidth;
     }
     if (this.height < this.minHeight) {
-      this.y = lastY;
-      this.height = pHeight;
+      this.top = lastTop;
+      this.height = lastHeight;
     }
 
     this.px = clientX;
@@ -216,23 +206,21 @@ export class NgxResizableDirective implements OnInit {
     this.resize.emit({
       width: this.width,
       height: this.height,
-      moveLeft: this.x,
-      moveTop: this.y,
+      moveLeft: this.left,
+      moveTop: this.top,
       left: realPos.realLeft,
       top: realPos.realTop,
     });
   }
 
-  /*--------------RESIZE FUNCTIONS--------------------------*/
+  /* ----------------- Resize Corner Logic ----------------- */
   private topLeftResize(offsetX: number, offsetY: number) {
     if (checkBoundX(this._boundary, this.el, offsetX, true, false)) {
       this.width -= offsetX;
-      if (!this.isRtl) {
-        this.x += offsetX;
-      }
+      this.left += offsetX;
     }
     if (checkBoundY(this._boundary, this.el, offsetY)) {
-      this.y += offsetY;
+      this.top += offsetY;
       this.height -= offsetY;
     }
   }
@@ -240,12 +228,9 @@ export class NgxResizableDirective implements OnInit {
   private topRightResize(offsetX: number, offsetY: number) {
     if (checkBoundX(this._boundary, this.el, offsetX, false, true)) {
       this.width += offsetX;
-      if (this.isRtl) {
-        this.x += offsetX;
-      }
     }
     if (checkBoundY(this._boundary, this.el, offsetY, true, false)) {
-      this.y += offsetY;
+      this.top += offsetY;
       this.height -= offsetY;
     }
   }
@@ -253,9 +238,7 @@ export class NgxResizableDirective implements OnInit {
   private bottomLeftResize(offsetX: number, offsetY: number) {
     if (checkBoundX(this._boundary, this.el, offsetX, true, false)) {
       this.width -= offsetX;
-      if (!this.isRtl) {
-        this.x += offsetX;
-      }
+      this.left += offsetX;
     }
     if (checkBoundY(this._boundary, this.el, offsetY, false)) {
       this.height += offsetY;
@@ -265,39 +248,35 @@ export class NgxResizableDirective implements OnInit {
   private bottomRightResize(offsetX: number, offsetY: number) {
     if (checkBoundX(this._boundary, this.el, offsetX, false)) {
       this.width += offsetX;
-      if (this.isRtl) {
-        this.x += offsetX;
-      }
     }
     if (checkBoundY(this._boundary, this.el, offsetY, false)) {
       this.height += offsetY;
     }
   }
+
   private topResize(offsetX: number, offsetY: number) {
     if (checkBoundY(this._boundary, this.el, offsetY, true, false)) {
-      this.y += offsetY;
+      this.top += offsetY;
       this.height -= offsetY;
     }
   }
+
   private rightResize(offsetX: number, offsetY: number) {
     if (checkBoundX(this._boundary, this.el, offsetX, false)) {
       this.width += offsetX;
-      if (this.isRtl) {
-        this.x += offsetX;
-      }
     }
   }
+
   private bottomResize(offsetX: number, offsetY: number) {
     if (checkBoundY(this._boundary, this.el, offsetY, false)) {
       this.height += offsetY;
     }
   }
+
   private leftResize(offsetX: number, offsetY: number) {
     if (checkBoundX(this._boundary, this.el, offsetX, true, false)) {
       this.width -= offsetX;
-      if (!this.isRtl) {
-        this.x += offsetX;
-      }
+      if (this.isRtl) this.left += offsetX;
     }
   }
 }
