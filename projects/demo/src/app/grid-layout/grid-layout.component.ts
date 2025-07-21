@@ -71,6 +71,11 @@ export class GridLayoutComponent {
       this.showLayout = true;
     }, 10);
   }
+
+
+  getLayout(){
+    
+  }
 }
 
 export interface DashboardItem {

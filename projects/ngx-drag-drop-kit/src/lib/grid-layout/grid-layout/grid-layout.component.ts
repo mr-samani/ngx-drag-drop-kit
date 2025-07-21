@@ -17,7 +17,6 @@ import {
 import { IGridLayoutOptions } from '../options/options';
 import { DEFAULT_GRID_LAYOUT_CONFIG, GridLayoutService } from '../services/grid-layout.service';
 import { GridItemComponent } from '../grid-item/grid-item.component';
-import { log, logEndTime, logStartTime } from '../utils/log';
 import { mergeDeep } from '../../../utils/deep-merge';
 import { getFirstCollision } from '../utils/grid.utils';
 
@@ -35,8 +34,7 @@ import { getFirstCollision } from '../utils/grid.utils';
   encapsulation: ViewEncapsulation.None,
 })
 export class GridLayoutComponent implements OnInit, AfterViewInit {
-  @Input()
-  get options() {
+  @Input() get options() {
     return this._gridService._options;
   }
   set options(val: IGridLayoutOptions) {
@@ -47,12 +45,10 @@ export class GridLayoutComponent implements OnInit, AfterViewInit {
 
   el: HTMLElement;
   @ContentChildren(GridItemComponent) set items(value: QueryList<GridItemComponent>) {
-    log('Change grid items in main layout.');
     if (value) {
       value.changes.subscribe((_) => {
         // log('Add new item to grid:', _);
       });
-      logStartTime('StartInit');
       this._gridService._gridItems = Array.from(value);
       this.initGridItems();
     }
@@ -115,14 +111,11 @@ export class GridLayoutComponent implements OnInit, AfterViewInit {
       //validate
       while (getFirstCollision(this._gridService._gridItems, { ...item.config, id: item.id })) {
         item.config.y++;
-        log('shift down');
       }
       this._gridService.updateGridItem(item);
     }
-    log('Initialize gridItems done.', this._gridService._gridItems.length);
     this._gridService.compactGridItems();
 
-    logEndTime('StartInit');
     setTimeout(() => {
       this._changeDetection.detectChanges();
     }, 0);

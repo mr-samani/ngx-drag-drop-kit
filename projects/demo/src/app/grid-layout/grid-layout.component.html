@@ -2,9 +2,11 @@
 <button (click)="add()">add</button>
 <button (click)="add10()">add 10</button>
 <button (click)="clear()">clear</button>
-<button (click)="rerenderLayout()">rerenderLayout</button>
+<button (click)="rerenderLayout()">ReRender ayout</button>
+<button (click)="getLayout()">Log layouts</button>
+
 <label>
-  <input type="checkbox" [(ngModel)]="options.pushOnDrag"  name="pushOnDrag"/>
+  <input type="checkbox" [(ngModel)]="options.pushOnDrag" name="pushOnDrag" />
   pushOnDrag
 </label>
 <grid-layout [options]="options" *ngIf="showLayout">
@@ -16,6 +18,5 @@
   }
 </grid-layout>
 
-
 config:
-<pre>{{options|json}}</pre>
+<pre>{{ options | json }}</pre>

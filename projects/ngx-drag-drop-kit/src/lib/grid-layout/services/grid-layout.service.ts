@@ -19,7 +19,6 @@ import {
 } from '../utils/grid.utils';
 import { FakeItem, GridItemConfig } from '../options/gride-item-config';
 import { mergeDeep } from '../../../utils/deep-merge';
-import { log } from '../utils/log';
 
 export const DEFAULT_GRID_ITEM_CONFIG = new GridItemConfig();
 export const DEFAULT_GRID_LAYOUT_CONFIG = new GridLayoutOptions();
@@ -236,7 +235,6 @@ export class GridLayoutService {
           // console.log('has collission with placehlder');
           break;
         }
-        log('shift up');
         fakeItem.y--;
         gridItem.config.y--;
       }

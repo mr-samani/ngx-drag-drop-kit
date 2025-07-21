@@ -5,7 +5,6 @@
 import { GridItemComponent } from '../grid-item/grid-item.component';
 import { FakeItem } from '../options/gride-item-config';
 import { CompactType } from '../options/options';
-import { log } from './log';
 
 export function screenXToGridX(screenXPos: number, cols: number, gridWidth: number, gap: number): number {
   const widthMinusGaps = gridWidth - gap * (cols - 1);
