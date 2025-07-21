@@ -71,19 +71,20 @@ export class NgxResizableDirective implements AfterViewInit {
     if (!this.isAbsoluteOrFixed) {
       this.renderer.setStyle(this.el, 'position', 'relative');
     }
-    this.isRtl = selfStyle.direction === 'rtl';
+    this.isRtl = selfStyle.direction === 'rtl' || this.el.closest('[dir=rtl]') !== null;
 
     this.addCornerDiv();
-    this.initXY(); 
+    this.initXY();
   }
 
   private getRealPosition() {
     const rect = this.el.getBoundingClientRect();
+    const parentRect = this.el.offsetParent?.getBoundingClientRect() ?? { left: 0, top: 0 };
     return {
       realLeft: rect.left,
       realTop: rect.top,
-      offsetLeft: this.el.offsetLeft,
-      offsetTop: this.el.offsetTop,
+      offsetLeft: rect.left - parentRect.left,
+      offsetTop: rect.top - parentRect.top,
     };
   }
 
@@ -139,9 +140,14 @@ export class NgxResizableDirective implements AfterViewInit {
 
   private onCornerClick(event: MouseEvent | TouchEvent, resizer: Function) {
     this.resizing = true;
-    this.isRtl = getComputedStyle(this.el).direction === 'rtl';
+    let computed = getComputedStyle(this.el);
 
-    this.el.style.setProperty('right', 'unset');
+    this.renderer.setStyle(this.el, 'right', 'unset');
+    if (!computed.left || computed.left === 'auto') {
+      const rect = this.el.getBoundingClientRect();
+      const parentRect = this.el.offsetParent?.getBoundingClientRect() ?? { left: 0 };
+      this.left = rect.left - parentRect.left;
+    }
 
     this.px = event instanceof MouseEvent ? event.clientX : event.touches[0].clientX;
     this.py = event instanceof MouseEvent ? event.clientY : event.touches[0].clientY;
@@ -173,15 +179,15 @@ export class NgxResizableDirective implements AfterViewInit {
     this.renderer.setStyle(this.el, 'height', `${this.height}px`);
   }
 
+  // TODO : check parent flexible for resize
   private checkFlexibale() {
     // اگر داخل parent فلکسی هست و باعث پرش می‌شه، تغییرات لازم را بده
-    const parent = this.el.parentElement;
-    if (!parent) return;
-    const style = getComputedStyle(parent);
-
-    if (['flex', 'inline-flex'].includes(style.display)) {
-      this.renderer.setStyle(this.el, 'position', 'absolute');
-    }
+    // const parent = this.el.parentElement;
+    // if (!parent) return;
+    // const style = getComputedStyle(parent);
+    // if (['flex', 'inline-flex'].includes(style.display)) {
+    //   this.renderer.setStyle(this.el, 'position', 'absolute');
+    // }
   }
 
   private onCornerMove(offsetX: number, offsetY: number, clientX: number, clientY: number) {
@@ -203,17 +209,18 @@ export class NgxResizableDirective implements AfterViewInit {
 
     this.px = clientX;
     this.py = clientY;
-    this.setElPosition();
-
-    const realPos = this.getRealPosition();
-    this.resize.emit({
-      width: this.width,
-      height: this.height,
-      moveLeft: this.left,
-      moveTop: this.top,
-      left: realPos.realLeft,
-      top: realPos.realTop,
-    });
+    if (this.left !== lastLeft || this.top !== lastTop || this.width !== lastWidth || this.height !== lastHeight) {
+      this.setElPosition();
+      const realPos = this.getRealPosition();
+      this.resize.emit({
+        width: this.width,
+        height: this.height,
+        moveLeft: this.left,
+        moveTop: this.top,
+        left: realPos.realLeft,
+        top: realPos.realTop,
+      });
+    }
   }
 
   /* ----------------- Resize Corner Logic ----------------- */
