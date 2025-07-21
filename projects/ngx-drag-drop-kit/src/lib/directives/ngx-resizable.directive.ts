@@ -1,5 +1,6 @@
 import { DOCUMENT } from '@angular/common';
 import {
+  AfterViewInit,
   Directive,
   ElementRef,
   EventEmitter,
@@ -27,7 +28,7 @@ import { getRelativePosition } from '../../utils/get-position';
   standalone: true,
   exportAs: 'NgxResizable',
 })
-export class NgxResizableDirective implements OnInit {
+export class NgxResizableDirective implements AfterViewInit {
   private _boundary?: HTMLElement;
   @Input() set boundary(val: HTMLElement) {
     this._boundary = val;
@@ -63,7 +64,7 @@ export class NgxResizableDirective implements OnInit {
     this.el = elRef.nativeElement;
   }
 
-  ngOnInit(): void {
+  ngAfterViewInit(): void {
     this.checkFlexibale();
     const selfStyle = getComputedStyle(this.el);
     this.isAbsoluteOrFixed = selfStyle.position === 'absolute' || selfStyle.position === 'fixed';
@@ -73,7 +74,7 @@ export class NgxResizableDirective implements OnInit {
     this.isRtl = selfStyle.direction === 'rtl';
 
     this.addCornerDiv();
-    this.initXY();
+    this.initXY(); 
   }
 
   private getRealPosition() {
