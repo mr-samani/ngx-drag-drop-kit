@@ -17,7 +17,7 @@ import { NgxResizableDirective } from '../../directives/ngx-resizable.directive'
 @Component({
   selector: 'grid-item',
   templateUrl: './grid-item.component.html',
-  styleUrl: './grid-item.component.css',
+  styleUrl: './grid-item.component.scss',
   host: {
     '[style.position]': '"absolute !important"',
     '[style.display]': '"block"',
@@ -30,13 +30,13 @@ import { NgxResizableDirective } from '../../directives/ngx-resizable.directive'
 })
 export class GridItemComponent implements OnInit, AfterViewInit, OnDestroy {
   @Input() config: GridItemConfig = new GridItemConfig();
+  @Input() id?: string;
 
   width?: number;
   height?: number;
   left?: number;
   top?: number;
   el: HTMLElement;
-  id!: string;
 
   isDragging = false;
   isResizing = false;
@@ -49,30 +49,15 @@ export class GridItemComponent implements OnInit, AfterViewInit, OnDestroy {
     private _renderer: Renderer2
   ) {
     this.el = elRef.nativeElement;
-    //_gridService.updateGridItem(this);
   }
 
-  // @HostBinding('click')
-  // onClick() {
-  //   let fakeItem: FakeItem = {
-  //     x: this.config.x,
-  //     y: this.config.y,
-  //     w: this.config.w,
-  //     h: this.config.h,
-  //     id: this.id,
-  //   };
-  //   const firstCollission = getFirstCollision(this._gridService._gridItems, fakeItem);
-  // }
-
   ngOnInit(): void {
-    //this.draggable.boundary = this._gridService._mainEl;
     this.draggable.dragStart.subscribe((ev) => (this.isDragging = true));
     this.draggable.dragMove.subscribe((ev) => this._gridService.onMoveOrResize(this));
     this.draggable.dragEnd.subscribe((ev) => {
       this.isDragging = false;
       this._gridService.onMoveOrResizeEnd(this);
     });
-    //this.resizable.boundary = this._gridService._mainEl;
     this.resizable.resizeStart.subscribe((ev) => (this.isResizing = true));
     this.resizable.resize.subscribe((ev) => this._gridService.onMoveOrResize(this));
     this.resizable.resizeEnd.subscribe((ev) => {

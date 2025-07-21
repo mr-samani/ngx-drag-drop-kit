@@ -13,7 +13,6 @@ import { FormsModule } from '@angular/forms';
   styleUrl: './grid-layout.component.scss',
 })
 export class GridLayoutComponent {
-  showLayout = true;
   options: IGridLayoutOptions = {
     cols: 12,
     gap: 10,
@@ -39,8 +38,8 @@ export class GridLayoutComponent {
       w = Math.max(1, Math.min(12 - x, this.getRandomH())),
       h = Math.max(1, Math.min(10 - y, this.getRandomV()));
     let config = new GridItemConfig(x, y, w, h);
-    // console.log('MUST ADD:', config);
-    this.layouts.push({ config });
+
+    this.layouts.push({ config, id: 'GritItem_' + (this.layouts.length + 1) });
   }
 
   private getRandomH() {
@@ -62,23 +61,15 @@ export class GridLayoutComponent {
 
   addInFirst() {
     let config = new GridItemConfig(0, 0, 2, 3);
-    this.layouts.push({ config });
+    this.layouts.push({ config, id: 'addedToFirst' });
   }
 
-  rerenderLayout() {
-    this.showLayout = false;
-    setTimeout(() => {
-      this.showLayout = true;
-    }, 10);
-  }
-
-
-  getLayout(){
-    
+  onLayoutChange(ev: GridItemConfig[]) {
+    console.log('layouts', ev);
   }
 }
 
 export interface DashboardItem {
   config: GridItemConfig;
-  title?: string;
+  id?: string;
 }

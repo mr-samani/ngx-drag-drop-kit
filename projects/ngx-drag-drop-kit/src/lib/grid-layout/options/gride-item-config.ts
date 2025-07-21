@@ -12,9 +12,13 @@ export class GridItemConfig {
 }
 
 export class FakeItem {
-  id!: string;
+  id?: string;
   x!: number;
   y!: number;
   w!: number;
   h!: number;
+}
+
+export interface LayoutOutput extends GridItemConfig {
+  id?: string;
 }

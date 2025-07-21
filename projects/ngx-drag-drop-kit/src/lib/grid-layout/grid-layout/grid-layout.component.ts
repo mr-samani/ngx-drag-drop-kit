@@ -5,9 +5,11 @@ import {
   Component,
   ContentChildren,
   ElementRef,
+  EventEmitter,
   HostListener,
   Input,
   OnInit,
+  Output,
   QueryList,
   ViewChild,
   ViewContainerRef,
@@ -19,6 +21,7 @@ import { DEFAULT_GRID_LAYOUT_CONFIG, GridLayoutService } from '../services/grid-
 import { GridItemComponent } from '../grid-item/grid-item.component';
 import { mergeDeep } from '../../../utils/deep-merge';
 import { getFirstCollision } from '../utils/grid.utils';
+import { GridItemConfig, LayoutOutput } from '../options/gride-item-config';
 
 @Component({
   selector: 'grid-layout',
@@ -42,6 +45,8 @@ export class GridLayoutComponent implements OnInit, AfterViewInit {
       this._gridService._options = mergeDeep(DEFAULT_GRID_LAYOUT_CONFIG, val);
     }
   }
+
+  @Output() layoutChange = new EventEmitter<LayoutOutput[]>();
 
   el: HTMLElement;
   @ContentChildren(GridItemComponent) set items(value: QueryList<GridItemComponent>) {
@@ -69,7 +74,7 @@ export class GridLayoutComponent implements OnInit, AfterViewInit {
 
   ngOnInit(): void {
     this.setBackgroundCssVariables();
-    this._gridService._mainEl = this.el;
+    this._gridService.gridLayout = this;
   }
 
   ngAfterViewInit(): void {}
@@ -107,15 +112,18 @@ export class GridLayoutComponent implements OnInit, AfterViewInit {
   private initGridItems() {
     for (let i = 0; i < this._gridService._gridItems.length; i++) {
       let item = this._gridService._gridItems[i];
-      item.id = 'GRID_ITEM_' + (i + 1);
+      if (!item.id) {
+        item.id = 'GRID_ITEM_' + (i + 1);
+      }
       //validate
       while (getFirstCollision(this._gridService._gridItems, { ...item.config, id: item.id })) {
         item.config.y++;
       }
       this._gridService.updateGridItem(item);
     }
+    this.checkDuplicatedId();
     this._gridService.compactGridItems();
-
+    this._gridService.calcLayout();
     setTimeout(() => {
       this._changeDetection.detectChanges();
     }, 0);
@@ -130,5 +138,27 @@ export class GridLayoutComponent implements OnInit, AfterViewInit {
   }
 
   // todo : clone changed grid items
-  public getRenderedColumns() {}
+  public emitChangeLayout(layout: LayoutOutput[]) {
+    this.layoutChange.emit(layout);
+  }
+
+  private checkDuplicatedId() {
+    let ids = this._gridService._gridItems.map((m) => m.id);
+    let hasDuplicated = false;
+    for (let i = 0; i < ids.length; i++) {
+      if (this._gridService._gridItems.findIndex((x) => x.id == ids[i]) > -1 && ids.indexOf(ids[i]) !== i) {
+        this._gridService._gridItems[i].id = this.generateRandomId();
+        hasDuplicated = true;
+      }
+    }
+    if (hasDuplicated) {
+      console.warn('GridLayout:', 'Grid items must be have unique ids', ids);
+    }
+    return hasDuplicated;
+  }
+
+  // TODO:return random string strong
+  private generateRandomId() {
+    return 'RandomId' + Math.round(Math.random() * 9999);
+  }
 }
