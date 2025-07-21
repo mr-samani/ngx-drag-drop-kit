@@ -1,222 +1,26 @@
-<div class="drag-item" ngxDraggable >ngxDraggable</div>
+<div class="drag-item" ngxDraggable>ngxDraggable</div>
 <div class="drag-item" ngxResizable>resizable</div>
+<div class="drag-item obs" ngxResizable ngxDraggable>Drag&resize in absolute</div>
+<div class="drag-item fxd" ngxResizable ngxDraggable>Drag&resize in fixed</div>
 
-
-<div
-  class="drag-item"
-  ngxResizable
-  ngxDraggable
-  (resizeEnd)="onResizeEnd($event)"
-  (dragEnd)="onDragEnd($event)">
-  Drag&resize
+<div class="drag-item" ngxResizable ngxDraggable (resizeEnd)="onResizeEnd($event)" (dragEnd)="onDragEnd($event)">
+  Drag&resize in relative
 </div>
-
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
+<div class="space-for-scroll"></div>
 
 <div class="drag-item" ngxDraggable>2</div>
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
+<div class="space-for-scroll"></div>
+
 <div class="boundary" #bound>
-  <div class="drag-item" ngxDraggable [boundary]="bound">3 with boundary</div>
+  <div class="drag-item" ngxDraggable ngxResizable [boundary]="bound">3 with boundary</div>
 </div>
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
+<div class="space-for-scroll"></div>
 
 <div class="list-scroll">
   <div class="drag-item" ngxDraggable>444</div>
 
-  <br />
-  <br />
-  <br />
-  <br />
-  <br />
-  <br />
-  <br />
-  <br />
-  <br />
-  <br />
-  <br />
-  <br />
-  <br />
-  <br />
-  <br />
-  <br />
-  <br />
-  <br />
-  <br />
-  <br />
-  <br />
-  <br />
-  <br />
-  <br />
-  <br />
-  <br />
-  <br />
-  <br />
-  <br />
-  <br />
-  <br />
-  <br />
-  <br />
-  <br />
-  <br />
-  <br />
-  <br />
-  <br />
-  <br />
-  <br />
-  <br />
-  <br />
-  <br />
-  <br />
-  <br />
-  <br />
-  <br />
-  <br />
-  <br />
-  <br />
-  <br />
-  <br />
-  <br />
-  <br />
-  <br />
-  <br />
-  <br />
-  <br />
-  <br />
-  <br />
-  <br />
-  <br />
-  <br />
-  <br />
-  <br />
-  <br />
-  <br />
-  <br />
-  <br />
+  <div class="space-for-scroll"></div>
+</div>
+<div class="boundary flex-center" #bound>
+  <div class="drag-item" ngxDraggable ngxResizable [boundary]="bound">boundary flexible container</div>
 </div>

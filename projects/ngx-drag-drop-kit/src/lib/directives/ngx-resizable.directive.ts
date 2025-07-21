@@ -53,6 +53,8 @@ export class NgxResizableDirective implements OnInit {
   el: HTMLElement;
   isRtl: boolean = false;
 
+  private isAbsoluteOrFixed: boolean = false;
+
   constructor(
     elRef: ElementRef<HTMLElement>,
     private renderer: Renderer2,
@@ -62,8 +64,14 @@ export class NgxResizableDirective implements OnInit {
   }
 
   ngOnInit(): void {
-    this.isRtl = getComputedStyle(this.el).direction === 'rtl';
-    console.log(this.isRtl);
+    this.checkFlexibale();
+    const selfStyle = getComputedStyle(this.el);
+    this.isAbsoluteOrFixed = selfStyle.position === 'absolute' || selfStyle.position === 'fixed';
+    if (!this.isAbsoluteOrFixed) {
+      this.renderer.setStyle(this.el, 'position', 'relative');
+    }
+    this.isRtl = selfStyle.direction === 'rtl';
+
     this.addCornerDiv();
     this.initXY();
   }
@@ -114,11 +122,6 @@ export class NgxResizableDirective implements OnInit {
   }
 
   private addCornerDiv() {
-    const selfStyle = getComputedStyle(this.el);
-    if (selfStyle.position !== 'absolute' && selfStyle.position !== 'relative' && selfStyle.position !== 'fixed') {
-      this.renderer.setStyle(this.el, 'position', 'relative');
-    }
-
     for (const corner of this.corners) {
       const child = this.document.createElement('div');
       child.classList.add('ngx-corner-resize', corner);
@@ -146,20 +149,19 @@ export class NgxResizableDirective implements OnInit {
     event.preventDefault();
     event.stopPropagation();
     this.initXY();
-    this.checkFlexibale();
     this.resizeStart.emit();
   }
 
   initXY() {
     const elRec = this.el.getBoundingClientRect();
     const position = getRelativePosition(this.el, this.el.offsetParent as HTMLElement);
-    //const computed = getComputedStyle(this.el);
-    //this.x = parseFloat(computed.left || '0');
-    //this.y = parseFloat(computed.top || '0');
+    const computed = getComputedStyle(this.el);
+    this.left = parseFloat(computed.left || '0');
+    this.top = parseFloat(computed.top || '0');
     this.width = elRec.width;
     this.height = elRec.height;
-    this.left = position.x;
-    this.top = position.y;
+    // this.left = position.x;
+    // this.top = position.y;
     this.setElPosition();
   }
 
@@ -217,7 +219,7 @@ export class NgxResizableDirective implements OnInit {
   private topLeftResize(offsetX: number, offsetY: number) {
     if (checkBoundX(this._boundary, this.el, offsetX, true, false)) {
       this.width -= offsetX;
-      this.left += offsetX;
+      if (this.isAbsoluteOrFixed || !this.isRtl) this.left += offsetX;
     }
     if (checkBoundY(this._boundary, this.el, offsetY)) {
       this.top += offsetY;
@@ -228,6 +230,7 @@ export class NgxResizableDirective implements OnInit {
   private topRightResize(offsetX: number, offsetY: number) {
     if (checkBoundX(this._boundary, this.el, offsetX, false, true)) {
       this.width += offsetX;
+      if (this.isRtl && !this.isAbsoluteOrFixed) this.left += offsetX;
     }
     if (checkBoundY(this._boundary, this.el, offsetY, true, false)) {
       this.top += offsetY;
@@ -238,7 +241,7 @@ export class NgxResizableDirective implements OnInit {
   private bottomLeftResize(offsetX: number, offsetY: number) {
     if (checkBoundX(this._boundary, this.el, offsetX, true, false)) {
       this.width -= offsetX;
-      this.left += offsetX;
+      if (this.isAbsoluteOrFixed || !this.isRtl) this.left += offsetX;
     }
     if (checkBoundY(this._boundary, this.el, offsetY, false)) {
       this.height += offsetY;
@@ -248,6 +251,7 @@ export class NgxResizableDirective implements OnInit {
   private bottomRightResize(offsetX: number, offsetY: number) {
     if (checkBoundX(this._boundary, this.el, offsetX, false)) {
       this.width += offsetX;
+      if (this.isRtl && !this.isAbsoluteOrFixed) this.left += offsetX;
     }
     if (checkBoundY(this._boundary, this.el, offsetY, false)) {
       this.height += offsetY;
@@ -264,6 +268,7 @@ export class NgxResizableDirective implements OnInit {
   private rightResize(offsetX: number, offsetY: number) {
     if (checkBoundX(this._boundary, this.el, offsetX, false)) {
       this.width += offsetX;
+      if (this.isRtl && !this.isAbsoluteOrFixed) this.left += offsetX;
     }
   }
 
@@ -276,7 +281,7 @@ export class NgxResizableDirective implements OnInit {
   private leftResize(offsetX: number, offsetY: number) {
     if (checkBoundX(this._boundary, this.el, offsetX, true, false)) {
       this.width -= offsetX;
-      if (this.isRtl) this.left += offsetX;
+      if (this.isAbsoluteOrFixed || !this.isRtl) this.left += offsetX;
     }
   }
 }
