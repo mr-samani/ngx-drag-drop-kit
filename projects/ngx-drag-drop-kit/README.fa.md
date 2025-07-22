@@ -1,12 +1,3 @@
-<div align="center">
-
-<h2 style="color:#fff;background:#d32f2f;padding:24px 12px;border-radius:12px;max-width:700px;margin:32px auto 24px auto;font-size:1.3em;">
-🚨 <span style="color:#fff;">این کتابخانه فعلاً در <b>نسخه آزمایشی</b> قرار دارد.<br>
-<strong>تا انتشار نسخه نهایی، در پروژه‌های اصلی استفاده نکنید.</strong></span> 🚨
-</h2>
-
-</div>
-
 # 🚀 ngx-drag-drop-kit
 
 [🇮🇷 مشاهده به فارسی](./README.fa.md) | [🇬🇧 English Version](./README.md)

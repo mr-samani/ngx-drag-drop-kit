@@ -1,6 +1,6 @@
 {
   "name": "ngx-drag-drop-kit",
-  "version": "0.2.1",
+  "version": "1.0.1",
   "scripts": {
     "ng": "ng",
     "start": "ng serve --open --port=8545",
