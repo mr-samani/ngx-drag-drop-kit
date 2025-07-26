@@ -172,7 +172,9 @@ export class NgxDragDropService {
 
   private getClosestDropList(ev: MouseEvent | TouchEvent): NgxDropListDirective | undefined {
     const { x, y } = getPointerPosition(ev);
-    let elements: Element[] = document.elementsFromPoint(x, y).filter((x) => x.hasAttribute('NgxDropList'));
+    let elements: Element[] = document
+      .elementsFromPoint(x - window.scrollX, y - window.scrollY)
+      .filter((x) => x.hasAttribute('NgxDropList'));
     if (elements.length > 0) {
       let found = this._dropList.get(elements[0]);
       return found;
