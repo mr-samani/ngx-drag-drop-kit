@@ -12,16 +12,8 @@
     id="base">
     <div class="custom-placeholder2" *ngxPlaceholder></div>
     @for (item of items; track item) {
-    <div
-      class="example-box"
-      ngxDraggable
-      #drgItem
-      (dragStart)="currentDragItem = drgItem"
-      (dragend)="currentDragItem = undefined"
-      (mousemove)="handleEnterd($event, item, drgItem)"
-      [class.entered]="item.entered"
-      [id]="item.name">
-      <div>{{ item.name }} - {{ item._dragAction }} - entered: {{ item.entered }}</div>
+    <div class="example-box" ngxDraggable [id]="item.name">
+      <div>{{ item.name }}</div>
       <div class="children" ngxDropList (drop)="drop($event)" [data]="item.children" [id]="'child_' + item.name">
         <div class="custom-placeholder" *ngxPlaceholder></div>
         <ng-container

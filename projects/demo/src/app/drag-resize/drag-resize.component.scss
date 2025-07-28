@@ -5,6 +5,7 @@
   box-shadow: 0 0 10px #00000073;
   border-radius: 10px;
   transition: all 500ms;
+  background: #fff;
 }
 
 .boundary {
@@ -39,4 +40,16 @@
   display: flex;
   align-items: center;
   justify-content: center;
+}
+.handle {
+  cursor: move;
+  background: #ff005e;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 3px 15px;
+  margin-bottom: 15px;
+  span {
+    color: #fff;
+  }
 }

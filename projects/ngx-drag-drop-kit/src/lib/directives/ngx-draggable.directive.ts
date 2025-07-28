@@ -1,4 +1,5 @@
 import {
+  AfterViewInit,
   Directive,
   ElementRef,
   EventEmitter,
@@ -9,21 +10,22 @@ import {
   OnInit,
   Output,
   Renderer2,
+  RendererStyleFlags2,
 } from '@angular/core';
 import { Subscription, fromEvent } from 'rxjs';
 import { getPointerPosition } from '../../utils/get-position';
 import { checkBoundX, checkBoundY } from '../../utils/check-boundary';
 import { NgxDropListDirective } from './ngx-drop-list.directive';
 import { NgxDragDropService } from '../services/ngx-drag-drop.service';
-import { getPositionFromElement, getXYfromTransform } from '../../utils/get-transform';
+import { getXYfromTransform } from '../../utils/get-transform';
 import { AutoScroll } from '../services/auto-scroll.service';
 import { IPosition } from '../../interfaces/IPosition';
+import { ElementHelper } from '../../utils/element.helper';
 export const NGX_DROP_LIST = new InjectionToken<NgxDropListDirective>('NgxDropList');
 
 @Directive({
   selector: '[ngxDraggable]',
   host: {
-    '[style.transition-property]': 'dragging ? "none" : ""',
     '[style.user-select]': 'dragging  ? "none" : ""',
     '[style.cursor]': 'dragging ? "grabbing" : ""',
     '[style.z-index]': 'dragging ? "999999" : ""',
@@ -36,12 +38,11 @@ export const NGX_DROP_LIST = new InjectionToken<NgxDropListDirective>('NgxDropLi
   standalone: true,
   exportAs: 'NgxDraggable',
 })
-export class NgxDraggableDirective implements OnDestroy, OnInit {
-  private _boundary?: HTMLElement;
-  @Input() set boundary(val: HTMLElement) {
-    this._boundary = val;
-  }
+export class NgxDraggableDirective implements OnDestroy, AfterViewInit {
+  private boundaryDomRect?: DOMRect;
+  @Input() boundary?: HTMLElement;
 
+  @Input() dragRootElement = '';
   @Output() dragStart = new EventEmitter<IPosition>();
   @Output() dragMove = new EventEmitter<IPosition>();
   @Output() dragEnd = new EventEmitter<IPosition>();
@@ -49,7 +50,20 @@ export class NgxDraggableDirective implements OnDestroy, OnInit {
   @Output() entered = new EventEmitter<IPosition>();
   @Output() exited = new EventEmitter<IPosition>();
 
-  dragging = false;
+  private previousTransitionProprety?: string;
+  _dragging: boolean = false;
+  set dragging(val: boolean) {
+    this._dragging = val == true;
+    if (this._dragging) {
+      this.previousTransitionProprety = getComputedStyle(this.el).transitionProperty;
+      this._renderer.setStyle(this.el, 'transition-property', 'none', RendererStyleFlags2.Important);
+    } else {
+      this._renderer.setStyle(this.el, 'transition-property', this.previousTransitionProprety);
+    }
+  }
+  get dragging() {
+    return this._dragging;
+  }
   isTouched = false;
   el: HTMLElement;
   protected x: number = 0;
@@ -68,20 +82,31 @@ export class NgxDraggableDirective implements OnDestroy, OnInit {
     this.initDrag();
   }
 
-  ngOnInit(): void {
-    this.initXY();
+  ngAfterViewInit(): void {
+    this.findFirstParentDragRootElement();
+    this.init();
   }
-
+  findFirstParentDragRootElement() {
+    if (this.dragRootElement) {
+      let parentRoot: HTMLElement | null = ElementHelper.findParentBySelector(this.el, this.dragRootElement);
+      if (parentRoot) {
+        this.el = parentRoot;
+      }
+    }
+  }
   ngOnDestroy() {
     this.subscriptions.forEach((sub) => sub.unsubscribe());
     this._autoScroll._stopScrolling();
     // this._autoScroll._stopScrollTimers.complete();
   }
 
-  initXY() {
+  init() {
     const xy = getXYfromTransform(this.el);
     this.x = xy.x;
     this.y = xy.y;
+    if (this.boundary) {
+      this.boundaryDomRect = this.boundary.getBoundingClientRect();
+    }
   }
 
   initDrag() {
@@ -124,7 +149,7 @@ export class NgxDraggableDirective implements OnDestroy, OnInit {
     this.isTouched = true;
     ev.preventDefault();
     ev.stopPropagation();
-    this.initXY();
+    this.init();
     this.subscriptions = this.subscriptions.filter((x) => !x.closed);
     this.subscriptions.push(
       fromEvent<MouseEvent>(document, 'mousemove').subscribe((ev) => this.onMouseMove(ev)),
@@ -152,11 +177,11 @@ export class NgxDraggableDirective implements OnDestroy, OnInit {
   }
 
   updatePosition(offsetX: number, offsetY: number, position: IPosition) {
-    if (checkBoundX(this._boundary, this.el, offsetX)) {
+    if (checkBoundX(this.boundaryDomRect, this.el, offsetX)) {
       this.x += offsetX;
       this.previousXY.x = position.x;
     }
-    if (checkBoundY(this._boundary, this.el, offsetY)) {
+    if (checkBoundY(this.boundaryDomRect, this.el, offsetY)) {
       this.y += offsetY;
       this.previousXY.y = position.y;
     }

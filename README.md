@@ -7,6 +7,7 @@ A powerful and modular Angular library for advanced Drag & Drop, Grid Layout, ho
 ---
 
 ## 🗂️ Table of Contents
+
 - [✨ Features](#-features)
 - [🔧 Installation](#-installation)
 - [⚡ Quick Start](#-quick-start)
@@ -45,7 +46,9 @@ A powerful and modular Angular library for advanced Drag & Drop, Grid Layout, ho
 ```bash
 npm install ngx-drag-drop-kit
 ```
+
 Or with yarn:
+
 ```bash
 yarn add ngx-drag-drop-kit
 ```
@@ -93,9 +96,7 @@ drop(event: IDropEvent) {
 
 ```html
 <grid-layout [options]="options">
-  <grid-item *ngFor="let item of layouts" [config]="item.config">
-    {{ item.title }}
-  </grid-item>
+  <grid-item *ngFor="let item of layouts" [config]="item.config">{{ item.title }}</grid-item>
 </grid-layout>
 ```
 
@@ -114,9 +115,7 @@ layouts = [
 ### 📏 Resizable
 
 ```html
-<div ngxResizable [minWidth]="50" [minHeight]="50" (resize)="onResize($event)">
-  Resizable!
-</div>
+<div ngxResizable [minWidth]="50" [minHeight]="50" (resize)="onResize($event)">Resizable!</div>
 ```
 
 ---
@@ -141,24 +140,25 @@ layouts = [
 
 ## 📝 Inputs/Outputs Table
 
-| Name           | Type/Directive              | Description                                 | Input/Output |
-|----------------|----------------------------|---------------------------------------------|--------------|
-| `ngxDraggable` | Directive                   | Makes an item draggable                     | Input        |
-| `boundary`     | Input (HTMLElement)         | Drag boundary                               | Input        |
-| `dragStart`    | Output (EventEmitter)       | Drag start event                            | Output       |
-| `dragMove`     | Output (EventEmitter)       | Drag move event                             | Output       |
-| `dragEnd`      | Output (EventEmitter)       | Drag end event                              | Output       |
-| `ngxResizable` | Directive                   | Makes an item resizable                     | Input        |
-| `minWidth`     | Input (number)              | Minimum width                               | Input        |
-| `minHeight`    | Input (number)              | Minimum height                              | Input        |
-| `resize`       | Output (EventEmitter)       | Resize event                                | Output       |
-| `ngxDropList`  | Directive                   | Drop list directive                         | Input        |
-| `data`         | Input (any[])               | List data                                   | Input        |
-| `drop`         | Output (EventEmitter)       | Drop event                                  | Output       |
-| `GridLayoutComponent` | Component              | Grid layout component                       | Input        |
-| `options`      | Input (IGridLayoutOptions)  | Grid options                                | Input        |
-| `GridItemComponent`   | Component              | Grid item component                         | Input        |
-| `config`       | Input (GridItemConfig)      | Grid item config                            | Input        |
+| Name                  | Type/Directive             | Description                                                     | Input/Output |
+| --------------------- | -------------------------- | --------------------------------------------------------------- | ------------ |
+| `ngxDraggable`        | Directive                  | Makes an item draggable                                         | Input        |
+| `boundary`            | Input (HTMLElement)        | Drag boundary                                                   | Input        |
+| `dragRootElement`     | Input (HTMLElement)        | Element that you want to make draggable(usefull in drag handle) | Input        |
+| `dragStart`           | Output (EventEmitter)      | Drag start event                                                | Output       |
+| `dragMove`            | Output (EventEmitter)      | Drag move event                                                 | Output       |
+| `dragEnd`             | Output (EventEmitter)      | Drag end event                                                  | Output       |
+| `ngxResizable`        | Directive                  | Makes an item resizable                                         | Input        |
+| `minWidth`            | Input (number)             | Minimum width                                                   | Input        |
+| `minHeight`           | Input (number)             | Minimum height                                                  | Input        |
+| `resize`              | Output (EventEmitter)      | Resize event                                                    | Output       |
+| `ngxDropList`         | Directive                  | Drop list directive                                             | Input        |
+| `data`                | Input (any[])              | List data                                                       | Input        |
+| `drop`                | Output (EventEmitter)      | Drop event                                                      | Output       |
+| `GridLayoutComponent` | Component                  | Grid layout component                                           | Input        |
+| `options`             | Input (IGridLayoutOptions) | Grid options                                                    | Input        |
+| `GridItemComponent`   | Component                  | Grid item component                                             | Input        |
+| `config`              | Input (GridItemConfig)     | Grid item config                                                | Input        |
 
 ---
 
@@ -173,6 +173,7 @@ See more demos and examples in the `projects/demo` folder.
 Fork the repo and send a Pull Request!
 
 For local development:
+
 ```bash
 npm install
 npm run start

@@ -25,10 +25,6 @@
     // background-color: #e9e9e9;
     min-height: 10px;
   }
-  &.entered:hover > .children {
-    animation: showInner 10ms forwards;
-    animation-delay: 200ms;
-  }
 }
 
 @keyframes showInner {

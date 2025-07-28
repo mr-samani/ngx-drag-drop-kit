@@ -1,22 +1,18 @@
 export function checkBoundY(
-  boundary: HTMLElement | undefined,
+  boundaryDomRec: DOMRect | undefined,
   el: HTMLElement,
   offsetY: number,
   checkTop = true,
   checkHeight = true
 ) {
-  if (!boundary) {
+  if (!boundaryDomRec) {
     return true;
   }
-  const boundleRec = boundary.getBoundingClientRect();
   const selfRec = el.getBoundingClientRect();
   const newY = selfRec.y + offsetY;
-  if (newY < boundleRec.y && checkTop) {
+  if (newY < boundaryDomRec.y && checkTop) {
     return false;
-  } else if (
-    newY + selfRec.height > boundleRec.y + boundleRec.height &&
-    checkHeight
-  ) {
+  } else if (newY + selfRec.height > boundaryDomRec.y + boundaryDomRec.height && checkHeight) {
     return false;
   } else {
     return true;
@@ -27,24 +23,20 @@ export function checkBoundY(
  * checkLeft and checkWidth useful in resize
  */
 export function checkBoundX(
-  boundary: HTMLElement | undefined,
+  boundaryDomRec: DOMRect | undefined,
   el: HTMLElement,
   offsetX: number,
   checkLeft = true,
   checkWidth = true
 ) {
-  if (!boundary) {
+  if (!boundaryDomRec) {
     return true;
   }
-  const boundleRec = boundary.getBoundingClientRect();
   const selfRec = el.getBoundingClientRect();
   const newX = selfRec.x + offsetX;
-  if (newX < boundleRec.x && checkLeft) {
+  if (newX < boundaryDomRec.x && checkLeft) {
     return false;
-  } else if (
-    newX + selfRec.width > boundleRec.x + boundleRec.width &&
-    checkWidth
-  ) {
+  } else if (newX + selfRec.width > boundaryDomRec.x + boundaryDomRec.width && checkWidth) {
     return false;
   } else {
     return true;

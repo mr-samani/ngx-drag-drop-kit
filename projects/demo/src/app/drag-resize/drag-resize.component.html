@@ -6,6 +6,19 @@
 <div class="drag-item" ngxResizable ngxDraggable (resizeEnd)="onResizeEnd($event)" (dragEnd)="onDragEnd($event)">
   Drag&resize in relative
 </div>
+
+<section class="boundary" #sectionWithHandler>
+  <div class="container">
+    <h3>Drag with handler</h3>
+    <div class="drag-item">
+      <span class="handle" [boundary]="sectionWithHandler" [dragRootElement]="'.boundary .drag-item'" ngxDraggable>
+        <i class="fad fa-arrows fa-2x"></i>
+        handle
+      </span>
+    </div>
+  </div>
+</section>
+
 <div class="space-for-scroll"></div>
 
 <div class="drag-item" ngxDraggable>2</div>
