@@ -12,7 +12,7 @@ import {
   Renderer2,
 } from '@angular/core';
 import { NgxDragDropService } from '../services/ngx-drag-drop.service';
-import { Subscription } from 'rxjs';
+import { fromEvent, Subscription } from 'rxjs';
 import { IDropEvent } from '../../interfaces/IDropEvent';
 import { NgxPlaceholderDirective } from './ngx-place-holder.directive';
 import { NgxDragRegisterService } from '../services/ngx-drag-register.service';
@@ -46,13 +46,15 @@ export class NgxDropListDirective<T = any> implements OnInit, OnDestroy {
   @Output() drop = new EventEmitter<IDropEvent>();
   el: HTMLElement;
   isDragging = false;
-
+  isFlexWrap = false;
   initCursor = '';
+  isRtl = false;
   private subscriptions: Subscription[] = [];
 
   dragItems = new WeakMap<Element, NgxDraggableDirective>();
 
   constructor(
+    private dragService: NgxDragDropService,
     private dragRegister: NgxDragRegisterService,
     elRef: ElementRef<HTMLElement>,
     private appRef: ApplicationRef,
@@ -65,6 +67,18 @@ export class NgxDropListDirective<T = any> implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.dragRegister.registerDropList(this);
+    this.checkIsFlexibleAndWrap();
+    this.isRtl = getComputedStyle(this.el).direction === 'rtl';
+    this.subscriptions.push(
+      fromEvent<TouchEvent>(this.el, 'mouseenter').subscribe((ev) => {
+        //console.log('enter drop lis', this.el);
+        this.dragService.enterDropList(this);
+      }),
+      fromEvent<TouchEvent>(this.el, 'mouseleave').subscribe((ev) => {
+        //console.log('leave drop lis', this.el);
+        this.dragService.leaveDropList(this);
+      })
+    );
   }
 
   ngOnDestroy() {
@@ -84,7 +98,8 @@ export class NgxDropListDirective<T = any> implements OnInit, OnDestroy {
     this.subscriptions = [];
   }
 
-  addPlaceholder(width?: number, height?: number): HTMLElement {
+  addPlaceholder(dragRect: DOMRect): HTMLElement {
+    const { width, height } = dragRect;
     if (this.userPlaceholder) {
       const ctx = { width, height };
       this.placeholderView = this.userPlaceholder.tpl.createEmbeddedView(ctx);
@@ -111,5 +126,10 @@ export class NgxDropListDirective<T = any> implements OnInit, OnDestroy {
       this.placeholderView.destroy();
       this.placeholderView = undefined!;
     }
+  }
+
+  private checkIsFlexibleAndWrap() {
+    const styles = window.getComputedStyle(this.el);
+    this.isFlexWrap = styles.display == 'flex' && styles.flexWrap == 'wrap';
   }
 }

@@ -30,7 +30,6 @@ export const NGX_DROP_LIST = new InjectionToken<NgxDropListDirective>('NgxDropLi
     '[style.user-select]': 'dragging  ? "none" : ""',
     '[style.cursor]': 'dragging ? "grabbing" : ""',
     '[style.z-index]': 'dragging ? "999999" : ""',
-    '[class.dragging]': 'dragging',
     '[style.touch-action]': 'dragging ? "none" : ""',
     '[style.-webkit-user-drag]': 'dragging ? "none" : ""',
     '[style.-webkit-tap-highlight-color]': 'dragging ? "transparent" : ""',
@@ -57,8 +56,10 @@ export class NgxDraggableDirective implements OnDestroy, AfterViewInit {
     if (this._dragging) {
       this.previousTransitionProprety = getComputedStyle(this.el).transitionProperty;
       this._renderer.setStyle(this.el, 'transition-property', 'none', RendererStyleFlags2.Important);
+      this.el.classList.add('dragging');
     } else {
       this._renderer.setStyle(this.el, 'transition-property', this.previousTransitionProprety);
+      this.el.classList.remove('dragging');
     }
   }
   get dragging() {
@@ -71,6 +72,7 @@ export class NgxDraggableDirective implements OnDestroy, AfterViewInit {
   private previousXY: IPosition = { x: 0, y: 0 };
   private subscriptions: Subscription[] = [];
   public dropList?: NgxDropListDirective;
+  public domRect!: DOMRect;
 
   constructor(
     elRef: ElementRef,
@@ -87,6 +89,11 @@ export class NgxDraggableDirective implements OnDestroy, AfterViewInit {
     this.findFirstParentDragRootElement();
     this.initDragItems();
     this.init();
+    this.updateDomRect();
+  }
+
+  updateDomRect() {
+    this.domRect = this.el.getBoundingClientRect();
   }
   findFirstParentDragRootElement() {
     if (this.dragRootElement) {
@@ -123,15 +130,15 @@ export class NgxDraggableDirective implements OnDestroy, AfterViewInit {
   initDragItems() {
     this.subscriptions.push(
       fromEvent<TouchEvent>(this.el, 'mouseenter').subscribe((ev) => {
-        if (!this._dragService.isDragging) return;
         this._dragService.enterDrag(this);
 
+        if (!this._dragService.isDragging) return;
         let position = getPointerPosition(ev);
         this.entered.emit(position);
       }),
       fromEvent<TouchEvent>(this.el, 'mouseleave').subscribe((ev) => {
-        if (!this._dragService.isDragging) return;
         this._dragService.leaveDrag(this);
+        if (!this._dragService.isDragging) return;
         let position = getPointerPosition(ev);
         this.exited.emit(position);
       })
@@ -178,7 +185,7 @@ export class NgxDraggableDirective implements OnDestroy, AfterViewInit {
     // console.time('drgmv');
     const offsetX = position.x - this.previousXY.x;
     const offsetY = position.y - this.previousXY.y;
-    this.updatePosition(offsetX, offsetY, position);
+    const transform = this.updatePosition(offsetX, offsetY, position);
     this._autoScroll.handleAutoScroll(ev);
     this._dragService.dragMove(this, ev);
     this.dragMove.emit({ x: this.x, y: this.y });
