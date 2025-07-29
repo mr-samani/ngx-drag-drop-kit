@@ -1,22 +1,22 @@
 import {
-  AfterViewInit,
   ApplicationRef,
   ContentChild,
-  ContentChildren,
   Directive,
   ElementRef,
   EmbeddedViewRef,
   EventEmitter,
   Input,
+  OnDestroy,
+  OnInit,
   Output,
-  QueryList,
   Renderer2,
 } from '@angular/core';
 import { NgxDragDropService } from '../services/ngx-drag-drop.service';
-import { NgxDraggableDirective } from './ngx-draggable.directive';
 import { Subscription } from 'rxjs';
 import { IDropEvent } from '../../interfaces/IDropEvent';
 import { NgxPlaceholderDirective } from './ngx-place-holder.directive';
+import { NgxDragRegisterService } from '../services/ngx-drag-register.service';
+import { NgxDraggableDirective } from './ngx-draggable.directive';
 @Directive({
   selector: '[ngxDropList]',
   host: {
@@ -27,7 +27,7 @@ import { NgxPlaceholderDirective } from './ngx-place-holder.directive';
   standalone: true,
   exportAs: 'NgxDropList',
 })
-export class NgxDropListDirective<T = any> implements AfterViewInit {
+export class NgxDropListDirective<T = any> implements OnInit, OnDestroy {
   @Input() data?: T;
   @Input() disableSort: boolean = false;
   @Input() direction: 'horizontal' | 'vertical' = 'vertical';
@@ -44,14 +44,16 @@ export class NgxDropListDirective<T = any> implements AfterViewInit {
   }
 
   @Output() drop = new EventEmitter<IDropEvent>();
-  @ContentChildren(NgxDraggableDirective, { descendants: true }) _draggables?: QueryList<NgxDraggableDirective>;
   el: HTMLElement;
   isDragging = false;
 
   initCursor = '';
   private subscriptions: Subscription[] = [];
+
+  dragItems = new WeakMap<Element, NgxDraggableDirective>();
+
   constructor(
-    public _dragDropService: NgxDragDropService,
+    private dragRegister: NgxDragRegisterService,
     elRef: ElementRef<HTMLElement>,
     private appRef: ApplicationRef,
 
@@ -59,51 +61,24 @@ export class NgxDropListDirective<T = any> implements AfterViewInit {
   ) {
     this.el = elRef.nativeElement;
     this.initCursor = this.el.style.cursor;
-    _dragDropService.registerDropList(this);
   }
 
-  ngAfterViewInit(): void {
-    this.onChangeDragChilds();
-    this._draggables?.changes.subscribe((r) => {
-      this.onChangeDragChilds();
-      // console.log('_draggables', 'change', r);
-    });
-    // console.log(this._draggables);
-    // this.subscriptions.push(
-    //   fromEvent<TouchEvent>(this.el, 'mouseenter').subscribe((ev) => {
-    //     console.log('entered', this.el.id);
-    //     if (!this._dragDropService.isDragging) return;
-    //     if (this.checkAllowedConnections() == true) {
-    //       this.el.style.cursor = this.previousCursor;
-    //       this._dragDropService.enterDropList(this);
-    //       this.entered.emit();
-    //     } else {
-    //       this.el.style.cursor = 'no-drop';
-    //     }
-    //   }),
-    //   fromEvent<TouchEvent>(this.el, 'mouseleave').subscribe((ev) => {
-    //     console.log('leaved', this.el.id);
-    //     if (!this._dragDropService.isDragging) return;
-    //     if (this.checkAllowedConnections()) {
-    //       this._dragDropService.leaveDropList(this);
-    //       this.exited.emit();
-    //     }
-    //   })
-    // );
+  ngOnInit(): void {
+    this.dragRegister.registerDropList(this);
   }
 
   ngOnDestroy() {
+    this.dragRegister.removeDropList(this);
     this.subscriptions.forEach((sub) => sub.unsubscribe());
-    this._draggables?.reset([]);
     this.disposePlaceholder();
   }
 
-  onChangeDragChilds() {
-    this._draggables?.forEach((el) => {
-      el.containerDropList = this;
-    });
+  registerDragItem(drag: NgxDraggableDirective) {
+    this.dragItems.set(drag.el, drag);
   }
-
+  removeDragItem(drag: NgxDraggableDirective) {
+    this.dragItems.delete(drag.el);
+  }
   onDrop(event: IDropEvent) {
     this.drop.emit(event);
     this.subscriptions = [];

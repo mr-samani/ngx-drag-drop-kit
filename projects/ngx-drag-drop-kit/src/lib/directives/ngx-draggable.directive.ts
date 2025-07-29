@@ -21,6 +21,7 @@ import { getXYfromTransform } from '../../utils/get-transform';
 import { AutoScroll } from '../services/auto-scroll.service';
 import { IPosition } from '../../interfaces/IPosition';
 import { ElementHelper } from '../../utils/element.helper';
+import { NgxDragRegisterService } from '../services/ngx-drag-register.service';
 export const NGX_DROP_LIST = new InjectionToken<NgxDropListDirective>('NgxDropList');
 
 @Directive({
@@ -69,13 +70,14 @@ export class NgxDraggableDirective implements OnDestroy, AfterViewInit {
   protected y: number = 0;
   private previousXY: IPosition = { x: 0, y: 0 };
   private subscriptions: Subscription[] = [];
-  containerDropList?: NgxDropListDirective;
+  public dropList?: NgxDropListDirective;
 
   constructor(
     elRef: ElementRef,
     private _renderer: Renderer2,
     public _dragService: NgxDragDropService,
-    private _autoScroll: AutoScroll
+    private _autoScroll: AutoScroll,
+    private dragRegister: NgxDragRegisterService
   ) {
     this.el = elRef.nativeElement;
     this.initDragHandler();
@@ -94,11 +96,13 @@ export class NgxDraggableDirective implements OnDestroy, AfterViewInit {
       }
     }
     this.el.classList.add('ngx-draggable');
+    this.dragRegister.registerDragItem(this);
   }
   ngOnDestroy() {
     this.subscriptions.forEach((sub) => sub.unsubscribe());
     this._autoScroll._stopScrolling();
     // this._autoScroll._stopScrollTimers.complete();
+    this.dragRegister.removeDragItem(this);
   }
 
   init() {
@@ -171,13 +175,14 @@ export class NgxDraggableDirective implements OnDestroy, AfterViewInit {
       return;
     }
     let position = getPointerPosition(ev);
-
+    // console.time('drgmv');
     const offsetX = position.x - this.previousXY.x;
     const offsetY = position.y - this.previousXY.y;
+    this.updatePosition(offsetX, offsetY, position);
     this._autoScroll.handleAutoScroll(ev);
     this._dragService.dragMove(this, ev);
-    this.updatePosition(offsetX, offsetY, position);
     this.dragMove.emit({ x: this.x, y: this.y });
+    // console.timeEnd('drgmv');
   }
 
   updatePosition(offsetX: number, offsetY: number, position: IPosition) {
