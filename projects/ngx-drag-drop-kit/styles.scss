@@ -85,19 +85,6 @@
   }
 }
 
-.ngx-draggable {
-  transition: none !important;
-  &.dragging {
-    transition-property: none !important;
-  }
-  /** 
-  style for draged element in drop list
-  - when appended to body
-  */
-  &.ngx-drag-drop {
-    box-shadow: 0 0 5px #32323291;
-  }
-}
 
 .ngx-drag-placeholder {
   display: none;

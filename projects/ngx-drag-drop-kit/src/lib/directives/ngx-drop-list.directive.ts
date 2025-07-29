@@ -14,7 +14,7 @@ import {
 } from '@angular/core';
 import { NgxDragDropService } from '../services/ngx-drag-drop.service';
 import { NgxDraggableDirective } from './ngx-draggable.directive';
-import { Subscription, fromEvent } from 'rxjs';
+import { Subscription } from 'rxjs';
 import { IDropEvent } from '../../interfaces/IDropEvent';
 import { NgxPlaceholderDirective } from './ngx-place-holder.directive';
 @Directive({
@@ -38,14 +38,13 @@ export class NgxDropListDirective<T = any> implements AfterViewInit {
     if (Array.isArray(list)) {
       this.connectedTo = list;
     } else {
-      console.warn('NgxDropList', 'connectedTo must be array!');
+      console.warn('NgxDropList', '"connectedTo" must be array!');
       this.connectedTo = [];
     }
   }
 
   @Output() drop = new EventEmitter<IDropEvent>();
-  @ContentChildren(NgxDraggableDirective)
-  _draggables?: QueryList<NgxDraggableDirective>;
+  @ContentChildren(NgxDraggableDirective, { descendants: true }) _draggables?: QueryList<NgxDraggableDirective>;
   el: HTMLElement;
   isDragging = false;
 
@@ -67,7 +66,7 @@ export class NgxDropListDirective<T = any> implements AfterViewInit {
     this.onChangeDragChilds();
     this._draggables?.changes.subscribe((r) => {
       this.onChangeDragChilds();
-      //console.log('_draggables', 'change', r);
+      // console.log('_draggables', 'change', r);
     });
     // console.log(this._draggables);
     // this.subscriptions.push(

@@ -33,7 +33,6 @@ export const NGX_DROP_LIST = new InjectionToken<NgxDropListDirective>('NgxDropLi
     '[style.touch-action]': 'dragging ? "none" : ""',
     '[style.-webkit-user-drag]': 'dragging ? "none" : ""',
     '[style.-webkit-tap-highlight-color]': 'dragging ? "transparent" : ""',
-    class: 'ngx-draggable',
   },
   standalone: true,
   exportAs: 'NgxDraggable',
@@ -79,11 +78,12 @@ export class NgxDraggableDirective implements OnDestroy, AfterViewInit {
     private _autoScroll: AutoScroll
   ) {
     this.el = elRef.nativeElement;
-    this.initDrag();
+    this.initDragHandler();
   }
 
   ngAfterViewInit(): void {
     this.findFirstParentDragRootElement();
+    this.initDragItems();
     this.init();
   }
   findFirstParentDragRootElement() {
@@ -93,6 +93,7 @@ export class NgxDraggableDirective implements OnDestroy, AfterViewInit {
         this.el = parentRoot;
       }
     }
+    this.el.classList.add('ngx-draggable');
   }
   ngOnDestroy() {
     this.subscriptions.forEach((sub) => sub.unsubscribe());
@@ -109,11 +110,14 @@ export class NgxDraggableDirective implements OnDestroy, AfterViewInit {
     }
   }
 
-  initDrag() {
+  initDragHandler() {
     this.subscriptions.push(
       fromEvent<MouseEvent>(this.el, 'mousedown').subscribe((ev) => this.onMouseDown(ev)),
-      fromEvent<TouchEvent>(this.el, 'touchstart').subscribe((ev) => this.onMouseDown(ev)),
-
+      fromEvent<TouchEvent>(this.el, 'touchstart').subscribe((ev) => this.onMouseDown(ev))
+    );
+  }
+  initDragItems() {
+    this.subscriptions.push(
       fromEvent<TouchEvent>(this.el, 'mouseenter').subscribe((ev) => {
         if (!this._dragService.isDragging) return;
         this._dragService.enterDrag(this);

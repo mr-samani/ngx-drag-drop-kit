@@ -77,17 +77,8 @@
   margin: -4px;
 }
 
-.ngx-draggable {
-  transition: none !important;
-  /** 
-  style for draged element in drop list
-  - when appended to body
-  */
-}
-.ngx-draggable.dragging {
-  transition-property: none !important;
-}
-.ngx-draggable.ngx-drag-drop {
+
+.ngx-drag-drop {
   box-shadow: 0 0 5px rgba(50, 50, 50, 0.568627451);
 }
 

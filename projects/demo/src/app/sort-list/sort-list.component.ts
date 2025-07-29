@@ -30,10 +30,6 @@ export class SortListComponent {
     }
   }
 
-  // drop(event: CdkDragDrop<string[]>) {
-  //  // moveItemInArray(this.items, event.previousIndex, event.currentIndex);
-  // }
-
   add() {
     let rndPosition = Math.floor(Math.random() * this.items.length);
     let rndName = 'added item_' + Math.round(Math.random() * 9999);

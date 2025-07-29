@@ -25,6 +25,7 @@ export class NgxDragDropService {
    */
   private isAfter = false;
   private dragOverItem?: NgxDraggableDirective;
+  isRtl = false;
   constructor(
     rendererFactory: RendererFactory2,
     @Inject(DOCUMENT) private _document: Document,
@@ -68,10 +69,11 @@ export class NgxDragDropService {
     this.dragElementInBody.style.width = dragElRec.width + 'px';
     this.dragElementInBody.style.height = dragElRec.height + 'px';
     this.dragElementInBody.style.pointerEvents = 'none';
-    this.dragElementInBody.style.opacity = '0.9';
+    this.dragElementInBody.style.opacity = '0.8';
     this._document.body.appendChild(this.dragElementInBody);
     if (drag.containerDropList._draggables)
       this.dragOverItem = drag.containerDropList._draggables.get(previousIndex + 1);
+    this.isRtl = getComputedStyle(drag.containerDropList.el).direction === 'rtl';
     this.placeholderService.updatePlaceholderPosition$.next({
       currentDrag: drag,
       dropList: drag.containerDropList,
@@ -121,17 +123,15 @@ export class NgxDragDropService {
     if (this.dragOverItem) {
       const position = getPointerPosition(ev);
       dragOverItemRec = this.dragOverItem.el.getBoundingClientRect();
-
       if (this.dragOverItem.containerDropList?.direction === 'horizontal') {
-        let xInEL = position.x - (dragOverItemRec.left + window.scrollX);
-        this.isAfter = xInEL > dragOverItemRec.width / 2;
+        const midpoint = dragOverItemRec.left + dragOverItemRec.width / 2;
+        this.isAfter = this.isRtl ? position.x < midpoint : position.x > midpoint;
       } else {
         let yInEL = position.y - (dragOverItemRec.top + window.scrollY);
         this.isAfter = yInEL > dragOverItemRec.height / 2;
       }
     }
     // init drag drop
-
     const dropList = this.getClosestDropList(ev);
     // console.log('getClosestDropList', dropList?.el?.id, 'dragover', this.dragOverItem);
     if (!dropList || this.checkAllowedConnections(dropList) == false) {

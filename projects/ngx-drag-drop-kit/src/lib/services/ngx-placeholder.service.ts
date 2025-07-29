@@ -54,7 +54,7 @@ export class NgxDragPlaceholderService {
       this._placeholder = dropList.addPlaceholder(currentDragRec?.width, currentDragRec?.height);
       dropList.el.insertAdjacentElement('beforeend', this._placeholder);
 
-     // console.log('placeholder created on:', dropList.el.id);
+      // console.log('placeholder created on:', dropList.el.id);
     }
 
     this.isShown = true;
@@ -65,7 +65,7 @@ export class NgxDragPlaceholderService {
       this._placeholder.remove();
     }
     this._placeholder = undefined;
-    document.querySelectorAll('[NgxDraggable]').forEach((el) => {
+    document.querySelectorAll('.ngx-draggable').forEach((el) => {
       this._renderer.removeStyle(el, 'transform');
     });
     this.isShown = false;
@@ -78,9 +78,11 @@ export class NgxDragPlaceholderService {
       this.inPlaceUpdatePlaceholderPosition(input);
       return;
     }
+
     this.index = 0;
     this.showPlaceholder(input);
     let { dragOverItem, currentDrag, dropList, isAfter, overItemRec } = input;
+    const isRtl = getComputedStyle(dropList.el).direction === 'rtl';
     if (!dragOverItem) {
       if (dropList._draggables?.length) {
         dragOverItem = dropList._draggables.last;
@@ -93,7 +95,10 @@ export class NgxDragPlaceholderService {
     const placeholderRect = this._placeholder!.getBoundingClientRect();
     const placeholderHeight = placeholderRect.height;
     const placeholderWidth = placeholderRect.width;
-    const dragItems = Array.from(dropList.el.querySelectorAll(':scope > [NgxDraggable]'));
+    const dragItems = Array.from(dropList.el.querySelectorAll(':scope > .ngx-draggable'));
+
+    // let dragItems: HTMLElement[] = [];
+    // if (dropList._draggables) dragItems = Array.from(dropList._draggables.map((m) => m.el));
     const dragOverIndex = dragItems.findIndex((x) => x === dragOverItem?.el);
     // جابجایی سایر آیتم‌ها
     for (let i = 0; i < dragItems.length; i++) {
@@ -116,16 +121,16 @@ export class NgxDragPlaceholderService {
         //   this._renderer.setStyle(dragItems[i], 'transform', '');
         //   continue;
         // }
-        if (isAfter) {
-          offsetX = i > dragOverIndex ? placeholderWidth : 0;
+        if (isRtl) {
+          offsetX = isAfter ? (i > dragOverIndex ? -placeholderWidth : 0) : i >= dragOverIndex ? -placeholderWidth : 0;
         } else {
-          offsetX = i >= dragOverIndex ? placeholderWidth : 0;
+          offsetX = isAfter ? (i > dragOverIndex ? placeholderWidth : 0) : i >= dragOverIndex ? placeholderWidth : 0;
         }
       }
 
       const transform = `translate(${offsetX}px, ${offsetY}px)`;
       this._renderer.setStyle(dragItems[i], 'transform', transform);
-      this._renderer.setStyle(dragItems[i], 'transition', 'transform 250ms cubic-bezier(0, 0, 0.2, 1)');
+      // this._renderer.setStyle(dragItems[i], 'transition', 'transform 250ms cubic-bezier(0, 0, 0.2, 1)');
     }
     // update placeholder position
     const containerEl = dropList.el;
@@ -138,7 +143,11 @@ export class NgxDragPlaceholderService {
         placeholderY = isAfter ? y + overItemRec.height : y;
         placeholderX = x;
       } else {
-        placeholderX = isAfter ? x + overItemRec.width : x;
+        if (isRtl) {
+          placeholderX = isAfter ? x - placeholderWidth : x;
+        } else {
+          placeholderX = isAfter ? x + overItemRec.width : x;
+        }
         placeholderY = y;
       }
     }
@@ -167,7 +176,6 @@ export class NgxDragPlaceholderService {
 
   public inPlaceShowPlaceholder(input: IUpdatePlaceholderPosition) {
     const { currentDragRec, dropList, isAfter, dragOverItem } = input;
-
     this.activeDropList = dropList;
     this.hidePlaceholder();
     this._placeholder = this._document.createElement('div');
@@ -190,13 +198,11 @@ export class NgxDragPlaceholderService {
   /*--------------------------------------------*/
 
   private inPlaceUpdatePlaceholderPosition(input: IUpdatePlaceholderPosition) {
-    this.showPlaceholder(input);
+    this.inPlaceShowPlaceholder(input);
     let els: HTMLElement[] = [];
     if (input.dragOverItem && input.dragOverItem.containerDropList) {
       els = Array.from(
-        input.dragOverItem.containerDropList.el.querySelectorAll(
-          '.ngx-draggable ,.ngx-drag-placeholder,.ngx-draggable.dragging'
-        )
+        input.dragOverItem.containerDropList.el.querySelectorAll('.ngx-draggable,.ngx-drag-placeholder')
       );
     }
 

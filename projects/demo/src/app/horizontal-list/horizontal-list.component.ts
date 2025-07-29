@@ -31,9 +31,6 @@ export class HorizontalListComponent {
     }
   }
 
-  // drop(event: CdkDragDrop<string[]>) {
-  //  // moveItemInArray(this.items, event.previousIndex, event.currentIndex);
-  // }
 
   add() {
     let rndPosition = Math.floor(Math.random() * this.items.length);

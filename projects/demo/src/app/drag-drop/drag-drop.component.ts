@@ -23,10 +23,6 @@ export class DragDropComponent {
     }
   }
 
-  // drop(event: CdkDragDrop<string[]>) {
-  //  // moveItemInArray(this.todoList, event.previousIndex, event.currentIndex);
-  // }
-
   add() {
     let rndPosition = Math.floor(Math.random() * this.todoList.length);
     let rndName = 'added item_' + Math.round(Math.random() * 9999);
@@ -34,7 +30,6 @@ export class DragDropComponent {
   }
 
   drop(event: IDropEvent) {
-    // console.log(event);
     if (event.previousContainer === event.container) {
       moveItemInArray(event.container.data, event.previousIndex, event.currentIndex);
     } else {
