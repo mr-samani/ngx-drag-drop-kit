@@ -77,11 +77,6 @@
   margin: -4px;
 }
 
-
-.ngx-drag-drop {
-  box-shadow: 0 0 5px rgba(50, 50, 50, 0.568627451);
-}
-
 .ngx-drag-placeholder {
   display: none;
   background: rgba(204, 204, 204, 0.4509803922);
