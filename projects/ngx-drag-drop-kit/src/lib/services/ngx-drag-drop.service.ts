@@ -111,13 +111,13 @@ export class NgxDragDropService {
   }
 
   enterDrag(drag: NgxDraggableDirective) {
-    console.log('enter', drag.el.id);
+    // console.log('enter', drag.el.id);
     this.dragOverItem = drag;
     // this.initDrag(drag);
   }
 
   leaveDrag(drag: NgxDraggableDirective) {
-    console.log('leave', drag.el.id);
+    // console.log('leave', drag.el.id);
     // this.dragOverItem = undefined;
   }
 
