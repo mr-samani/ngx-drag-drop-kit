@@ -221,7 +221,7 @@ export class NgxDragDropService {
     if (!dropList) return 0;
     const dragElements = Array.from(dropList.el.querySelectorAll(':scope > .ngx-draggable'));
     const currentIndex = dragElements.findIndex((el) => el === dragItem.el);
-    return currentIndex;
+    return currentIndex > -1 ? currentIndex : 0;
   }
 
   updateAllDragItemsRect() {
