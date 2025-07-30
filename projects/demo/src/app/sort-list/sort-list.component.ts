@@ -8,7 +8,7 @@ import { NgxDragDropKitModule } from '../../../../ngx-drag-drop-kit/src/public-a
   standalone: true,
   imports: [NgxDragDropKitModule],
   templateUrl: './sort-list.component.html',
-  styleUrl: './sort-list.component.scss'
+  styleUrl: './sort-list.component.scss',
 })
 export class SortListComponent {
   items = [
@@ -37,7 +37,7 @@ export class SortListComponent {
   }
 
   drop(ev: IDropEvent) {
-    // console.log(ev);
+    console.log('Drop event: ', ev);
     moveItemInArray(this.items, ev.previousIndex, ev.currentIndex);
   }
 }

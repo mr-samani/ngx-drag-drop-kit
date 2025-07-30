@@ -99,7 +99,7 @@ export class NgxDragDropService {
 
   stopDrag(drag: NgxDraggableDirective) {
     this.isDragging = false;
-    if (drag.dropList) drag.dropList.isDragging = true;
+    if (drag.dropList) drag.dropList.isDragging = false;
     const index = this._activeDragInstances.indexOf(drag);
     if (index > -1) {
       drag.el.style.display = this.currentDragPreviousDisplay;
@@ -187,7 +187,6 @@ export class NgxDragDropService {
       let yInEL = position.y - (this.dragOverItem.domRect.top + window.scrollY);
       this.isAfter = yInEL > this.dragOverItem.domRect.height / 2;
     }
-
     this.placeholderService.updatePlaceholder$.next({
       currentDrag: this._activeDragInstances[0],
       dragOverItem: this.dragOverItem,

@@ -23,6 +23,7 @@ import { NgxDraggableDirective } from './ngx-draggable.directive';
     '[style.position]': '"relative"',
     '[style.scroll-snap-type]': 'isDragging ? "none": "" ',
     '[style.user-select]': 'isDragging ? "none" : ""',
+    '[style.min-height]': 'isDragging ? minHeight+"px" : ""',
   },
   standalone: true,
   exportAs: 'NgxDropList',
@@ -55,7 +56,7 @@ export class NgxDropListDirective<T = any> implements OnInit, OnDestroy {
    * NOTE: index of drag items is not valid
    */
   dragItems: NgxDraggableDirective[] = [];
-
+  minHeight = 0;
   constructor(
     private dragService: NgxDragDropService,
     private dragRegister: NgxDragRegisterService,
@@ -75,6 +76,7 @@ export class NgxDropListDirective<T = any> implements OnInit, OnDestroy {
     this.subscriptions.push(
       fromEvent<TouchEvent>(this.el, 'mouseenter').subscribe((ev) => {
         //console.log('enter drop lis', this.el);
+        this.minHeight = this.el.getBoundingClientRect().height;
         if (!this.disableSort) this.dragService.enterDropList(this);
       }),
       fromEvent<TouchEvent>(this.el, 'mouseleave').subscribe((ev) => {
@@ -102,6 +104,7 @@ export class NgxDropListDirective<T = any> implements OnInit, OnDestroy {
   onDrop(event: IDropEvent) {
     this.drop.emit(event);
     this.subscriptions = [];
+    this.minHeight = this.el.getBoundingClientRect().height;
   }
 
   addPlaceholder(dragRect: DOMRect): HTMLElement {
