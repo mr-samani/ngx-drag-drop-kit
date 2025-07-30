@@ -51,7 +51,10 @@ export class NgxDropListDirective<T = any> implements OnInit, OnDestroy {
   isRtl = false;
   private subscriptions: Subscription[] = [];
 
-  dragItems = new WeakMap<Element, NgxDraggableDirective>();
+  /**
+   * NOTE: index of drag items is not valid
+   */
+  dragItems: NgxDraggableDirective[] = [];
 
   constructor(
     private dragService: NgxDragDropService,
@@ -88,10 +91,13 @@ export class NgxDropListDirective<T = any> implements OnInit, OnDestroy {
   }
 
   registerDragItem(drag: NgxDraggableDirective) {
-    this.dragItems.set(drag.el, drag);
+    this.dragItems.push(drag);
   }
   removeDragItem(drag: NgxDraggableDirective) {
-    this.dragItems.delete(drag.el);
+    let indx = this.dragItems.findIndex((x) => x == drag);
+    if (indx > -1) {
+      this.dragItems.splice(indx, 1);
+    }
   }
   onDrop(event: IDropEvent) {
     this.drop.emit(event);

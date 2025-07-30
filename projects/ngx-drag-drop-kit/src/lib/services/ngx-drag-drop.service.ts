@@ -42,6 +42,9 @@ export class NgxDragDropService {
     if (!drag.dropList) {
       return;
     }
+
+    this.updateAllDragItemsRect();
+
     this.activeDropList = drag.dropList;
 
     this.isDragging = true;
@@ -77,18 +80,6 @@ export class NgxDragDropService {
     this._renderer.setStyle(drag.el, 'display', 'none', RendererStyleFlags2.Important);
 
     this.isRtl = getComputedStyle(this.activeDropList.el).direction === 'rtl';
-    if (!this.dragOverItem) {
-      this.dragOverItem = this.getNextOrPreviousDragItem(drag);
-    }
-    this.placeholderService.updatePlaceholder$.next({
-      currentDrag: drag,
-      dropList: this.activeDropList,
-      isAfter: false,
-      currentDragRec: this._currentDragRect,
-      overItemRec: this.dragOverItem?.domRect,
-      dragOverItem: this.dragOverItem,
-      state: 'update',
-    });
   }
 
   stopDrag(drag: NgxDraggableDirective) {
@@ -227,20 +218,17 @@ export class NgxDragDropService {
     return true;
   }
 
-  getNextOrPreviousDragItem(dragItem: NgxDraggableDirective): NgxDraggableDirective | undefined {
-    const dropList = dragItem.dropList;
-    if (!dropList) return undefined;
-    const dragElements = Array.from(dropList.el.querySelectorAll(':scope > .ngx-draggable'));
-    if (dragElements.length < 1) {
-      return undefined;
+
+
+  updateAllDragItemsRect() {
+    const drpLstElms = Array.from(this._document.querySelectorAll('[ngxDropList]'));
+    for (let drp of drpLstElms) {
+      const drpDrctv = this.dragRegister.dropList.get(drp);
+      if (drpDrctv) {
+        for (let drg of drpDrctv.dragItems) {
+          drg.updateDomRect();
+        }
+      }
     }
-    const currentIndex = dragElements.findIndex((el) => el === dragItem.el);
-    let nextElOrPreviousEl;
-    if (dragElements[currentIndex + 1]) {
-      nextElOrPreviousEl = dragElements[currentIndex + 1];
-    } else {
-      nextElOrPreviousEl = dragElements[currentIndex - 1];
-    }
-    return dropList.dragItems.get(nextElOrPreviousEl);
   }
 }

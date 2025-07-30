@@ -20,7 +20,7 @@ export class NgxDragRegisterService {
     let dropList = this.findParentDropList(drag);
     if (dropList) {
       drag.dropList = dropList;
-      dropList.dragItems.set(drag.el, drag);
+      dropList.registerDragItem(drag);
     }
     // console.log('registerDragItem', dropList?.dragItems);
   }
@@ -28,7 +28,7 @@ export class NgxDragRegisterService {
   removeDragItem(drag: NgxDraggableDirective) {
     let dropList = drag.dropList;
     if (dropList) {
-      dropList.dragItems.delete(drag.el);
+      dropList.removeDragItem(drag);
     }
     // console.log('removeDragItem', dropList?.dragItems);
   }

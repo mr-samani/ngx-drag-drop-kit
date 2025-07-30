@@ -54,11 +54,14 @@ export class NgxDraggableDirective implements OnDestroy, AfterViewInit {
   set dragging(val: boolean) {
     this._dragging = val == true;
     if (this._dragging) {
-      this.previousTransitionProprety = getComputedStyle(this.el).transitionProperty;
+      this.previousTransitionProprety = this.el.style.transitionProperty;
       this._renderer.setStyle(this.el, 'transition-property', 'none', RendererStyleFlags2.Important);
       this.el.classList.add('dragging');
     } else {
-      this._renderer.setStyle(this.el, 'transition-property', this.previousTransitionProprety);
+      if (this.previousTransitionProprety)
+        this._renderer.setStyle(this.el, 'transition-property', this.previousTransitionProprety);
+      else this._renderer.removeStyle(this.el, 'transition-property');
+
       this.el.classList.remove('dragging');
     }
   }

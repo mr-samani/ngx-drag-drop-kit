@@ -1,10 +1,8 @@
 import { Inject, Injectable, Renderer2, RendererFactory2 } from '@angular/core';
 import { Subject, distinctUntilChanged } from 'rxjs';
 import { DOCUMENT } from '@angular/common';
-import { NgxDropListDirective } from '../directives/ngx-drop-list.directive';
 import { getRelativePosition } from '../../utils/get-position';
 import { IUpdatePlaceholder } from '../../interfaces/update-placeholder';
-import { NgxDraggableDirective } from '../directives/ngx-draggable.directive';
 
 @Injectable({
   providedIn: 'root',
@@ -87,7 +85,6 @@ export class NgxDragPlaceholderService {
       this.inPlaceUpdatePlaceholderPosition(input);
       return;
     }
-
     this.showPlaceholder(input);
     let { dragOverItem, currentDrag, dropList, isAfter, overItemRec, currentDragRec } = input;
 
@@ -95,6 +92,36 @@ export class NgxDragPlaceholderService {
     const placeholderRect = this._placeholder!.getBoundingClientRect();
     const placeholderHeight = placeholderRect.height;
     const placeholderWidth = placeholderRect.width;
+
+    // update placeholder position
+    const containerEl = dropList.el;
+    let placeholderX = 0;
+    let placeholderY = 0;
+    if (dragOverItem && overItemRec && dragOverItem.el.parentElement == containerEl) {
+      const { x, y } = getRelativePosition(
+        dragOverItem !== currentDrag ? dragOverItem.el : currentDrag.el,
+        containerEl
+      );
+
+      if (dropList.direction === 'vertical') {
+        placeholderY = isAfter ? y + overItemRec.height : y;
+        placeholderX = x;
+      } else {
+        if (dropList.isRtl) {
+          placeholderX = isAfter ? x - placeholderWidth : x;
+        } else {
+          placeholderX = isAfter ? x + overItemRec.width : x;
+        }
+        placeholderY = y;
+      }
+    }
+
+    const plcPosition = getRelativePosition(this._placeholder!, containerEl);
+    const placeholderTransform = `translate(${placeholderX - plcPosition.x}px, ${placeholderY - plcPosition.y}px)`;
+    this._renderer.setStyle(this._placeholder, 'transform', placeholderTransform);
+    this._renderer.setStyle(this._placeholder, 'transition', 'transform 250ms ease');
+
+    // MOVE OTHER ITEMS
     const dragItems = Array.from(dropList.el.querySelectorAll(':scope > .ngx-draggable'));
 
     // let dragItems: HTMLElement[] = [];
@@ -132,35 +159,6 @@ export class NgxDragPlaceholderService {
       this._renderer.setStyle(dragItems[i], 'transform', transform);
       // this._renderer.setStyle(dragItems[i], 'transition', 'transform 250ms cubic-bezier(0, 0, 0.2, 1)');
     }
-    // update placeholder position
-    const containerEl = dropList.el;
-    let placeholderX = 0;
-    let placeholderY = 0;
-    if (dragOverItem && overItemRec && dragOverItem.el.parentElement == containerEl) {
-      const { x, y } = getRelativePosition(
-        dragOverItem !== currentDrag ? dragOverItem.el : currentDrag.el,
-        containerEl
-      );
-
-      if (dropList.direction === 'vertical') {
-        placeholderY = isAfter ? y + overItemRec.height : y;
-        placeholderX = x;
-      } else {
-        if (dropList.isRtl) {
-          placeholderX = isAfter ? x - placeholderWidth : x;
-        } else {
-          placeholderX = isAfter ? x + overItemRec.width : x;
-        }
-        placeholderY = y;
-      }
-    }
-
-    const plcPosition = getRelativePosition(this._placeholder!, containerEl);
-    // console.log(containerEl, placeholderX, plcPosition.x);
-    // const placeholderTransform = `translate(${placeholderX}px, ${placeholderY}px)`;
-    const placeholderTransform = `translate(${placeholderX - plcPosition.x}px, ${placeholderY - plcPosition.y}px)`;
-    this._renderer.setStyle(this._placeholder, 'transform', placeholderTransform);
-    // this._renderer.setStyle(this._placeholder, 'transition', 'transform 250ms ease');
 
     this.index = isAfter ? dragOverIndex + 1 : dragOverIndex;
 
