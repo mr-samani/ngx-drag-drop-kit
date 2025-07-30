@@ -150,6 +150,7 @@ export class NgxDragPlaceholderService {
     }
 
     this.index = isAfter ? dragOverIndex + 1 : dragOverIndex;
+    if (this.index < 0) this.index = 0;
   }
 
   /*------------------------------------when in place codes... ----------------------------------------------------*/
