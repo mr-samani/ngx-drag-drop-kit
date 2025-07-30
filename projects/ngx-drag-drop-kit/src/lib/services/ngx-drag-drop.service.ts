@@ -14,8 +14,19 @@ import { NgxDragRegisterService } from './ngx-drag-register.service';
 export class NgxDragDropService {
   isDragging = false;
 
-  public _activeDragInstances: NgxDraggableDirective[] = [];
-  public activeDropList?: NgxDropListDirective;
+  private _activeDragInstances: NgxDraggableDirective[] = [];
+  private get activeDropList(): NgxDropListDirective | undefined {
+    console.log(this.stackDropList.map((m) => m.el.id));
+    if (this.stackDropList.length > 0) {
+      return this.stackDropList[this.stackDropList.length - 1];
+    }
+    return undefined;
+  }
+  private set activeDropList(drp: NgxDropListDirective) {
+    if (this.activeDropList != drp) this.stackDropList.push(drp);
+  }
+  /** stack list of drop list usefull for nested items */
+  private stackDropList: NgxDropListDirective[] = [];
 
   private _currentDragRect?: DOMRect;
   private _renderer: Renderer2;
@@ -108,26 +119,29 @@ export class NgxDragDropService {
       });
       this.dragOverItem = undefined;
     }
+    this.stackDropList = [];
   }
 
   enterDrag(drag: NgxDraggableDirective) {
     // console.log('enter', drag.el.id);
     this.dragOverItem = drag;
+    // drag.el.style.backgroundColor = 'red';
     // this.initDrag(drag);
   }
 
   leaveDrag(drag: NgxDraggableDirective) {
     // console.log('leave', drag.el.id);
     // this.dragOverItem = undefined;
+    // drag.el.style.backgroundColor = '';
   }
 
-  enterDropList(drop: NgxDropListDirective) {
+  enterDropList(dropList: NgxDropListDirective) {
     if (this.isDragging) {
-      this.activeDropList = drop;
+      this.activeDropList = dropList;
       this.placeholderService.updatePlaceholder$.next({
         currentDrag: this._activeDragInstances[0],
         currentDragRec: this._activeDragInstances[0].domRect,
-        dropList: drop,
+        dropList: dropList,
         isAfter: this.isAfter,
         dragOverItem: this.dragOverItem,
         overItemRec: this.dragOverItem?.domRect,
@@ -136,18 +150,20 @@ export class NgxDragDropService {
     }
   }
 
-  leaveDropList(drop: NgxDropListDirective) {
+  leaveDropList(dropList: NgxDropListDirective) {
     if (!this.isDragging) return;
-    this.placeholderService.updatePlaceholder$.next({
-      currentDrag: this._activeDragInstances[0],
-      currentDragRec: this._activeDragInstances[0].domRect,
-      dropList: drop,
-      isAfter: this.isAfter,
-      dragOverItem: this.dragOverItem,
-      overItemRec: this.dragOverItem?.domRect,
-      state: 'hidden',
-    });
-    this.dragOverItem = undefined;
+    let foundIndex = this.stackDropList.findIndex((x) => x == dropList);
+    if (foundIndex > -1) this.stackDropList.splice(foundIndex, 1);
+    // this.placeholderService.updatePlaceholder$.next({
+    //   currentDrag: this._activeDragInstances[0],
+    //   currentDragRec: this._activeDragInstances[0].domRect,
+    //   dropList: drop,
+    //   isAfter: this.isAfter,
+    //   dragOverItem: this.dragOverItem,
+    //   overItemRec: this.dragOverItem?.domRect,
+    //   state: 'hidden',
+    // });
+    // this.dragOverItem = undefined;
   }
   dragMove(drag: NgxDraggableDirective, ev: MouseEvent | TouchEvent) {
     if (!this.dragElementInBody || !this.isDragging) {
@@ -217,8 +233,6 @@ export class NgxDragDropService {
     }
     return true;
   }
-
-
 
   updateAllDragItemsRect() {
     const drpLstElms = Array.from(this._document.querySelectorAll('[ngxDropList]'));

@@ -9,8 +9,7 @@ import { IUpdatePlaceholder } from '../../interfaces/update-placeholder';
 })
 export class NgxDragPlaceholderService {
   private _renderer: Renderer2;
-  private placeholder: HTMLElement | undefined;
-  private placeholderDomRect?: DOMRect;
+  public placeholder: HTMLElement | undefined;
   public index = 0;
   public updatePlaceholder$ = new Subject<IUpdatePlaceholder>();
   public isShown: boolean = false;
@@ -37,7 +36,7 @@ export class NgxDragPlaceholderService {
   }
 
   private updatePlaceHolder(input: IUpdatePlaceholder) {
-    console.log('updateposition', input.dropList?.el.id, input.state);
+    // console.log('updateposition', input.dropList?.el.id, input.state);
 
     switch (input.state) {
       case 'show':
@@ -66,7 +65,6 @@ export class NgxDragPlaceholderService {
       } else {
         input.dropList.el.insertAdjacentElement('beforeend', this.placeholder);
       }
-      this.placeholderDomRect = this.placeholder.getBoundingClientRect();
     }
     this.isShown = true;
   }
@@ -86,6 +84,10 @@ export class NgxDragPlaceholderService {
 
   /*--------------------------------------------*/
   private updatePlaceholderPosition(input: IUpdatePlaceholder) {
+    if (input.dropList.isFlexWrap) {
+      this.inPlaceUpdatePlaceholderPosition(input);
+      return;
+    }
     const { currentDrag, dragOverItem, dropList, isAfter, overItemRec } = input;
 
     this.showPlaceholder(input);
@@ -96,7 +98,7 @@ export class NgxDragPlaceholderService {
 
     let placeholderX = 0;
     let placeholderY = 0;
-
+    console.log(dragOverItem?.el?.id, isAfter, dropList.el.id);
     if (dragOverItem && overItemRec && dragOverItem.dropList === dropList) {
       const relPos = getRelativePosition(dragOverItem.el, dropList.el);
       if (dropList.direction === 'vertical') {
@@ -116,7 +118,7 @@ export class NgxDragPlaceholderService {
     const placeholderTransform = `translate(${placeholderX - plcRel.x}px, ${placeholderY - plcRel.y}px)`;
 
     this._renderer.setStyle(this.placeholder, 'transform', placeholderTransform);
-    this._renderer.setStyle(this.placeholder, 'transition', 'transform 250ms ease');
+    // this._renderer.setStyle(this.placeholder, 'transition', 'transform 250ms ease');
 
     // ✅ جابجا کردن سایر آیتم‌ها
     const dragItems: HTMLElement[] = Array.from(dropList.el.querySelectorAll(':scope > .ngx-draggable'));
@@ -154,6 +156,7 @@ export class NgxDragPlaceholderService {
     this.placeholder = this._document.createElement('div');
     this.placeholder.style.display = 'inline-block';
     this.placeholder.style.pointerEvents = 'none';
+    this.placeholder.style.position = 'relative';
 
     this.placeholder.className = 'ngx-drag-placeholder';
     if (input.currentDragRec) {
@@ -171,8 +174,8 @@ export class NgxDragPlaceholderService {
   /*--------------------------------------------*/
 
   private inPlaceUpdatePlaceholderPosition(input: IUpdatePlaceholder) {
-    if (!this.isShown) return;
     this.inPlaceShowPlaceholder(input);
+    if (!this.isShown) return;
     let els: HTMLElement[] = [];
     if (input.dragOverItem && input.dragOverItem.dropList) {
       els = Array.from(input.dragOverItem.dropList.el.querySelectorAll('.ngx-draggable,.ngx-drag-placeholder'));

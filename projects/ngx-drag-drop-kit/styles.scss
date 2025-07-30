@@ -68,10 +68,6 @@
     transition-property: none !important;
   }
   &:hover {
-    // outline: 2px solid var(--pointerColor);
-    // outline-offset: -2px;
-    // border-radius: 0px !important;
-
     .ngx-corner-resize {
       visibility: visible;
       z-index: 1;
@@ -96,25 +92,4 @@
   min-height: 30px;
   pointer-events: none;
   max-width: 100%;
-
-  // animation: animationMaxHeight 1000ms, animationShow 300ms;
-  // transform-origin: 0% 0%;
-  // @keyframes animationMaxHeight {
-  //   from {
-  //     min-height: 0;
-  //     max-height: 0;
-  //   }
-  //   to {
-  //     max-height: 500px;
-  //   }
-  // }
-
-  // @keyframes animationShow {
-  //   from {
-  //     transform: scaleY(0);
-  //   }
-  //   to {
-  //     transform: scaleY(1);
-  //   }
-  // }
 }

@@ -120,6 +120,7 @@ export class NgxDropListDirective<T = any> implements OnInit, OnDestroy {
     this.renderer.addClass(el, 'ngx-drag-placeholder');
     this.renderer.setStyle(el, 'pointer-events', 'none');
     this.renderer.setStyle(el, 'display', 'inline-block');
+    this.renderer.setStyle(el, 'position', 'absolute');
     if (width) this.renderer.setStyle(el, 'width', `${width}px`);
     if (height) this.renderer.setStyle(el, 'height', `${height}px`);
     return el;
