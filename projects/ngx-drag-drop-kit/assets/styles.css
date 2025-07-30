@@ -77,7 +77,12 @@
   margin: -4px;
 }
 
+.ngx-draggable {
+  transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+}
+
 .ngx-drag-placeholder {
+  position: absolute;
   display: none;
   background: rgba(204, 204, 204, 0.4509803922);
   border: dotted 2px #999;

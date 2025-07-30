@@ -64,3 +64,17 @@ export function getRelativePosition(el: HTMLElement, container: HTMLElement): { 
 
   return { x: elX, y: elY };
 }
+
+export function getAbsoluteOffset(el: HTMLElement): { x: number; y: number } {
+  let x = 0;
+  let y = 0;
+  let current = el;
+
+  while (current) {
+    x += current.offsetLeft - current.scrollLeft + current.clientLeft;
+    y += current.offsetTop - current.scrollTop + current.clientTop;
+    current = current.offsetParent as HTMLElement;
+  }
+
+  return { x, y };
+}

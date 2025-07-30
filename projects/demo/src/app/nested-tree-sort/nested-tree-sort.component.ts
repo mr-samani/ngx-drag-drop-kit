@@ -35,7 +35,7 @@ export class NestedTreeSortComponent {
   }
 
   drop(event: IDropEvent) {
+    console.log('droped nested tree: ', event);
     transferArrayItem(event.previousContainer.data, event.container.data, event.previousIndex, event.currentIndex);
   }
-
 }

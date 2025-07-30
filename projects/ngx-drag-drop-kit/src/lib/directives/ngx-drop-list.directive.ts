@@ -1,33 +1,34 @@
 import {
-  AfterViewInit,
   ApplicationRef,
   ContentChild,
-  ContentChildren,
   Directive,
   ElementRef,
   EmbeddedViewRef,
   EventEmitter,
   Input,
+  OnDestroy,
+  OnInit,
   Output,
-  QueryList,
   Renderer2,
 } from '@angular/core';
 import { NgxDragDropService } from '../services/ngx-drag-drop.service';
-import { NgxDraggableDirective } from './ngx-draggable.directive';
-import { Subscription } from 'rxjs';
+import { fromEvent, Subscription } from 'rxjs';
 import { IDropEvent } from '../../interfaces/IDropEvent';
 import { NgxPlaceholderDirective } from './ngx-place-holder.directive';
+import { NgxDragRegisterService } from '../services/ngx-drag-register.service';
+import { NgxDraggableDirective } from './ngx-draggable.directive';
 @Directive({
   selector: '[ngxDropList]',
   host: {
     '[style.position]': '"relative"',
     '[style.scroll-snap-type]': 'isDragging ? "none": "" ',
     '[style.user-select]': 'isDragging ? "none" : ""',
+    '[style.min-height]': 'isDragging ? minHeight+"px" : ""',
   },
   standalone: true,
   exportAs: 'NgxDropList',
 })
-export class NgxDropListDirective<T = any> implements AfterViewInit {
+export class NgxDropListDirective<T = any> implements OnInit, OnDestroy {
   @Input() data?: T;
   @Input() disableSort: boolean = false;
   @Input() direction: 'horizontal' | 'vertical' = 'vertical';
@@ -44,14 +45,21 @@ export class NgxDropListDirective<T = any> implements AfterViewInit {
   }
 
   @Output() drop = new EventEmitter<IDropEvent>();
-  @ContentChildren(NgxDraggableDirective, { descendants: true }) _draggables?: QueryList<NgxDraggableDirective>;
   el: HTMLElement;
   isDragging = false;
-
+  isFlexWrap = false;
   initCursor = '';
+  isRtl = false;
   private subscriptions: Subscription[] = [];
+
+  /**
+   * NOTE: index of drag items is not valid
+   */
+  dragItems: NgxDraggableDirective[] = [];
+  minHeight = 0;
   constructor(
-    public _dragDropService: NgxDragDropService,
+    private dragService: NgxDragDropService,
+    private dragRegister: NgxDragRegisterService,
     elRef: ElementRef<HTMLElement>,
     private appRef: ApplicationRef,
 
@@ -59,57 +67,48 @@ export class NgxDropListDirective<T = any> implements AfterViewInit {
   ) {
     this.el = elRef.nativeElement;
     this.initCursor = this.el.style.cursor;
-    _dragDropService.registerDropList(this);
   }
 
-  ngAfterViewInit(): void {
-    this.onChangeDragChilds();
-    this._draggables?.changes.subscribe((r) => {
-      this.onChangeDragChilds();
-      // console.log('_draggables', 'change', r);
-    });
-    // console.log(this._draggables);
-    // this.subscriptions.push(
-    //   fromEvent<TouchEvent>(this.el, 'mouseenter').subscribe((ev) => {
-    //     console.log('entered', this.el.id);
-    //     if (!this._dragDropService.isDragging) return;
-    //     if (this.checkAllowedConnections() == true) {
-    //       this.el.style.cursor = this.previousCursor;
-    //       this._dragDropService.enterDropList(this);
-    //       this.entered.emit();
-    //     } else {
-    //       this.el.style.cursor = 'no-drop';
-    //     }
-    //   }),
-    //   fromEvent<TouchEvent>(this.el, 'mouseleave').subscribe((ev) => {
-    //     console.log('leaved', this.el.id);
-    //     if (!this._dragDropService.isDragging) return;
-    //     if (this.checkAllowedConnections()) {
-    //       this._dragDropService.leaveDropList(this);
-    //       this.exited.emit();
-    //     }
-    //   })
-    // );
+  ngOnInit(): void {
+    this.dragRegister.registerDropList(this);
+    this.checkIsFlexibleAndWrap();
+    this.isRtl = getComputedStyle(this.el).direction === 'rtl';
+    this.subscriptions.push(
+      fromEvent<TouchEvent>(this.el, 'mouseenter').subscribe((ev) => {
+        //console.log('enter drop lis', this.el);
+        this.minHeight = this.el.getBoundingClientRect().height;
+        if (!this.disableSort) this.dragService.enterDropList(this);
+      }),
+      fromEvent<TouchEvent>(this.el, 'mouseleave').subscribe((ev) => {
+        //console.log('leave drop lis', this.el);
+        if (!this.disableSort) this.dragService.leaveDropList(this);
+      })
+    );
   }
 
   ngOnDestroy() {
+    this.dragRegister.removeDropList(this);
     this.subscriptions.forEach((sub) => sub.unsubscribe());
-    this._draggables?.reset([]);
     this.disposePlaceholder();
   }
 
-  onChangeDragChilds() {
-    this._draggables?.forEach((el) => {
-      el.containerDropList = this;
-    });
+  registerDragItem(drag: NgxDraggableDirective) {
+    this.dragItems.push(drag);
   }
-
+  removeDragItem(drag: NgxDraggableDirective) {
+    let indx = this.dragItems.findIndex((x) => x == drag);
+    if (indx > -1) {
+      this.dragItems.splice(indx, 1);
+    }
+  }
   onDrop(event: IDropEvent) {
     this.drop.emit(event);
     this.subscriptions = [];
+    this.minHeight = this.el.getBoundingClientRect().height;
   }
 
-  addPlaceholder(width?: number, height?: number): HTMLElement {
+  addPlaceholder(dragRect: DOMRect): HTMLElement {
+    const { width, height } = dragRect;
     if (this.userPlaceholder) {
       const ctx = { width, height };
       this.placeholderView = this.userPlaceholder.tpl.createEmbeddedView(ctx);
@@ -124,6 +123,7 @@ export class NgxDropListDirective<T = any> implements AfterViewInit {
     this.renderer.addClass(el, 'ngx-drag-placeholder');
     this.renderer.setStyle(el, 'pointer-events', 'none');
     this.renderer.setStyle(el, 'display', 'inline-block');
+    this.renderer.setStyle(el, 'position', 'absolute');
     if (width) this.renderer.setStyle(el, 'width', `${width}px`);
     if (height) this.renderer.setStyle(el, 'height', `${height}px`);
     return el;
@@ -136,5 +136,22 @@ export class NgxDropListDirective<T = any> implements AfterViewInit {
       this.placeholderView.destroy();
       this.placeholderView = undefined!;
     }
+  }
+
+  private checkIsFlexibleAndWrap() {
+    const styles = window.getComputedStyle(this.el);
+    this.isFlexWrap = styles.display == 'flex' && styles.flexWrap == 'wrap';
+  }
+
+  checkAllowedConnections(sourceDropList?: NgxDropListDirective): boolean {
+    this.el.style.cursor = this.initCursor;
+    if (sourceDropList && sourceDropList.connectedTo.length > 0 && sourceDropList.el !== this.el) {
+      const found = sourceDropList.connectedTo.indexOf(this.el) > -1;
+      if (!found) {
+        this.el.style.cursor = 'no-drop';
+      }
+      return found;
+    }
+    return true;
   }
 }
