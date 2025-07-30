@@ -75,11 +75,11 @@ export class NgxDropListDirective<T = any> implements OnInit, OnDestroy {
     this.subscriptions.push(
       fromEvent<TouchEvent>(this.el, 'mouseenter').subscribe((ev) => {
         //console.log('enter drop lis', this.el);
-        this.dragService.enterDropList(this);
+        if (!this.disableSort) this.dragService.enterDropList(this);
       }),
       fromEvent<TouchEvent>(this.el, 'mouseleave').subscribe((ev) => {
         //console.log('leave drop lis', this.el);
-        this.dragService.leaveDropList(this);
+        if (!this.disableSort) this.dragService.leaveDropList(this);
       })
     );
   }
@@ -138,5 +138,17 @@ export class NgxDropListDirective<T = any> implements OnInit, OnDestroy {
   private checkIsFlexibleAndWrap() {
     const styles = window.getComputedStyle(this.el);
     this.isFlexWrap = styles.display == 'flex' && styles.flexWrap == 'wrap';
+  }
+
+  checkAllowedConnections(sourceDropList?: NgxDropListDirective): boolean {
+    this.el.style.cursor = this.initCursor;
+    if (sourceDropList && sourceDropList.connectedTo.length > 0 && sourceDropList.el !== this.el) {
+      const found = sourceDropList.connectedTo.indexOf(this.el) > -1;
+      if (!found) {
+        this.el.style.cursor = 'no-drop';
+      }
+      return found;
+    }
+    return true;
   }
 }

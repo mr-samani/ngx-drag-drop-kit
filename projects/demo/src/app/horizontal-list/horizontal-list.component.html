@@ -1,5 +1,11 @@
 horizontal list (signle line)
-<div ngxDropList class="list-container" (drop)="drop($event, simpleItems)" [direction]="'horizontal'">
+<div
+  ngxDropList
+  class="list-container"
+  (drop)="drop($event, simpleItems)"
+  [direction]="'horizontal'"
+  [connectedTo]="[horizontalList]"
+  #horizontalList>
   @for (item of simpleItems; track item) {
   <div class="box-item" ngxDraggable>
     {{ item }}
@@ -8,7 +14,13 @@ horizontal list (signle line)
 </div>
 
 horizontal list felxible with auto wrap css
-<div ngxDropList class="list-container auto-wrap" (drop)="drop($event, items)" [direction]="'horizontal'">
+<div
+  ngxDropList
+  class="list-container auto-wrap"
+  (drop)="drop($event, items)"
+  [direction]="'horizontal'"
+  [connectedTo]="[horizontalFlexWrap]"
+  #horizontalFlexWrap>
   @for (item of items; track item) {
   <div class="box-item" ngxDraggable>
     {{ item }}

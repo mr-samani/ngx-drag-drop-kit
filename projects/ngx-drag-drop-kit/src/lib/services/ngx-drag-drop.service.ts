@@ -16,7 +16,7 @@ export class NgxDragDropService {
 
   private _activeDragInstances: NgxDraggableDirective[] = [];
   private get activeDropList(): NgxDropListDirective | undefined {
-    console.log(this.stackDropList.map((m) => m.el.id));
+    // console.log(this.stackDropList.map((m) => m.el.id));
     if (this.stackDropList.length > 0) {
       return this.stackDropList[this.stackDropList.length - 1];
     }
@@ -84,11 +84,15 @@ export class NgxDragDropService {
     this.dragElementInBody.style.height = this._currentDragRect.height + 'px';
     this.dragElementInBody.style.pointerEvents = 'none';
     this.dragElementInBody.style.opacity = '0.85';
-    this.dragElementInBody.style.boxShadow = '0px 5px 40px rgba(0,0,0,.5)';
+    this.dragElementInBody.style.boxShadow = '0px 3px 20px rgba(0,0,0,.5)';
     this.dragElementInBody.style.zIndex = '1000';
     this.dragElementInBody.style.transitionProperty = 'none';
     this._document.body.appendChild(this.dragElementInBody);
-    this._renderer.setStyle(drag.el, 'display', 'none', RendererStyleFlags2.Important);
+    if (!drag.dropList.disableSort) {
+      this._renderer.setStyle(drag.el, 'display', 'none', RendererStyleFlags2.Important);
+    } else {
+      this._renderer.setStyle(drag.el, 'transform', 'none', RendererStyleFlags2.Important);
+    }
 
     this.isRtl = getComputedStyle(this.activeDropList.el).direction === 'rtl';
   }
@@ -165,13 +169,13 @@ export class NgxDragDropService {
     // });
     // this.dragOverItem = undefined;
   }
-  dragMove(drag: NgxDraggableDirective, ev: MouseEvent | TouchEvent) {
+  dragMove(drag: NgxDraggableDirective, ev: MouseEvent | TouchEvent, transform: string) {
     if (!this.dragElementInBody || !this.isDragging) {
       return;
     }
-    this._renderer.setStyle(this.dragElementInBody, 'transform', drag.el.style.transform);
+    this._renderer.setStyle(this.dragElementInBody, 'transform', transform);
     if (!this.dragOverItem || !this.activeDropList) return;
-    if (this.checkAllowedConnections(this.activeDropList) == false) {
+    if (this.activeDropList.checkAllowedConnections(this._activeDragInstances[0]?.dropList) == false) {
       return;
     }
     const position = getPointerPosition(ev);
@@ -219,19 +223,6 @@ export class NgxDragDropService {
     const dragElements = Array.from(dropList.el.querySelectorAll(':scope > .ngx-draggable'));
     const currentIndex = dragElements.findIndex((el) => el === dragItem.el);
     return currentIndex;
-  }
-
-  checkAllowedConnections(dropList: NgxDropListDirective): boolean {
-    let currentDropList = this._activeDragInstances[0]?.dropList;
-    dropList.el.style.cursor = dropList.initCursor;
-    if (currentDropList && currentDropList.connectedTo.length > 0 && currentDropList.el !== dropList.el) {
-      const found = currentDropList.connectedTo.indexOf(dropList.el) > -1;
-      if (!found) {
-        dropList.el.style.cursor = 'no-drop';
-      }
-      return found;
-    }
-    return true;
   }
 
   updateAllDragItemsRect() {

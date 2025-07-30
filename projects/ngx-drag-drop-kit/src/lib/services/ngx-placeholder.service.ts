@@ -52,6 +52,8 @@ export class NgxDragPlaceholderService {
   }
 
   private showPlaceholder(input: IUpdatePlaceholder) {
+    if (input.dropList.disableSort || input.dropList.checkAllowedConnections(input.currentDrag.dropList) == false)
+      return;
     if (input.dropList.isFlexWrap) {
       return this.inPlaceShowPlaceholder(input);
     }
@@ -84,6 +86,8 @@ export class NgxDragPlaceholderService {
 
   /*--------------------------------------------*/
   private updatePlaceholderPosition(input: IUpdatePlaceholder) {
+    if (input.dropList.disableSort || input.dropList.checkAllowedConnections(input.currentDrag.dropList) == false)
+      return;
     if (input.dropList.isFlexWrap) {
       this.inPlaceUpdatePlaceholderPosition(input);
       return;
@@ -98,7 +102,6 @@ export class NgxDragPlaceholderService {
 
     let placeholderX = 0;
     let placeholderY = 0;
-    console.log(dragOverItem?.el?.id, isAfter, dropList.el.id);
     if (dragOverItem && overItemRec && dragOverItem.dropList === dropList) {
       const relPos = getRelativePosition(dragOverItem.el, dropList.el);
       if (dropList.direction === 'vertical') {
@@ -152,6 +155,8 @@ export class NgxDragPlaceholderService {
   /*------------------------------------when in place codes... ----------------------------------------------------*/
 
   private inPlaceShowPlaceholder(input: IUpdatePlaceholder) {
+    if (input.dropList.disableSort || input.dropList.checkAllowedConnections(input.currentDrag.dropList) == false)
+      return;
     this.hidePlaceholder();
     this.placeholder = this._document.createElement('div');
     this.placeholder.style.display = 'inline-block';
@@ -163,7 +168,7 @@ export class NgxDragPlaceholderService {
       this._renderer.setStyle(this.placeholder, 'width', input.currentDragRec.width + 'px');
       this._renderer.setStyle(this.placeholder, 'height', input.currentDragRec.height + 'px');
     }
-    if (input.dragOverItem) {
+    if (input.dragOverItem && input.dragOverItem.dropList == input.dropList) {
       input.dragOverItem.el.insertAdjacentElement(input.isAfter ? 'afterend' : 'beforebegin', this.placeholder);
     } else {
       input.dropList.el.insertAdjacentElement('afterbegin', this.placeholder);
@@ -174,6 +179,8 @@ export class NgxDragPlaceholderService {
   /*--------------------------------------------*/
 
   private inPlaceUpdatePlaceholderPosition(input: IUpdatePlaceholder) {
+    if (input.dropList.disableSort || input.dropList.checkAllowedConnections(input.currentDrag.dropList) == false)
+      return;
     this.inPlaceShowPlaceholder(input);
     if (!this.isShown) return;
     let els: HTMLElement[] = [];

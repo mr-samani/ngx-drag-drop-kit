@@ -190,7 +190,7 @@ export class NgxDraggableDirective implements OnDestroy, AfterViewInit {
     const offsetY = position.y - this.previousXY.y;
     const transform = this.updatePosition(offsetX, offsetY, position);
     this._autoScroll.handleAutoScroll(ev);
-    this._dragService.dragMove(this, ev);
+    this._dragService.dragMove(this, ev, transform);
     this.dragMove.emit({ x: this.x, y: this.y });
     // console.timeEnd('drgmv');
   }
@@ -204,9 +204,11 @@ export class NgxDraggableDirective implements OnDestroy, AfterViewInit {
       this.y += offsetY;
       this.previousXY.y = position.y;
     }
-
-    // Use transform positioning when transform is enabled
     let transform = `translate(${this.x}px, ${this.y}px)`;
-    this._renderer.setStyle(this.el, 'transform', transform);
+
+    if (!this.dropList || !this.dropList.disableSort) {
+      this._renderer.setStyle(this.el, 'transform', transform);
+    }
+    return transform;
   }
 }
