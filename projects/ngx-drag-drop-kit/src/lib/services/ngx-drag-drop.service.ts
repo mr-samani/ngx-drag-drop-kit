@@ -129,6 +129,7 @@ export class NgxDragDropService {
   enterDrag(drag: NgxDraggableDirective) {
     // console.log('enter', drag.el.id);
     this.dragOverItem = drag;
+    this.dragOverItem.updateDomRect();
     // drag.el.style.backgroundColor = 'red';
     // this.initDrag(drag);
   }
@@ -187,6 +188,7 @@ export class NgxDragDropService {
       let yInEL = position.y - (this.dragOverItem.domRect.top + window.scrollY);
       this.isAfter = yInEL > this.dragOverItem.domRect.height / 2;
     }
+    
     this.placeholderService.updatePlaceholder$.next({
       currentDrag: this._activeDragInstances[0],
       dragOverItem: this.dragOverItem,
