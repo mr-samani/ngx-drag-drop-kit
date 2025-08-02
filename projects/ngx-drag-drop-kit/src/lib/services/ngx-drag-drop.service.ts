@@ -7,6 +7,7 @@ import { getPointerPosition } from '../../utils/get-position';
 import { NgxDragPlaceholderService } from './ngx-placeholder.service';
 import { copyEssentialStyles } from '../../utils/clone-style';
 import { NgxDragRegisterService } from './ngx-drag-register.service';
+import { getFirstLevelDraggables } from '../../utils/element.helper';
 
 @Injectable({
   providedIn: 'root',
@@ -188,7 +189,7 @@ export class NgxDragDropService {
       let yInEL = position.y - (this.dragOverItem.domRect.top + window.scrollY);
       this.isAfter = yInEL > this.dragOverItem.domRect.height / 2;
     }
-    
+
     this.placeholderService.updatePlaceholder$.next({
       currentDrag: this._activeDragInstances[0],
       dragOverItem: this.dragOverItem,
@@ -221,7 +222,7 @@ export class NgxDragDropService {
   private getDragItemIndexInDropList(dragItem: NgxDraggableDirective): number {
     const dropList = dragItem.dropList;
     if (!dropList) return 0;
-    const dragElements = Array.from(dropList.el.querySelectorAll(':scope > .ngx-draggable'));
+    const dragElements = getFirstLevelDraggables(dropList.el);
     const currentIndex = dragElements.findIndex((el) => el === dragItem.el);
     return currentIndex > -1 ? currentIndex : 0;
   }

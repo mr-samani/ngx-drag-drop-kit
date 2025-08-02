@@ -3,6 +3,7 @@ import { Subject, distinctUntilChanged } from 'rxjs';
 import { DOCUMENT } from '@angular/common';
 import { getRelativePosition } from '../../utils/get-position';
 import { IUpdatePlaceholder } from '../../interfaces/update-placeholder';
+import { getFirstLevelDraggables } from '../../utils/element.helper';
 
 @Injectable({
   providedIn: 'root',
@@ -124,7 +125,7 @@ export class NgxDragPlaceholderService {
     // this._renderer.setStyle(this.placeholder, 'transition', 'transform 250ms ease');
 
     // ✅ جابجا کردن سایر آیتم‌ها
-    const dragItems: HTMLElement[] = Array.from(dropList.el.querySelectorAll(':scope > .ngx-draggable'));
+    const dragItems: HTMLElement[] = getFirstLevelDraggables(dropList.el);
     const dragOverIndex = dragOverItem ? dragItems.findIndex((x) => x === dragOverItem.el) : -1;
     for (let i = 0; i < dragItems.length; i++) {
       const el = dragItems[i];
