@@ -6,6 +6,8 @@
 [![GitHub stars](https://img.shields.io/github/stars/mr-samani/ngx-drag-drop-kit?style=flat-square)](https://github.com/mr-samani/ngx-drag-drop-kit/stargazers)
 [![Sponsor](https://img.shields.io/badge/Sponsor-%E2%9D%A4-red?style=flat-square)](#-support--sponsor)
 
+
+[Live Demo](https://mr-samani.github.io/ngx-drag-drop-kit/)
 ---
 
 ## ✨ Features

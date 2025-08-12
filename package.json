@@ -5,6 +5,8 @@
     "ng": "ng",
     "start": "ng serve --open --port=8545",
     "build": "ng build --project=demo",
+    "buildDemo": "ng build demo --base-href /ngx-drag-drop-kit/  --output-path ./docs",
+
 
     "link:lib": "cd dist/ngx-drag-drop-kit && npm link",
     "link:app": "cd projects/sandbox && npm link ngx-drag-drop-kit",
