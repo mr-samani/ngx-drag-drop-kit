@@ -46,9 +46,6 @@ export class NgxDraggableDirective implements OnDestroy, AfterViewInit {
   @Output() dragMove = new EventEmitter<IPosition>();
   @Output() dragEnd = new EventEmitter<IPosition>();
 
-  @Output() entered = new EventEmitter<IPosition>();
-  @Output() exited = new EventEmitter<IPosition>();
-
   private previousTransitionProprety?: string;
   _dragging: boolean = false;
   set dragging(val: boolean) {
@@ -90,7 +87,6 @@ export class NgxDraggableDirective implements OnDestroy, AfterViewInit {
 
   ngAfterViewInit(): void {
     this.findFirstParentDragRootElement();
-    this.initDragItems();
     this.init();
     this.updateDomRect();
   }
@@ -130,23 +126,6 @@ export class NgxDraggableDirective implements OnDestroy, AfterViewInit {
       fromEvent<TouchEvent>(this.el, 'touchstart').subscribe((ev) => this.onMouseDown(ev))
     );
   }
-  initDragItems() {
-    this.subscriptions.push(
-      fromEvent<TouchEvent>(this.el, 'mouseenter').subscribe((ev) => {
-        this._dragService.enterDrag(this);
-
-        if (!this._dragService.isDragging) return;
-        let position = getPointerPosition(ev);
-        this.entered.emit(position);
-      }),
-      fromEvent<TouchEvent>(this.el, 'mouseleave').subscribe((ev) => {
-        this._dragService.leaveDrag(this);
-        if (!this._dragService.isDragging) return;
-        let position = getPointerPosition(ev);
-        this.exited.emit(position);
-      })
-    );
-  }
 
   @HostListener('document:mouseup', ['$event'])
   @HostListener('document:touchend', ['$event'])
@@ -158,8 +137,6 @@ export class NgxDraggableDirective implements OnDestroy, AfterViewInit {
     this.dragging = false;
     this.isTouched = false;
     this._autoScroll._stopScrolling();
-    let position = getPointerPosition(ev);
-    this.exited.emit(position);
   }
 
   onMouseDown(ev: MouseEvent | TouchEvent) {

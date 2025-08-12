@@ -8,6 +8,7 @@ import { NgxDragPlaceholderService } from './ngx-placeholder.service';
 import { copyEssentialStyles } from '../../utils/clone-style';
 import { NgxDragRegisterService } from './ngx-drag-register.service';
 import { getFirstLevelDraggables } from '../../utils/element.helper';
+import { IPosition } from '../../interfaces/IPosition';
 
 @Injectable({
   providedIn: 'root',
@@ -16,19 +17,8 @@ export class NgxDragDropService {
   isDragging = false;
 
   private _activeDragInstances: NgxDraggableDirective[] = [];
-  private get activeDropList(): NgxDropListDirective | undefined {
-    // console.log(this.stackDropList.map((m) => m.el.id));
-    if (this.stackDropList.length > 0) {
-      return this.stackDropList[this.stackDropList.length - 1];
-    }
-    return undefined;
-  }
-  private set activeDropList(drp: NgxDropListDirective) {
-    if (this.activeDropList != drp) this.stackDropList.push(drp);
-  }
-  /** stack list of drop list usefull for nested items */
-  private stackDropList: NgxDropListDirective[] = [];
-
+  private activeDropList?: NgxDropListDirective;
+  dragOverItem?: NgxDraggableDirective;
   private _currentDragRect?: DOMRect;
   private _renderer: Renderer2;
   private _dropEvent: IDropEvent | null = null;
@@ -38,9 +28,9 @@ export class NgxDragDropService {
    * - add before or after hovered element
    */
   private isAfter = false;
-  private dragOverItem?: NgxDraggableDirective;
   isRtl = false;
   currentDragPreviousDisplay = '';
+
   constructor(
     rendererFactory: RendererFactory2,
     @Inject(DOCUMENT) private _document: Document,
@@ -56,7 +46,6 @@ export class NgxDragDropService {
     }
 
     this.updateAllDragItemsRect();
-
     this.activeDropList = drag.dropList;
 
     this.isDragging = true;
@@ -124,63 +113,32 @@ export class NgxDragDropService {
       });
       this.dragOverItem = undefined;
     }
-    this.stackDropList = [];
+    this.activeDropList = undefined;
   }
 
-  enterDrag(drag: NgxDraggableDirective) {
-    // console.log('enter', drag.el.id);
-    this.dragOverItem = drag;
-    this.dragOverItem.updateDomRect();
-    // drag.el.style.backgroundColor = 'red';
-    // this.initDrag(drag);
-  }
-
-  leaveDrag(drag: NgxDraggableDirective) {
-    // console.log('leave', drag.el.id);
-    // this.dragOverItem = undefined;
-    // drag.el.style.backgroundColor = '';
-  }
-
-  enterDropList(dropList: NgxDropListDirective) {
-    if (this.isDragging) {
-      this.activeDropList = dropList;
-      this.placeholderService.updatePlaceholder$.next({
-        currentDrag: this._activeDragInstances[0],
-        currentDragRec: this._activeDragInstances[0].domRect,
-        dropList: dropList,
-        isAfter: this.isAfter,
-        dragOverItem: this.dragOverItem,
-        overItemRec: this.dragOverItem?.domRect,
-        state: 'update',
-      });
-    }
-  }
-
-  leaveDropList(dropList: NgxDropListDirective) {
-    if (!this.isDragging) return;
-    let foundIndex = this.stackDropList.findIndex((x) => x == dropList);
-    if (foundIndex > -1) this.stackDropList.splice(foundIndex, 1);
-    // this.placeholderService.updatePlaceholder$.next({
-    //   currentDrag: this._activeDragInstances[0],
-    //   currentDragRec: this._activeDragInstances[0].domRect,
-    //   dropList: drop,
-    //   isAfter: this.isAfter,
-    //   dragOverItem: this.dragOverItem,
-    //   overItemRec: this.dragOverItem?.domRect,
-    //   state: 'hidden',
-    // });
-    // this.dragOverItem = undefined;
-  }
   dragMove(drag: NgxDraggableDirective, ev: MouseEvent | TouchEvent, transform: string) {
     if (!this.dragElementInBody || !this.isDragging) {
       return;
     }
     this._renderer.setStyle(this.dragElementInBody, 'transform', transform);
-    if (!this.dragOverItem || !this.activeDropList) return;
+    const position = getPointerPosition(ev);
+    this.dragOverItem = this.findItemUnderPointer(position);
+    console.log('drag over item:', this.dragOverItem?.el?.id, 'drop list:', this.activeDropList?.el?.id);
+    if (!this.dragOverItem && this.activeDropList) {
+      this.placeholderService.updatePlaceholder$.next({
+        currentDrag: this._activeDragInstances[0],
+        currentDragRec: this._activeDragInstances[0].domRect,
+        dropList: this.activeDropList,
+        isAfter: this.isAfter,
+        dragOverItem: undefined,
+        overItemRec: undefined,
+        state: 'update',
+      });
+    }
+    if (!this.activeDropList || !this.dragOverItem) return;
     if (this.activeDropList.checkAllowedConnections(this._activeDragInstances[0]?.dropList) == false) {
       return;
     }
-    const position = getPointerPosition(ev);
 
     if (this.dragOverItem.dropList?.direction === 'horizontal') {
       const midpoint = this.dragOverItem.domRect.left + this.dragOverItem.domRect.width / 2;
@@ -189,6 +147,7 @@ export class NgxDragDropService {
       let yInEL = position.y - (this.dragOverItem.domRect.top + window.scrollY);
       this.isAfter = yInEL > this.dragOverItem.domRect.height / 2;
     }
+    console.log('isAfter', this.isAfter);
 
     this.placeholderService.updatePlaceholder$.next({
       currentDrag: this._activeDragInstances[0],
@@ -232,10 +191,38 @@ export class NgxDragDropService {
     for (let drp of drpLstElms) {
       const drpDrctv = this.dragRegister.dropList.get(drp);
       if (drpDrctv) {
+        drpDrctv.updateDomRect();
         for (let drg of drpDrctv.dragItems) {
           drg.updateDomRect();
         }
       }
     }
+  }
+
+  findItemUnderPointer(position: IPosition): NgxDraggableDirective | undefined {
+    const pointerX = position.x - window.scrollX;
+    const pointerY = position.y - window.scrollY;
+    for (const dropList of this.dragRegister.dropListItems) {
+      const dropListRect = dropList.domRect;
+
+      if (
+        pointerX >= dropListRect.left &&
+        pointerX <= dropListRect.right &&
+        pointerY >= dropListRect.top &&
+        pointerY <= dropListRect.bottom
+      ) {
+        this.activeDropList = dropList;
+      } else {
+        continue;
+      }
+
+      for (let item of dropList.dragItems) {
+        const rect = item.domRect;
+        if (pointerX >= rect.left && pointerX <= rect.right && pointerY >= rect.top && pointerY <= rect.bottom) {
+          return item; // Pointer داخل این عنصر است
+        }
+      }
+    }
+    return undefined; // هیچ عنصری زیر موس نیست
   }
 }

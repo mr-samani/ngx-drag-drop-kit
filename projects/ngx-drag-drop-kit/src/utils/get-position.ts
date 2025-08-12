@@ -21,6 +21,13 @@ export function getOffsetPosition(evt: MouseEvent | TouchEvent, parent?: HTMLEle
   return position;
 }
 
+
+/**
+ * نکته : pageX,pageY اگر صفحه اسکرول داشته باشه هم محاسبه میکنه 
+ * اگر بخواهیم فقط Viewport باشد باید clinetX , clientY استفاده کنیم
+ * @param evt 
+ * @returns 
+ */
 export function getPointerPosition(evt: MouseEvent | TouchEvent): IPosition {
   if (evt instanceof MouseEvent) {
     return {

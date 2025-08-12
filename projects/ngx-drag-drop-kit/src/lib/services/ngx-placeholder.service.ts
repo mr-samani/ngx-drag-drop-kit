@@ -4,6 +4,7 @@ import { DOCUMENT } from '@angular/common';
 import { getRelativePosition } from '../../utils/get-position';
 import { IUpdatePlaceholder } from '../../interfaces/update-placeholder';
 import { getFirstLevelDraggables } from '../../utils/element.helper';
+import { NgxDragRegisterService } from './ngx-drag-register.service';
 
 @Injectable({
   providedIn: 'root',
@@ -15,7 +16,12 @@ export class NgxDragPlaceholderService {
   public updatePlaceholder$ = new Subject<IUpdatePlaceholder>();
   public isShown: boolean = false;
 
-  constructor(rendererFactory: RendererFactory2, @Inject(DOCUMENT) private _document: Document) {
+  constructor(
+    rendererFactory: RendererFactory2,
+    @Inject(DOCUMENT) private _document: Document,
+
+    private dragRegister: NgxDragRegisterService
+  ) {
     this._renderer = rendererFactory.createRenderer(null, null);
     this.updatePlaceholder$
       .pipe(
@@ -50,6 +56,7 @@ export class NgxDragPlaceholderService {
         this.updatePlaceholderPosition(input);
         break;
     }
+    input.dropList.dragItems.forEach((d) => d.updateDomRect());
   }
 
   private showPlaceholder(input: IUpdatePlaceholder) {
@@ -100,30 +107,30 @@ export class NgxDragPlaceholderService {
     const plcRect = this.placeholder!.getBoundingClientRect();
     const plcHeight = plcRect.height;
     const plcWidth = plcRect.width;
-
-    let placeholderX = 0;
-    let placeholderY = 0;
-    if (dragOverItem && overItemRec && dragOverItem.dropList === dropList) {
-      const relPos = getRelativePosition(dragOverItem.el, dropList.el);
-      if (dropList.direction === 'vertical') {
-        placeholderY = isAfter ? relPos.y + overItemRec.height : relPos.y;
-        placeholderX = relPos.x;
-      } else {
-        if (dropList.isRtl) {
-          placeholderX = isAfter ? relPos.x - plcWidth : relPos.x;
+    if (dragOverItem != currentDrag) {
+      let placeholderX = 0;
+      let placeholderY = 0;
+      if (dragOverItem && overItemRec && dragOverItem.dropList === dropList) {
+        const relPos = getRelativePosition(dragOverItem.el, dropList.el);
+        if (dropList.direction === 'vertical') {
+          placeholderY = isAfter ? relPos.y + overItemRec.height : relPos.y;
+          placeholderX = relPos.x;
         } else {
-          placeholderX = isAfter ? relPos.x + overItemRec.width : relPos.x;
+          if (dropList.isRtl) {
+            placeholderX = isAfter ? relPos.x - plcWidth : relPos.x;
+          } else {
+            placeholderX = isAfter ? relPos.x + overItemRec.width : relPos.x;
+          }
+          placeholderY = relPos.y;
         }
-        placeholderY = relPos.y;
       }
+
+      const plcRel = getRelativePosition(this.placeholder!, dropList.el);
+      const placeholderTransform = `translate(${placeholderX - plcRel.x}px, ${placeholderY - plcRel.y}px)`;
+
+      this._renderer.setStyle(this.placeholder, 'transform', placeholderTransform);
+      // this._renderer.setStyle(this.placeholder, 'transition', 'transform 250ms ease');
     }
-
-    const plcRel = getRelativePosition(this.placeholder!, dropList.el);
-    const placeholderTransform = `translate(${placeholderX - plcRel.x}px, ${placeholderY - plcRel.y}px)`;
-
-    this._renderer.setStyle(this.placeholder, 'transform', placeholderTransform);
-    // this._renderer.setStyle(this.placeholder, 'transition', 'transform 250ms ease');
-
     // ✅ جابجا کردن سایر آیتم‌ها
     const dragItems: HTMLElement[] = getFirstLevelDraggables(dropList.el);
     const dragOverIndex = dragOverItem ? dragItems.findIndex((x) => x === dragOverItem.el) : -1;

@@ -1,4 +1,5 @@
 import {
+  AfterViewInit,
   ApplicationRef,
   ContentChild,
   Directive,
@@ -28,7 +29,7 @@ import { NgxDraggableDirective } from './ngx-draggable.directive';
   standalone: true,
   exportAs: 'NgxDropList',
 })
-export class NgxDropListDirective<T = any> implements OnInit, OnDestroy {
+export class NgxDropListDirective<T = any> implements OnInit, AfterViewInit, OnDestroy {
   @Input() data?: T;
   @Input() disableSort: boolean = false;
   @Input() direction: 'horizontal' | 'vertical' = 'vertical';
@@ -57,6 +58,8 @@ export class NgxDropListDirective<T = any> implements OnInit, OnDestroy {
    */
   dragItems: NgxDraggableDirective[] = [];
   minHeight = 0;
+  public domRect!: DOMRect;
+
   constructor(
     private dragService: NgxDragDropService,
     private dragRegister: NgxDragRegisterService,
@@ -73,19 +76,25 @@ export class NgxDropListDirective<T = any> implements OnInit, OnDestroy {
     this.dragRegister.registerDropList(this);
     this.checkIsFlexibleAndWrap();
     this.isRtl = getComputedStyle(this.el).direction === 'rtl';
-    this.subscriptions.push(
-      fromEvent<TouchEvent>(this.el, 'mouseenter').subscribe((ev) => {
-        //console.log('enter drop lis', this.el);
-        this.minHeight = this.el.getBoundingClientRect().height;
-        if (!this.disableSort) this.dragService.enterDropList(this);
-      }),
-      fromEvent<TouchEvent>(this.el, 'mouseleave').subscribe((ev) => {
-        //console.log('leave drop lis', this.el);
-        if (!this.disableSort) this.dragService.leaveDropList(this);
-      })
-    );
+    // this.subscriptions.push(
+    //   fromEvent<TouchEvent>(this.el, 'mouseenter').subscribe((ev) => {
+    //     //console.log('enter drop lis', this.el);
+    //     this.minHeight = this.el.getBoundingClientRect().height;
+    //     if (!this.disableSort) this.dragService.enterDropList(this);
+    //   }),
+    //   fromEvent<TouchEvent>(this.el, 'mouseleave').subscribe((ev) => {
+    //     //console.log('leave drop lis', this.el);
+    //     if (!this.disableSort) this.dragService.leaveDropList(this);
+    //   })
+    // );
+  }
+  ngAfterViewInit(): void {
+    this.updateDomRect();
   }
 
+  updateDomRect() {
+    this.domRect = this.el.getBoundingClientRect();
+  }
   ngOnDestroy() {
     this.dragRegister.removeDropList(this);
     this.subscriptions.forEach((sub) => sub.unsubscribe());
