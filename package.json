@@ -1,10 +1,10 @@
 {
   "name": "ngx-drag-drop-kit",
-  "version": "0.0.0",
+  "version": "3.0.0",
   "scripts": {
     "ng": "ng",
     "start": "ng serve --open --port=8545",
-    "build": "ng build",
+    "build": "ng build --project=demo",
 
     "link:lib": "cd dist/ngx-drag-drop-kit && npm link",
     "link:app": "cd projects/sandbox && npm link ngx-drag-drop-kit",
@@ -12,9 +12,9 @@
     "link:rm": "npm rm -g ngx-drag-drop-kit",
     "sandbox:ng-add": "cd projects/sandbox && ng g ngx-drag-drop-kit:ng-add",
     "clean:sandbox": "git checkout HEAD -- projects/sandbox && git clean -f -d projects/sandbox",
-    "build:lib": "ng build ngx-drag-drop-kit",
-    "build:schematics": "tsc -p projects/ngx-drag-drop-kit/tsconfig.schematics.json",
     "build:sass": "sass projects/ngx-drag-drop-kit/styles.scss projects/ngx-drag-drop-kit/assets/styles.css",
+    "build:lib": "npm run build:sass && ng build ngx-drag-drop-kit",
+    "build:schematics": "tsc -p projects/ngx-drag-drop-kit/tsconfig.schematics.json",
     "postbuild:schematics": "copyfiles projects/ngx-drag-drop-kit/schematics/migrations.json projects/ngx-drag-drop-kit/schematics/collection.json dist/ngx-drag-drop-kit/schematics/ -f",
     "build:all": "npm run build:sass && npm run build:lib && npm run build:schematics",
     "pack:lib": "cd dist/ngx-drag-drop-kit && npm pack",

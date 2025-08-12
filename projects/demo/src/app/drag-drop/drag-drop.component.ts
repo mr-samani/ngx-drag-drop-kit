@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
-import { NgxDragDropKitModule } from '../../../../ngx-drag-drop-kit/src/lib/ngx-drag-drop-kit.module';
-import { IDropEvent } from '../../../../ngx-drag-drop-kit/src/lib/directives/ngx-drop-list.directive';
+import { IDropEvent } from '../../../../ngx-drag-drop-kit/src/interfaces/IDropEvent';
 import { moveItemInArray, transferArrayItem } from '../../../../ngx-drag-drop-kit/src/drag-utils';
+import { NgxDragDropKitModule } from '../../../../ngx-drag-drop-kit/src/public-api';
 
 @Component({
   selector: 'app-drag-drop',
@@ -22,10 +22,6 @@ export class DragDropComponent {
       this.todoList.push('Episode ' + i);
     }
   }
-
-  // drop(event: CdkDragDrop<string[]>) {
-  //  // moveItemInArray(this.todoList, event.previousIndex, event.currentIndex);
-  // }
 
   add() {
     let rndPosition = Math.floor(Math.random() * this.todoList.length);

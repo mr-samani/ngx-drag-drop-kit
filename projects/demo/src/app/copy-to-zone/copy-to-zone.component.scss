@@ -1,0 +1,44 @@
+.form-container {
+  display: flex;
+  gap: 20px;
+  .target-container {
+    flex: 1;
+    .inner {
+      background-color: #ccc;
+      min-height: 100px;
+      display: flex;
+      align-items: flex-start;
+      flex-direction: row;
+      flex-wrap: wrap;
+      gap: 5px;
+      padding: 5px;
+    }
+  }
+}
+.example-list {
+  width: 200px;
+  max-width: 100%;
+  border: solid 1px #ccc;
+  min-height: 60px;
+  display: block;
+  background: white;
+  border-radius: 4px;
+  overflow: auto;
+  max-height: 1000px;
+}
+
+.example-box {
+  padding: 8px 10px;
+  border-bottom: solid 1px #ccc;
+  color: rgba(0, 0, 0, 0.87);
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  box-sizing: border-box;
+  cursor: move;
+  background: white;
+  font-size: 14px;
+}
+
+

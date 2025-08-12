@@ -1,10 +1,31 @@
-<div ngxDropList class="example-list" (drop)="drop($event)">
-    @for (movie of movies; track movie) {
-      <div class="example-box" ngxDraggable>
-        <div class="example-custom-placeholder" *cdkDragPlaceholder></div>
-        {{movie}}
-      </div>
-    }
+horizontal list (signle line)
+<div
+  ngxDropList
+  class="list-container"
+  (drop)="drop($event, simpleItems)"
+  [direction]="'horizontal'"
+  [connectedTo]="[horizontalList]"
+  #horizontalList>
+  @for (item of simpleItems; track item) {
+  <div class="box-item" ngxDraggable>
+    {{ item }}
   </div>
+  }
+</div>
 
-  <button (click)="add()">add</button>
+horizontal list felxible with auto wrap css
+<div
+  ngxDropList
+  class="list-container auto-wrap"
+  (drop)="drop($event, items)"
+  [direction]="'horizontal'"
+  [connectedTo]="[horizontalFlexWrap]"
+  #horizontalFlexWrap>
+  @for (item of items; track item) {
+  <div class="box-item" ngxDraggable>
+    {{ item }}
+  </div>
+  }
+</div>
+
+<button (click)="add()">add</button>

@@ -1,0 +1,11 @@
+<div class="panel" #panel>
+  <div
+    class="side-bar"
+    ngxResizable
+    [boundary]="panel"
+    [corners]="isRtl ? ['left'] : ['right']"
+    [minWidth]="100"
+    (resizeEnd)="onResizeEnd($event)"
+    [style.width.px]="width"></div>
+  <div class="main-content"></div>
+</div>
