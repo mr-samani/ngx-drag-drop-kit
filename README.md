@@ -1,31 +1,14 @@
 # 🚀 ngx-drag-drop-kit
 
-[🇮🇷 مشاهده به فارسی](./README.fa.md) | [🇬🇧 English Version](./README.md)
+> **Advanced & blazing-fast Angular Drag & Drop Toolkit** — Grid, Sort, Resize, Nesting, and more!
 
-A powerful and modular Angular library for advanced Drag & Drop, Grid Layout, horizontal/vertical lists, sorting, resizing, and more.
-
----
-
-## 🗂️ Table of Contents
-
-- [✨ Features](#-features)
-- [🔧 Installation](#-installation)
-- [⚡ Quick Start](#-quick-start)
-- [📚 Usage Guide](#-usage-guide)
-  - [🎯 Simple Drag & Drop](#simple-drag--drop)
-  - [🧩 Grid Layout](#grid-layout)
-  - [📏 Resizable](#resizable)
-  - [🔄 Sortable List](#sortable-list)
-  - [🌳 Nested Tree Sort](#nested-tree-sort)
-- [📝 Inputs/Outputs Table](#-inputsoutputs-table)
-- [🔬 Code Samples](#-code-samples)
-- [🤝 Contributing](#-contributing)
-- [📄 License](#-license)
+[![npm version](https://img.shields.io/npm/v/ngx-drag-drop-kit?style=flat-square)](https://www.npmjs.com/package/ngx-drag-drop-kit)
+[![GitHub stars](https://img.shields.io/github/stars/mr-samani/ngx-drag-drop-kit?style=flat-square)](https://github.com/mr-samani/ngx-drag-drop-kit/stargazers)
+[![Sponsor](https://img.shields.io/badge/Sponsor-%E2%9D%A4-red?style=flat-square)](#-support--sponsor)
 
 ---
 
 ## ✨ Features
-
 - 🖱️ **Advanced Drag & Drop** with multi-list and cross-list support
 - 🧩 **Configurable & Responsive Grid Layout**
 - 📏 **Resizable**: Resize items with mouse
@@ -36,8 +19,9 @@ A powerful and modular Angular library for advanced Drag & Drop, Grid Layout, ho
 - 🧲 **Snap to Grid**
 - 🛡️ **Boundary**: Set boundaries for drag/resize
 - 🖼️ **Custom Placeholder**
-- ⚡ **Performance Optimized**
+- ⚡ **Performance Optimized** and Ultra **lightweight**
 - 🧑‍💻 **Fully modular, Angular 18+ ready**
+- 🧩 **Modular**: Drag & Drop, Grid, Sortable, Resizable  
 
 ---
 
@@ -45,9 +29,9 @@ A powerful and modular Angular library for advanced Drag & Drop, Grid Layout, ho
 
 ```bash
 npm install ngx-drag-drop-kit
-```
+````
 
-Or with yarn:
+Or:
 
 ```bash
 yarn add ngx-drag-drop-kit
@@ -57,28 +41,28 @@ yarn add ngx-drag-drop-kit
 
 ## ⚡ Quick Start
 
-```typescript
+```ts
 import { NgxDragDropKitModule } from 'ngx-drag-drop-kit';
 
 @NgModule({
-  imports: [NgxDragDropKitModule, ...]
+  imports: [NgxDragDropKitModule]
 })
 export class AppModule {}
 ```
 
 ---
 
-## 📚 Usage Guide
+## 📚 Usage Highlights
 
-### 🎯 Simple Drag & Drop
+### ✅ Basic Drag & Drop
 
 ```html
-<div ngxDropList (drop)="drop($event)" [data]="todoList">
-  <div ngxDraggable *ngFor="let item of todoList">{{ item }}</div>
+<div ngxDropList [data]="list" (drop)="drop($event)">
+  <div ngxDraggable *ngFor="let item of list">{{ item }}</div>
 </div>
 ```
 
-```typescript
+```ts
 import { IDropEvent, moveItemInArray, transferArrayItem } from 'ngx-drag-drop-kit';
 
 drop(event: IDropEvent) {
@@ -90,17 +74,23 @@ drop(event: IDropEvent) {
 }
 ```
 
----
-
 ### 🧩 Grid Layout
+```ts
+import { NgxGridLayoutModule } from 'ngx-drag-drop-kit';
 
+@NgModule({
+  imports: [NgxGridLayoutModule]
+})
+export class AppModule {}
+```
 ```html
 <grid-layout [options]="options">
-  <grid-item *ngFor="let item of layouts" [config]="item.config">{{ item.title }}</grid-item>
+  <grid-item *ngFor="let item of layouts" [config]="item.config">
+    {{ item.title }}
+  </grid-item>
 </grid-layout>
 ```
-
-```typescript
+```ts
 import { IGridLayoutOptions, GridItemConfig } from 'ngx-drag-drop-kit';
 
 options: IGridLayoutOptions = { cols: 12, gap: 10 };
@@ -110,81 +100,101 @@ layouts = [
 ];
 ```
 
----
-
 ### 📏 Resizable
 
 ```html
-<div ngxResizable [minWidth]="50" [minHeight]="50" (resize)="onResize($event)">Resizable!</div>
-```
-
----
-
-### 🔄 Sortable List
-
-```html
-<div ngxDropList [data]="items" (drop)="drop($event)">
-  <div ngxDraggable *ngFor="let item of items">{{ item }}</div>
+<div ngxResizable [minWidth]="50" [minHeight]="50" (resize)="onResize($event)">
+  Resizable!
 </div>
 ```
 
 ---
 
-### 🌳 Nested Tree Sort
+## 🌳 Nested Drag & Drop Tree
+
+Supports multi-level tree-like structures with drag & drop:
 
 ```html
-<nested-tree-sort [data]="treeData" (drop)="onTreeDrop($event)"></nested-tree-sort>
+<ng-template #tree let-items>
+  <div ngxDropList [data]="items" (drop)="drop($event)">
+    <div *ngxPlaceholder class="custom-placeholder"></div>
+    <div ngxDraggable *ngFor="let item of items">
+      {{ item.name }}
+      <ng-container *ngIf="item.children">
+        <ng-container
+          [ngTemplateOutlet]="tree"
+          [ngTemplateOutletContext]="{ $implicit: item.children }">
+        </ng-container>
+      </ng-container>
+    </div>
+  </div>
+</ng-template>
 ```
 
 ---
 
-## 📝 Inputs/Outputs Table
+## 📄 API Summary
 
-| Name                  | Type/Directive             | Description                                                     | Input/Output |
-| --------------------- | -------------------------- | --------------------------------------------------------------- | ------------ |
-| `ngxDraggable`        | Directive                  | Makes an item draggable                                         | Input        |
-| `boundary`            | Input (HTMLElement)        | Drag boundary                                                   | Input        |
-| `dragRootElement`     | Input (HTMLElement)        | Element that you want to make draggable(usefull in drag handle) | Input        |
-| `dragStart`           | Output (EventEmitter)      | Drag start event                                                | Output       |
-| `dragMove`            | Output (EventEmitter)      | Drag move event                                                 | Output       |
-| `dragEnd`             | Output (EventEmitter)      | Drag end event                                                  | Output       |
-| `ngxResizable`        | Directive                  | Makes an item resizable                                         | Input        |
-| `minWidth`            | Input (number)             | Minimum width                                                   | Input        |
-| `minHeight`           | Input (number)             | Minimum height                                                  | Input        |
-| `resize`              | Output (EventEmitter)      | Resize event                                                    | Output       |
-| `ngxDropList`         | Directive                  | Drop list directive                                             | Input        |
-| `data`                | Input (any[])              | List data                                                       | Input        |
-| `drop`                | Output (EventEmitter)      | Drop event                                                      | Output       |
-| `GridLayoutComponent` | Component                  | Grid layout component                                           | Input        |
-| `options`             | Input (IGridLayoutOptions) | Grid options                                                    | Input        |
-| `GridItemComponent`   | Component                  | Grid item component                                             | Input        |
-| `config`              | Input (GridItemConfig)     | Grid item config                                                | Input        |
+| Directive/Component   | Input/Output                | Description             |
+| --------------------- | --------------------------- | ----------------------- |
+| `ngxDraggable`        | Input                       | Makes element draggable |
+|                       | `dragStart`, `dragEnd`      | Drag events             |
+| `ngxDropList`         | Input: `[data]`             | Drop zone array         |
+|                       | Output: `(drop)`            | Drop event              |
+| `ngxResizable`        | `[minWidth]`, `[minHeight]` | Resizing constraints    |
+|                       | Output: `(resize)`          | Emits size changes      |
+| `GridLayoutComponent` | `options`                   | Grid options            |
+| `GridItemComponent`   | `config`                    | Grid item configuration |
 
 ---
 
-## 🔬 Code Samples
+## 📦 Demos & Examples
 
-See more demos and examples in the `projects/demo` folder.
+See working examples in the [`projects/demo`](./projects/demo) folder.
+
+---
+
+## 💖 Support / Sponsor
+
+Maintaining open-source libraries takes time and energy. If you find this project useful, please consider **supporting me**:
+
+### ☕ One-time Donation
+
+[![BuyMeACoffee](https://img.shields.io/badge/buymeacoffee-donate-yellow?style=flat-square)](https://buymeacoffee.com/mr-samani)
+
+### 🧡 Monthly Sponsorship
+
+[![GitHub Sponsors](https://img.shields.io/badge/GitHub%20Sponsors-Become%20a%20Sponsor-red?logo=github-sponsors\&style=flat-square)](https://github.com/sponsors/mr-samani)
+
+### 💸 Crypto Support
+
+You can also support via **Tether (USDT)** or **Bitcoin (BTC)**:
+
+* `USDT (TRC20): TXf3...Z29x9e3`
+* `BTC: bc1qxy2...t8s7`
+
+> Message me or create an issue if you want to be listed as a sponsor.
 
 ---
 
 ## 🤝 Contributing
 
-Fork the repo and send a Pull Request!
-
-For local development:
+Pull requests welcome 🙌
 
 ```bash
+git clone https://github.com/mr-samani/ngx-drag-drop-kit.git
+cd ngx-drag-drop-kit
 npm install
 npm run start
 ```
 
 ---
 
-## 📄 License
+## 📜 License
 
-MIT
+MIT — feel free to use & modify.
 
 ---
 
-> Made with ❤️ by the open-source community
+> Built with ❤️ in Iran – by [@mr-samani](https://github.com/mr-samani)
+

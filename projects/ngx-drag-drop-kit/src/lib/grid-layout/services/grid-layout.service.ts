@@ -17,7 +17,8 @@ import {
   screenYToGridY,
   sortGridItems,
 } from '../utils/grid.utils';
-import { FakeItem, GridItemConfig, LayoutOutput } from '../options/gride-item-config';
+import { FakeItem, GridItemConfig } from '../options/gride-item-config';
+import { LayoutOutput } from "../options/layout-output";
 import { mergeDeep } from '../../../utils/deep-merge';
 import { GridLayoutComponent } from '../grid-layout/grid-layout.component';
 

@@ -19,6 +19,3 @@ export class FakeItem {
   h!: number;
 }
 
-export interface LayoutOutput extends GridItemConfig {
-  id?: string;
-}

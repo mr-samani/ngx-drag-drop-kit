@@ -21,7 +21,7 @@ import { DEFAULT_GRID_LAYOUT_CONFIG, GridLayoutService } from '../services/grid-
 import { GridItemComponent } from '../grid-item/grid-item.component';
 import { mergeDeep } from '../../../utils/deep-merge';
 import { getFirstCollision } from '../utils/grid.utils';
-import { GridItemConfig, LayoutOutput } from '../options/gride-item-config';
+import { LayoutOutput } from "../options/layout-output";
 
 @Component({
   selector: 'grid-layout',
@@ -123,7 +123,7 @@ export class GridLayoutComponent implements OnInit, AfterViewInit {
     }
     this.checkDuplicatedId();
     this._gridService.compactGridItems();
-    this._gridService.calcLayout();
+    // this._gridService.calcLayout();
     setTimeout(() => {
       this._changeDetection.detectChanges();
     }, 0);

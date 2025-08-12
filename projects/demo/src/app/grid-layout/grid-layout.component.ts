@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { GridLayoutModule } from '../../../../ngx-drag-drop-kit/src/lib/grid-layout/grid-layout.module';
+import { NgxGridLayoutModule } from '../../../../ngx-drag-drop-kit/src/lib/grid-layout/ngx-grid-layout.module';
 import { IGridLayoutOptions } from '../../../../ngx-drag-drop-kit/src/lib/grid-layout/options/options';
 import { GridItemConfig } from '../../../../ngx-drag-drop-kit/src/lib/grid-layout/options/gride-item-config';
 import { CommonModule } from '@angular/common';
@@ -8,7 +8,7 @@ import { FormsModule } from '@angular/forms';
 @Component({
   selector: 'app-grid-layout',
   standalone: true,
-  imports: [CommonModule, FormsModule, GridLayoutModule],
+  imports: [CommonModule, FormsModule, NgxGridLayoutModule],
   templateUrl: './grid-layout.component.html',
   styleUrl: './grid-layout.component.scss',
 })
