@@ -174,10 +174,29 @@ export class NgxResizableDirective implements AfterViewInit {
   }
 
   private setElPosition() {
-    this.renderer.setStyle(this.el, 'left', `${this.left}px`);
-    this.renderer.setStyle(this.el, 'top', `${this.top}px`);
-    this.renderer.setStyle(this.el, 'width', `${this.width}px`);
-    this.renderer.setStyle(this.el, 'height', `${this.height}px`);
+    if (!this.corners) return;
+
+    // بررسی کرنرها برای تنظیم استایل‌های مناسب
+    const canSetLeft = this.corners.some((corner) => ['left', 'topLeft', 'bottomLeft'].includes(corner));
+    const canSetRight = this.corners.some((corner) => ['right', 'topRight', 'bottomRight'].includes(corner));
+    const canSetTop = this.corners.some((corner) => ['top', 'topLeft', 'topRight'].includes(corner));
+    const canSetBottom = this.corners.some((corner) => ['bottom', 'bottomLeft', 'bottomRight'].includes(corner));
+
+    // تنظیم استایل‌ها بر اساس کرنرهای مجاز
+    if (canSetLeft) {
+      this.renderer.setStyle(this.el, 'left', `${this.left}px`);
+    }
+    if (canSetTop) {
+      this.renderer.setStyle(this.el, 'top', `${this.top}px`);
+    }
+    // اگر کرنر شامل right یا left باشد، عرض تغییر می‌کند
+    if (canSetLeft || canSetRight) {
+      this.renderer.setStyle(this.el, 'width', `${this.width}px`);
+    }
+    // اگر کرنر شامل top یا bottom باشد، ارتفاع تغییر می‌کند
+    if (canSetTop || canSetBottom) {
+      this.renderer.setStyle(this.el, 'height', `${this.height}px`);
+    }
   }
 
   // TODO : check parent flexible for resize

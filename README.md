@@ -160,7 +160,7 @@ Maintaining open-source libraries takes time and energy. If you find this projec
 
 ### ☕ One-time Donation
 
-[![BuyMeACoffee](https://img.shields.io/badge/buymeacoffee-donate-yellow?style=flat-square)](https://buymeacoffee.com/mr-samani)
+[![BuyMeACoffee](https://img.shields.io/badge/buymeacoffee-donate-yellow?style=flat-square)](https://buymeacoffee.com/mrsamani)
 
 ### 🧡 Monthly Sponsorship
 
@@ -170,8 +170,12 @@ Maintaining open-source libraries takes time and energy. If you find this projec
 
 You can also support via **Tether (USDT)** or **Bitcoin (BTC)**:
 
-* `USDT (TRC20): TXf3...Z29x9e3`
-* `BTC: bc1qxy2...t8s7`
+* `BTC: bc1qnhnpn9dtk3det08hkpduv8x9u8rnesujplg0p2`
+* `Ethereum: 0x3891395BB3f6c4642f6C7001FDD9113F22065680`
+* `TRON: TRJ7a8npXFzkfDLfwsRz2CCH1GWHuuthaJ`
+* `TON: UQAejnuN0MUM8zxsbUsLYtCB79gl88NDSGbv6OYzly4h4yfT`
+
+
 
 > Message me or create an issue if you want to be listed as a sponsor.
 
