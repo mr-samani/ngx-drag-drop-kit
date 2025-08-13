@@ -56,7 +56,7 @@ export class NgxDropListDirective<T = any> implements OnInit, AfterViewInit, OnD
    * NOTE: index of drag items is not valid
    */
   dragItems: NgxDraggableDirective[] = [];
-  public domRect!: DOMRect;
+  public elPositionOfPage!: DOMRect;
 
   constructor(
     private dragService: NgxDragDropService,
@@ -80,7 +80,16 @@ export class NgxDropListDirective<T = any> implements OnInit, AfterViewInit, OnD
   }
 
   updateDomRect() {
-    this.domRect = this.el.getBoundingClientRect();
+    const domRect = this.el.getBoundingClientRect();
+    const scrollLeft = window.scrollX || document.documentElement.scrollLeft;
+    const scrollTop = window.scrollY || document.documentElement.scrollTop;
+
+    this.elPositionOfPage = new DOMRect(
+      domRect.left + scrollLeft,
+      domRect.top + scrollTop,
+      domRect.width,
+      domRect.height
+    );
   }
   ngOnDestroy() {
     this.dragRegister.removeDropList(this);

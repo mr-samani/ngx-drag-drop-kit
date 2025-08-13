@@ -73,6 +73,7 @@ export class NgxDraggableDirective implements OnDestroy, AfterViewInit {
   private subscriptions: Subscription[] = [];
   public dropList?: NgxDropListDirective;
   public domRect!: DOMRect;
+  public elPositionOfPage!: DOMRect;
 
   constructor(
     elRef: ElementRef,
@@ -93,6 +94,15 @@ export class NgxDraggableDirective implements OnDestroy, AfterViewInit {
 
   updateDomRect() {
     this.domRect = this.el.getBoundingClientRect();
+    const scrollLeft = window.scrollX || document.documentElement.scrollLeft;
+    const scrollTop = window.scrollY || document.documentElement.scrollTop;
+
+    this.elPositionOfPage = new DOMRect(
+      this.domRect.left + scrollLeft,
+      this.domRect.top + scrollTop,
+      this.domRect.width,
+      this.domRect.height
+    );
   }
   findFirstParentDragRootElement() {
     if (this.dragRootElement) {
@@ -166,7 +176,7 @@ export class NgxDraggableDirective implements OnDestroy, AfterViewInit {
     const offsetX = position.x - this.previousXY.x;
     const offsetY = position.y - this.previousXY.y;
     const transform = this.updatePosition(offsetX, offsetY, position);
-    this._autoScroll.handleAutoScroll(ev);
+    // this._autoScroll.handleAutoScroll(ev);
     this._dragService.dragMove(this, ev, transform);
     this.dragMove.emit({ x: this.x, y: this.y });
     // console.timeEnd('drgmv');

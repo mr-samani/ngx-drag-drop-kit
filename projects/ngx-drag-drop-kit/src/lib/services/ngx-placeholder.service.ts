@@ -57,6 +57,9 @@ export class NgxDragPlaceholderService {
         this.updatePlaceholderPosition(input);
         break;
     }
+    // input.dropList.dragItems.forEach((e) => {
+    //   if (e != input.currentDrag) e.updateDomRect();
+    // });
   }
 
   private showPlaceholder(input: IUpdatePlaceholder) {
@@ -108,42 +111,52 @@ export class NgxDragPlaceholderService {
     if (!dragOverItem || !overItemRec) {
       return;
     }
-
+    const scrollLeft = window.scrollX || document.documentElement.scrollLeft;
+    const scrollTop = window.scrollY || document.documentElement.scrollTop;
     const plcHeight = this.placeHolderRect?.height ?? 0;
     const plcWidth = this.placeHolderRect?.width ?? 0;
-    const plcX = this.placeHolderRect?.x ?? 0;
-    const plcY = this.placeHolderRect?.y ?? 0;
+    const plcX = this.placeHolderRect?.x ?? 0 + scrollLeft;
+    const plcY = this.placeHolderRect?.y ?? 0 + scrollTop;
 
     // ✅ جابجا کردن سایر آیتم‌ها
     const dragItems: HTMLElement[] = getFirstLevelDraggables(dropList.el);
     const overIndex = dragOverItem ? dragItems.findIndex((x) => x === dragOverItem.el) : -1;
-    const currentDragIndex = dragOverItem ? dragItems.findIndex((x) => x === currentDrag.el) : -1;
-    const isVertical = dropList.direction === 'vertical';
+    let currentDragIndex = currentDrag ? dragItems.findIndex((x) => x === currentDrag.el) : 0;
 
+    const isVertical = dropList.direction === 'vertical';
     for (let i = 0; i < dragItems.length; i++) {
       const el = dragItems[i];
       if (el === currentDrag.el) continue;
 
       let offsetX = 0;
       let offsetY = 0;
+      let ahead = false;
+      let behind = false;
 
-      const ahead = i <= overIndex && i > currentDragIndex;
-      const behind = i >= overIndex && i < currentDragIndex;
-
+      if (currentDragIndex >= 0) {
+        // حالت self-drop در همان لیست
+        ahead = i <= overIndex && i > currentDragIndex;
+        behind = i >= overIndex && i < currentDragIndex;
+      } else {
+        // حالت بین دو لیست
+        if (isAfter) {
+          ahead = i > overIndex; // آیتم بعد از overIndex بیاد
+        } else {
+          ahead = i >= overIndex; // آیتم سر جای overIndex بیاد
+        }
+        behind = false;
+      }
       if (isVertical) {
-        if (currentDragIndex < overIndex && ahead) {
-          offsetY = -plcHeight; // آیتم‌ها بالا می‌رن
-        } else if (currentDragIndex > overIndex && behind) {
-          offsetY = plcHeight; // آیتم‌ها پایین می‌رن
+        if (ahead) {
+          offsetY = plcHeight * (currentDragIndex >= 0 ? -1 : 1);
+        } else if (behind) {
+          offsetY = plcHeight;
         }
       } else {
-        const shift = currentDragIndex < overIndex && i > currentDragIndex && i <= overIndex;
-        const revShift = currentDragIndex > overIndex && i >= overIndex && i < currentDragIndex;
-
         const direction = dropList.isRtl ? -1 : 1;
-        if (shift) {
+        if (ahead) {
           offsetX = plcWidth * direction;
-        } else if (revShift) {
+        } else if (behind) {
           offsetX = -plcWidth * direction;
         }
       }
@@ -151,14 +164,23 @@ export class NgxDragPlaceholderService {
       this._renderer.setStyle(el, 'transform', `translate(${offsetX}px, ${offsetY}px)`);
     }
 
-    this.index = isAfter ? overIndex + 1 : overIndex;
-    if (this.index < 0) this.index = 0;
+    if (currentDrag.dropList == dragOverItem.dropList || !isAfter) {
+      this.index = overIndex >= 0 ? overIndex : 0;
+      this._renderer.setStyle(
+        this.placeholder,
+        'transform',
+        `translate(${overItemRec.x - plcX}px, ${overItemRec.y - plcY}px)`
+      );
+    } else {
+      this.index = overIndex >= 0 ? overIndex + 1 : 0;
+      this._renderer.setStyle(
+        this.placeholder,
+        'transform',
+        `translate(${overItemRec.x + scrollLeft - plcX}px, ${overItemRec.y + scrollTop - plcY + overItemRec.height}px)`
+      );
+    }
 
-    this._renderer.setStyle(
-      this.placeholder,
-      'transform',
-      `translate(${overItemRec.x - plcX}px, ${overItemRec.y - plcY}px)`
-    );
+    // console.log('isAfter', isAfter, 'overIndex', overIndex, 'currentIdndex', this.index);
   }
 
   /*------------------------------------when in place codes... ----------------------------------------------------*/

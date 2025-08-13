@@ -24,7 +24,7 @@ export function getOffsetPosition(evt: MouseEvent | TouchEvent, parent?: HTMLEle
 
 /**
  * نکته : pageX,pageY اگر صفحه اسکرول داشته باشه هم محاسبه میکنه
- * اگر بخواهیم فقط Viewport باشد باید clinetX , clientY استفاده کنیم
+ * اگر بخواهیم فقط Viewport باشد باید clientX , clientY استفاده کنیم
  * @param evt
  * @returns
  */
@@ -42,9 +42,23 @@ export function getPointerPosition(evt: MouseEvent | TouchEvent): IPosition {
     };
   }
 }
-
+export function getPointerPositionOnViewPort(evt: MouseEvent | TouchEvent): IPosition {
+  if (evt instanceof MouseEvent) {
+    return {
+      x: evt.clientX,
+      y: evt.clientY,
+    };
+  } else {
+    const touch = evt.targetTouches[0] || evt.changedTouches[0];
+    return {
+      x: touch.clientX,
+      y: touch.clientY,
+    };
+  }
+}
 export function getRelativePosition(el: HTMLElement, container: HTMLElement): { x: number; y: number } {
-  let elX = 0, elY = 0;
+  let elX = 0,
+    elY = 0;
   let current: HTMLElement | null = el;
 
   // اگر المنت display:none هست، موقتاً نمایش بدیم
@@ -93,8 +107,6 @@ export function getRelativePosition(el: HTMLElement, container: HTMLElement): { 
 
   return { x: elX, y: elY };
 }
-
-
 
 export function getAbsoluteOffset(el: HTMLElement): { x: number; y: number } {
   let x = 0;

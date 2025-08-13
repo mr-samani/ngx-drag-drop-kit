@@ -3,7 +3,7 @@
     <h6>TODO</h6>
     <div class="inner" ngxDropList (drop)="drop($event)" [data]="todoList" id="TODO">
       @for (item of todoList; track item) {
-      <div class="example-box" ngxDraggable>
+      <div class="example-box" ngxDraggable [id]="item">
         {{ item }}
       </div>
       }
@@ -14,7 +14,7 @@
     <h6>In progress</h6>
     <div class="inner" ngxDropList (drop)="drop($event)" [data]="inProgressList" id="InProgress">
       @for (item of inProgressList; track item) {
-      <div class="example-box" ngxDraggable>
+      <div class="example-box" ngxDraggable [id]="item">
         {{ item }}
       </div>
       }
@@ -25,7 +25,7 @@
     <h6>Completed</h6>
     <div class="inner" ngxDropList (drop)="drop($event)" [data]="completedList" id="Completed">
       @for (item of completedList; track item) {
-      <div class="example-box" ngxDraggable>
+      <div class="example-box" ngxDraggable [id]="item">
         {{ item }}
       </div>
       }
@@ -36,7 +36,7 @@
     <h6>Failed</h6>
     <div class="inner" ngxDropList (drop)="drop($event)" [data]="failedList" id="Failed">
       @for (item of failedList; track item) {
-      <div class="example-box" ngxDraggable>
+      <div class="example-box" ngxDraggable [id]="item">
         {{ item }}
       </div>
       }
