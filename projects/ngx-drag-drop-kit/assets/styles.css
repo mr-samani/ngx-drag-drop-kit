@@ -82,7 +82,6 @@
 }
 
 .ngx-drag-placeholder {
-  position: absolute;
   display: none;
   background: rgba(204, 204, 204, 0.4509803922);
   border: dotted 2px #999;

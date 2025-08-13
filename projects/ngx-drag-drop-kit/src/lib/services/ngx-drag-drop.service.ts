@@ -47,7 +47,6 @@ export class NgxDragDropService {
 
     this.updateAllDragItemsRect();
     this.activeDropList = drag.dropList;
-
     this.isDragging = true;
     this.activeDropList.isDragging = true;
     this._currentDragRect = drag.domRect;

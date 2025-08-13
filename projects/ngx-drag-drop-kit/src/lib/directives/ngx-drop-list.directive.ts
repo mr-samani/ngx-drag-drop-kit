@@ -24,7 +24,6 @@ import { NgxDraggableDirective } from './ngx-draggable.directive';
     '[style.position]': '"relative"',
     '[style.scroll-snap-type]': 'isDragging ? "none": "" ',
     '[style.user-select]': 'isDragging ? "none" : ""',
-    '[style.min-height]': 'isDragging ? minHeight+"px" : ""',
   },
   standalone: true,
   exportAs: 'NgxDropList',
@@ -57,7 +56,6 @@ export class NgxDropListDirective<T = any> implements OnInit, AfterViewInit, OnD
    * NOTE: index of drag items is not valid
    */
   dragItems: NgxDraggableDirective[] = [];
-  minHeight = 0;
   public domRect!: DOMRect;
 
   constructor(
@@ -76,17 +74,6 @@ export class NgxDropListDirective<T = any> implements OnInit, AfterViewInit, OnD
     this.dragRegister.registerDropList(this);
     this.checkIsFlexibleAndWrap();
     this.isRtl = getComputedStyle(this.el).direction === 'rtl';
-    // this.subscriptions.push(
-    //   fromEvent<TouchEvent>(this.el, 'mouseenter').subscribe((ev) => {
-    //     //console.log('enter drop lis', this.el);
-    //     this.minHeight = this.el.getBoundingClientRect().height;
-    //     if (!this.disableSort) this.dragService.enterDropList(this);
-    //   }),
-    //   fromEvent<TouchEvent>(this.el, 'mouseleave').subscribe((ev) => {
-    //     //console.log('leave drop lis', this.el);
-    //     if (!this.disableSort) this.dragService.leaveDropList(this);
-    //   })
-    // );
   }
   ngAfterViewInit(): void {
     this.updateDomRect();
@@ -113,7 +100,6 @@ export class NgxDropListDirective<T = any> implements OnInit, AfterViewInit, OnD
   onDrop(event: IDropEvent) {
     this.drop.emit(event);
     this.subscriptions = [];
-    this.minHeight = this.el.getBoundingClientRect().height;
   }
 
   addPlaceholder(dragRect: DOMRect): HTMLElement {
@@ -122,17 +108,13 @@ export class NgxDropListDirective<T = any> implements OnInit, AfterViewInit, OnD
       const ctx = { width, height };
       this.placeholderView = this.userPlaceholder.tpl.createEmbeddedView(ctx);
       this.appRef.attachView(this.placeholderView);
-
-      // اولین ریشهٔ واقعی درخت view عنصر placeholder است
       const el = this.placeholderView.rootNodes[0] as HTMLElement;
       return el;
     }
-    // 2) در غیر این صورت placeholder پیش‌فرض
     const el = this.renderer.createElement('div');
     this.renderer.addClass(el, 'ngx-drag-placeholder');
     this.renderer.setStyle(el, 'pointer-events', 'none');
     this.renderer.setStyle(el, 'display', 'inline-block');
-    this.renderer.setStyle(el, 'position', 'absolute');
     if (width) this.renderer.setStyle(el, 'width', `${width}px`);
     if (height) this.renderer.setStyle(el, 'height', `${height}px`);
     return el;
