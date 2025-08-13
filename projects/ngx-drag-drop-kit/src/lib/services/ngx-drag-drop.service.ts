@@ -50,7 +50,8 @@ export class NgxDragDropService {
     this.activeDropList = drag.dropList;
     this.isDragging = true;
     this.activeDropList.isDragging = true;
-    this._currentDragRect = drag.domRect;
+    this._currentDragRect = drag.elPositionOfPage;
+    const currDomRect = drag.el.getBoundingClientRect();
     this._activeDragInstances.push(drag);
     let previousIndex = this.getDragItemIndexInDropList(drag);
     // console.log('previousIndex', previousIndex);
@@ -69,10 +70,10 @@ export class NgxDragDropService {
     this.dragElementInBody.className = drag.el.className + ' ngx-drag-in-body';
     this.dragElementInBody.style.display = this.currentDragPreviousDisplay || 'block';
     this.dragElementInBody.style.position = 'absolute';
-    this.dragElementInBody.style.top = window.scrollY + this._currentDragRect.top + 'px';
-    this.dragElementInBody.style.left = window.scrollX + this._currentDragRect.left + 'px';
-    this.dragElementInBody.style.width = this._currentDragRect.width + 'px';
-    this.dragElementInBody.style.height = this._currentDragRect.height + 'px';
+    this.dragElementInBody.style.top = window.scrollY + currDomRect.top + 'px';
+    this.dragElementInBody.style.left = window.scrollX + currDomRect.left + 'px';
+    this.dragElementInBody.style.width = currDomRect.width + 'px';
+    this.dragElementInBody.style.height = currDomRect.height + 'px';
     this.dragElementInBody.style.pointerEvents = 'none';
     this.dragElementInBody.style.opacity = '0.85';
     this.dragElementInBody.style.boxShadow = '0px 3px 20px rgba(0,0,0,.5)';
@@ -105,11 +106,11 @@ export class NgxDragDropService {
       }
       this.placeholderService.updatePlaceholder$.next({
         currentDrag: drag,
-        currentDragRec: drag.domRect,
+        currentDragRec: drag.elPositionOfPage,
         dropList: drag.dropList!,
         dragOverItem: this.dragOverItem,
         isAfter: this.isAfter,
-        overItemRec: this.dragOverItem?.domRect,
+        overItemRec: this.dragOverItem?.elPositionOfPage,
         state: 'hidden',
       });
       this.dragOverItem = undefined;
@@ -135,7 +136,7 @@ export class NgxDragDropService {
     if (!this.dragOverItem && this.activeDropList) {
       this.placeholderService.updatePlaceholder$.next({
         currentDrag: this._activeDragInstances[0],
-        currentDragRec: this._activeDragInstances[0].domRect,
+        currentDragRec: this._activeDragInstances[0].elPositionOfPage,
         dropList: this.activeDropList,
         isAfter: this.isAfter,
         dragOverItem: undefined,
@@ -163,7 +164,7 @@ export class NgxDragDropService {
       isAfter: this.isAfter,
       currentDragRec: this._currentDragRect!,
       dropList: this.activeDropList,
-      overItemRec: this.dragOverItem?.domRect,
+      overItemRec: this.dragOverItem?.elPositionOfPage,
       state: 'update',
     });
     //

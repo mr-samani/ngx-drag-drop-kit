@@ -115,8 +115,8 @@ export class NgxDragPlaceholderService {
     const scrollTop = window.scrollY || document.documentElement.scrollTop;
     const plcHeight = this.placeHolderRect?.height ?? 0;
     const plcWidth = this.placeHolderRect?.width ?? 0;
-    const plcX = this.placeHolderRect?.x ?? 0 + scrollLeft;
-    const plcY = this.placeHolderRect?.y ?? 0 + scrollTop;
+    const plcX = (this.placeHolderRect?.x ?? 0) + scrollLeft;
+    const plcY = (this.placeHolderRect?.y ?? 0) + scrollTop;
 
     // ✅ جابجا کردن سایر آیتم‌ها
     const dragItems: HTMLElement[] = getFirstLevelDraggables(dropList.el);
@@ -164,6 +164,8 @@ export class NgxDragPlaceholderService {
       this._renderer.setStyle(el, 'transform', `translate(${offsetX}px, ${offsetY}px)`);
     }
 
+    // update placeholder position
+
     if (currentDrag.dropList == dragOverItem.dropList || !isAfter) {
       this.index = overIndex >= 0 ? overIndex : 0;
       this._renderer.setStyle(
@@ -176,7 +178,7 @@ export class NgxDragPlaceholderService {
       this._renderer.setStyle(
         this.placeholder,
         'transform',
-        `translate(${overItemRec.x + scrollLeft - plcX}px, ${overItemRec.y + scrollTop - plcY + overItemRec.height}px)`
+        `translate(${overItemRec.x - plcX}px, ${overItemRec.y - plcY + overItemRec.height}px)`
       );
     }
 

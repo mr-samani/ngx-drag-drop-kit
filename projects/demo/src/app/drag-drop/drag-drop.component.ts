@@ -18,7 +18,7 @@ export class DragDropComponent {
 
   constructor() {
     this.todoList = [];
-    for (let i = 1; i < 8; i++) {
+    for (let i = 1; i < 30; i++) {
       this.todoList.push('Episode ' + i);
     }
   }

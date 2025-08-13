@@ -25,7 +25,7 @@ export class SortListComponent {
 
   constructor() {
     this.items = [];
-    for (let i = 1; i <= 4; i++) {
+    for (let i = 1; i <= 30; i++) {
       this.items.push('Episode ' + i);
     }
   }
