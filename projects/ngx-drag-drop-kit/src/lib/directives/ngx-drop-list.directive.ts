@@ -18,6 +18,7 @@ import { IDropEvent } from '../../interfaces/IDropEvent';
 import { NgxPlaceholderDirective } from './ngx-place-holder.directive';
 import { NgxDragRegisterService } from '../services/ngx-drag-register.service';
 import { NgxDraggableDirective } from './ngx-draggable.directive';
+import { getXYfromTransform } from '../../utils/get-transform';
 @Directive({
   selector: '[ngxDropList]',
   host: {
@@ -114,7 +115,7 @@ export class NgxDropListDirective<T = any> implements OnInit, AfterViewInit, OnD
     const el = this.renderer.createElement('div');
     this.renderer.addClass(el, 'ngx-drag-placeholder');
     this.renderer.setStyle(el, 'pointer-events', 'none');
-    this.renderer.setStyle(el, 'display', 'inline-block');
+    this.renderer.setStyle(el, 'display', 'block');
     if (width) this.renderer.setStyle(el, 'width', `${width}px`);
     if (height) this.renderer.setStyle(el, 'height', `${height}px`);
     return el;

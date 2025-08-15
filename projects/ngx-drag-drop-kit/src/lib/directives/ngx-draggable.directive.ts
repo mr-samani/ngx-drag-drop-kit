@@ -33,6 +33,7 @@ export const NGX_DROP_LIST = new InjectionToken<NgxDropListDirective>('NgxDropLi
   selector: '[ngxDraggable]',
   host: {
     '[style.user-select]': 'dragging  ? "none" : ""',
+    '[style.pointer-events]': 'dragging  ? "none" : ""',
     '[style.cursor]': 'dragging ? "grabbing" : ""',
     '[style.z-index]': 'dragging ? "999999" : ""',
     '[style.touch-action]': 'dragging ? "none" : ""',

@@ -13,6 +13,7 @@ import { Subject } from 'rxjs/internal/Subject';
 import { fromEvent } from 'rxjs/internal/observable/fromEvent';
 import { throttleTime } from 'rxjs/internal/operators/throttleTime';
 import { IPosition } from '../../interfaces/IPosition';
+import { getXYfromTransform } from '../../utils/get-transform';
 
 @Injectable({
   providedIn: 'root',
@@ -96,6 +97,18 @@ export class NgxDragDropService {
     }
 
     this.isRtl = getComputedStyle(this.activeDropList.el).direction === 'rtl';
+
+    if (this.activeDropList) {
+      this.placeholderService.updatePlaceholder$.next({
+        currentDrag: this._activeDragInstances[0],
+        currentDragRec: this._activeDragInstances[0].domRect,
+        dropList: this.activeDropList,
+        isAfter: this.isAfter,
+        dragOverItem: undefined,
+        overItemRec: undefined,
+        state: 'show',
+      });
+    }
   }
 
   stopDrag(drag: NgxDraggableDirective) {
@@ -132,8 +145,8 @@ export class NgxDragDropService {
       return;
     }
     this._renderer.setStyle(this.dragElementInBody, 'transform', transform);
-    const position = getPointerPositionOnViewPort(ev);
-    const finded = this.findItemUnderPointer(position);
+    const viewPortPosition = getPointerPositionOnViewPort(ev);
+    const finded = this.findItemUnderPointer(viewPortPosition);
     this.dragOverItem = finded.item;
     this.activeDropList = finded.dropList;
 
@@ -152,14 +165,16 @@ export class NgxDragDropService {
     if (this.activeDropList.checkAllowedConnections(this._activeDragInstances[0]?.dropList) == false) {
       return;
     }
-
+    const position = getPointerPosition(ev);
+    const transformed = getXYfromTransform(this.dragOverItem.el);
     if (this.dragOverItem.dropList?.direction === 'horizontal') {
-      const midpoint = this.dragOverItem.domRect.left + this.dragOverItem.domRect.width / 2;
+      const midpoint = this.dragOverItem.domRect.left + transformed.x + this.dragOverItem.domRect.width / 2;
       this.isAfter = this.isRtl ? position.x < midpoint : position.x > midpoint;
     } else {
-      let yInEL = position.y - this.dragOverItem.domRect.top;
-      this.isAfter = yInEL > this.dragOverItem.domRect.height / 2;
+      const midpoint = this.dragOverItem.domRect.top + transformed.y + this.dragOverItem.domRect.height / 2;
+      this.isAfter = position.y > midpoint;
     }
+
     // console.log('isAfter', this.isAfter);
     console.log(
       'drag over item:',
@@ -178,7 +193,6 @@ export class NgxDragDropService {
       overItemRec: this.dragOverItem?.domRect,
       state: 'update',
     });
-    //
   }
 
   droped(drag: NgxDraggableDirective) {
@@ -199,6 +213,7 @@ export class NgxDragDropService {
   }
 
   updateAllDragItemsRect() {
+    // console.time('initUpdateAllDragItemsRect');
     for (const dropList of this.dragRegister.dropListItems) {
       if (dropList.el.offsetParent === null) continue; // یعنی hidden هست
       dropList.updateDomRect();
@@ -207,9 +222,7 @@ export class NgxDragDropService {
         item.updateDomRect();
       });
     }
-    if (this.placeholderService.placeholder) {
-      this.placeholderService.placeHolderRect = this.placeholderService.placeholder.getBoundingClientRect();
-    }
+    // console.timeEnd('initUpdateAllDragItemsRect');
   }
 
   private sortDragItems() {
@@ -227,7 +240,7 @@ export class NgxDragDropService {
     const dropElm = elements.find((x) => x.hasAttribute('ngxdroplist'));
     const dragItem = dragElm ? this.dragRegister.dargItems.get(dragElm) : undefined;
     const dropList = dropElm ? this.dragRegister.dropList.get(dropElm) : undefined;
-    return { dropList: dropList, item: dragItem };
+    return { dropList: dragItem ? dragItem.dropList : dropList, item: dragItem };
   }
 
   // Find all scrollable parents
@@ -241,7 +254,9 @@ export class NgxDragDropService {
           style.overflow === 'auto' ||
           style.overflow === 'scroll' ||
           style.overflowY === 'auto' ||
-          style.overflowY === 'scroll'
+          style.overflowY === 'scroll' ||
+          style.overflowX === 'auto' ||
+          style.overflowX === 'scroll'
         ) {
           if (!this.scrollableParents.includes(parent)) {
             this.scrollableParents.push(parent);
