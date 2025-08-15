@@ -56,7 +56,7 @@ export function getPointerPositionOnViewPort(evt: MouseEvent | TouchEvent): IPos
     };
   }
 }
-export function getRelativePosition(el: HTMLElement, container: HTMLElement): { x: number; y: number } {
+export function getRelativePosition(el: HTMLElement, container: HTMLElement): DOMRect {
   let elX = 0,
     elY = 0;
   let current: HTMLElement | null = el;
@@ -87,25 +87,22 @@ export function getRelativePosition(el: HTMLElement, container: HTMLElement): { 
 
     current = current.offsetParent as HTMLElement;
   }
+  const elRect = el.getBoundingClientRect();
 
   // اگه container پیدا نشد → fallback به getBoundingClientRect
   if (current !== container) {
-    const elRect = el.getBoundingClientRect();
     const containerRect = container.getBoundingClientRect();
 
     // بازگرداندن display های قبلی
     for (const { el, display } of hiddenElements) el.style.display = display;
 
-    return {
-      x: elRect.left - containerRect.left,
-      y: elRect.top - containerRect.top,
-    };
+    return new DOMRect(elRect.left - containerRect.left, elRect.top - containerRect.top, elRect.width, elRect.height);
   }
 
   // بازگرداندن display های قبلی
   for (const { el, display } of hiddenElements) el.style.display = display;
 
-  return { x: elX, y: elY };
+  return new DOMRect(elX, elY, elRect.width, elRect.height);
 }
 
 export function getAbsoluteOffset(el: HTMLElement): { x: number; y: number } {

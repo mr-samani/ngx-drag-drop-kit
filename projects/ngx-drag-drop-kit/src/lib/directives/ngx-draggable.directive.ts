@@ -13,7 +13,12 @@ import {
   RendererStyleFlags2,
 } from '@angular/core';
 import { Subscription, fromEvent } from 'rxjs';
-import { getPointerPosition } from '../../utils/get-position';
+import {
+  getAbsoluteOffset,
+  getPointerPosition,
+  getPointerPositionOnViewPort,
+  getRelativePosition,
+} from '../../utils/get-position';
 import { checkBoundX, checkBoundY } from '../../utils/check-boundary';
 import { NgxDropListDirective } from './ngx-drop-list.directive';
 import { NgxDragDropService } from '../services/ngx-drag-drop.service';
@@ -72,7 +77,6 @@ export class NgxDraggableDirective implements OnDestroy, AfterViewInit {
   private previousXY: IPosition = { x: 0, y: 0 };
   private subscriptions: Subscription[] = [];
   public dropList?: NgxDropListDirective;
-  public elPositionOfPage!: DOMRect;
   public domRect!: DOMRect;
 
   constructor(
@@ -93,17 +97,7 @@ export class NgxDraggableDirective implements OnDestroy, AfterViewInit {
   }
 
   updateDomRect() {
-    const domRect = this.el.getBoundingClientRect();
-    const scrollLeft = window.scrollX || document.documentElement.scrollLeft;
-    const scrollTop = window.scrollY || document.documentElement.scrollTop;
-
-    this.elPositionOfPage = new DOMRect(
-      domRect.left + scrollLeft,
-      domRect.top + scrollTop,
-      domRect.width,
-      domRect.height
-    );
-    this.domRect = domRect;
+    this.domRect = this.el.getBoundingClientRect();
   }
   findFirstParentDragRootElement() {
     if (this.dragRootElement) {
@@ -164,6 +158,9 @@ export class NgxDraggableDirective implements OnDestroy, AfterViewInit {
   }
 
   onMouseMove(ev: MouseEvent | TouchEvent) {
+    let p = getPointerPositionOnViewPort(ev);
+    this._dragService.getPointerElement(p);
+
     if (this.isTouched && !this.dragging) {
       this._dragService.startDrag(this);
       this.dragStart.emit(this.previousXY);

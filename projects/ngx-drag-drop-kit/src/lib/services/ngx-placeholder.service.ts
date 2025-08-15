@@ -12,7 +12,7 @@ import { NgxDragRegisterService } from './ngx-drag-register.service';
 export class NgxDragPlaceholderService {
   private _renderer: Renderer2;
   public placeholder?: HTMLElement;
-  private placeHolderRect?: DOMRect;
+  public placeHolderRect?: DOMRect;
   public index = 0;
   public updatePlaceholder$ = new Subject<IUpdatePlaceholder>();
   public isShown: boolean = false;
@@ -165,23 +165,32 @@ export class NgxDragPlaceholderService {
     }
 
     // update placeholder position
+    // if (currentDrag.dropList == dragOverItem.dropList || !isAfter) {
+    //   this.index = overIndex >= 0 ? overIndex : 0;
+    // } else {
+    //   this.index = overIndex >= 0 ? overIndex + 1 : 0;
+    // }
+    // let placeholderX = 0;
+    // let placeholderY = 0;
+    // if (dragOverItem && overItemRec && dragOverItem.dropList === dropList) {
+    //   const relPos = getRelativePosition(dragOverItem.el, dropList.el);
+    //   if (dropList.direction === 'vertical') {
+    //     placeholderY = isAfter ? relPos.y + overItemRec.height : relPos.y;
+    //     placeholderX = relPos.x;
+    //   } else {
+    //     if (dropList.isRtl) {
+    //       placeholderX = isAfter ? relPos.x - plcWidth : relPos.x;
+    //     } else {
+    //       placeholderX = isAfter ? relPos.x + overItemRec.width : relPos.x;
+    //     }
+    //     placeholderY = relPos.y;
+    //   }
+    // }
 
-    if (currentDrag.dropList == dragOverItem.dropList || !isAfter) {
-      this.index = overIndex >= 0 ? overIndex : 0;
-      this._renderer.setStyle(
-        this.placeholder,
-        'transform',
-        `translate(${overItemRec.x - plcX}px, ${overItemRec.y - plcY}px)`
-      );
-    } else {
-      this.index = overIndex >= 0 ? overIndex + 1 : 0;
-      this._renderer.setStyle(
-        this.placeholder,
-        'transform',
-        `translate(${overItemRec.x - plcX}px, ${overItemRec.y - plcY + overItemRec.height}px)`
-      );
-    }
+    // const plcRel = getRelativePosition(this.placeholder!, dropList.el);
+    // const placeholderTransform = `translate(${placeholderX - plcRel.x}px, ${placeholderY - plcRel.y}px)`;
 
+    // this._renderer.setStyle(this.placeholder, 'transform', placeholderTransform);
     // console.log('isAfter', isAfter, 'overIndex', overIndex, 'currentIdndex', this.index);
   }
 

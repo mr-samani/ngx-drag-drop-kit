@@ -42,3 +42,13 @@
   background: white;
   font-size: 14px;
 }
+
+
+
+.pointer{
+    position: absolute;
+    background-color: #ff0000;
+    top: 11px;
+    left: 10px;
+    z-index: 99999999;
+}

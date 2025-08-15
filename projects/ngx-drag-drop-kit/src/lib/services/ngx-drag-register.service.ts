@@ -4,8 +4,10 @@ import { NgxDraggableDirective } from '../directives/ngx-draggable.directive';
 
 @Injectable({ providedIn: 'root' })
 export class NgxDragRegisterService {
-  dropList = new WeakMap<Element, NgxDropListDirective>();
+  dropList = new Map<Element, NgxDropListDirective>();
   dropListItems: NgxDropListDirective[] = [];
+
+  dargItems = new Map<HTMLElement, NgxDraggableDirective>();
   registerDropList(drop: NgxDropListDirective) {
     this.dropList.set(drop.el, drop);
     this.dropListItems.push(drop);
@@ -27,6 +29,7 @@ export class NgxDragRegisterService {
       drag.dropList = dropList;
       dropList.registerDragItem(drag);
     }
+    this.dargItems.set(drag.el, drag);
     // console.log('registerDragItem', dropList?.dragItems);
   }
 
@@ -35,6 +38,7 @@ export class NgxDragRegisterService {
     if (dropList) {
       dropList.removeDragItem(drag);
     }
+    this.dargItems.delete(drag.el);
     // console.log('removeDragItem', dropList?.dragItems);
   }
 
