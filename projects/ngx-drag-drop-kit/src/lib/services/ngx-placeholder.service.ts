@@ -93,6 +93,8 @@ export class NgxDragPlaceholderService {
 
   /*--------------------------------------------*/
   private updatePlaceholderPosition(input: IUpdatePlaceholder) {
+    console.log((input.isAfter ? 'After: ' : 'Before: ') + input.dragOverItem?.el?.id);
+
     if (input.dropList.disableSort || input.dropList.checkAllowedConnections(input.currentDrag.dropList) == false)
       return;
     if (input.dropList.isFlexWrap) {
@@ -100,13 +102,13 @@ export class NgxDragPlaceholderService {
       return;
     }
     const { currentDrag, dragOverItem, dropList, isAfter, overItemRec } = input;
-
     this.showPlaceholder(input);
 
     if (!dragOverItem || !overItemRec) {
       return;
     }
     // console.log(input);
+    const isSelfList = currentDrag.dropList == dragOverItem?.dropList;
     const isVertical = dropList.direction === 'vertical';
     const placeHolderRect = this.placeholder?.getBoundingClientRect();
     const plcHeight = placeHolderRect?.height ?? 0;
@@ -115,44 +117,34 @@ export class NgxDragPlaceholderService {
     // ✅ جابجا کردن سایر آیتم‌ها
     const dragItems: HTMLElement[] = getFirstLevelDraggables(dropList.el);
     const overIndex = dragOverItem ? dragItems.findIndex((x) => x === dragOverItem.el) : -1;
-    let currentDragIndex = currentDrag ? dragItems.findIndex((x) => x === currentDrag.el) : 0;
+    let plcIndex = currentDrag ? dragItems.findIndex((x) => x === currentDrag.el) : 0;
+
+    if (plcIndex == -1) {
+      if (isAfter) {
+        plcIndex = overIndex + 1;
+      } else {
+        plcIndex = overIndex > 0 ? overIndex - 1 : 0;
+      }
+    }
 
     for (let i = 0; i < dragItems.length; i++) {
       const el = dragItems[i];
-      if (el === currentDrag.el) continue;
-
       let offsetX = 0;
       let offsetY = 0;
-      let ahead = false;
-      let behind = false;
-
-      // حالت self-drop در همان لیست
-      if (currentDragIndex >= 0) {
-        behind = i >= overIndex && i <= currentDragIndex;
-        if (isAfter) {
-          ahead = i <= overIndex && i > currentDragIndex;
-        } else {
-          ahead = i < overIndex && i > currentDragIndex;
-        }
-      } else {
-        if (isAfter) {
-          ahead = i > overIndex;
-        } else {
-          ahead = false;
-        }
-        behind = false;
-      }
+      const dir = this.getItemShiftDirection(i, overIndex, plcIndex, isAfter);
       if (isVertical) {
-        if (ahead) {
-          offsetY = plcHeight * (currentDragIndex >= 0 ? -1 : 1);
-        } else if (behind) {
-          offsetY = plcHeight;
+        if (dir == 'ahead') {
+          offsetY = +plcHeight;
+        } else if (dir == 'behind') {
+          offsetY = -plcHeight;
         }
-      } else {
+      }
+      // horizontal
+      else {
         const direction = dropList.isRtl ? -1 : 1;
-        if (ahead) {
-          offsetX = plcWidth * direction;
-        } else if (behind) {
+        if (dir == 'ahead') {
+          offsetX = +plcWidth * direction;
+        } else if (dir == 'behind') {
           offsetX = -plcWidth * direction;
         }
       }
@@ -166,22 +158,59 @@ export class NgxDragPlaceholderService {
       this.index = overIndex >= 0 ? overIndex + 1 : 0;
     }
     // ✅ تنظیم دقیق موقعیت placeholder بعد از جابجایی آیتم‌ها
-    if (dragOverItem && overItemRec && dragOverItem.dropList === dropList && this.placeholder) {
+    if (dragOverItem && overItemRec && this.placeholder) {
       const baseCurrentX = this.placeholder.offsetLeft;
       const baseCurrentY = this.placeholder.offsetTop;
       const baseTargetX = dragOverItem.el.offsetLeft;
       const baseTargetY = dragOverItem.el.offsetTop;
       let deltaX = baseTargetX - baseCurrentX;
       let deltaY = baseTargetY - baseCurrentY;
-      if (overIndex > currentDragIndex && !isAfter) {
-        deltaY -= overItemRec.height;
+      if (overIndex > plcIndex && !isAfter) {
+        deltaY -= plcHeight;
       }
       const placeholderTransform = `translate(${deltaX}px, ${deltaY}px)`;
       this._renderer.setStyle(this.placeholder, 'transform', placeholderTransform);
-      this._renderer.setStyle(this.placeholder, 'width', `${overItemRec.width}px`);
-      this._renderer.setStyle(this.placeholder, 'height', `${overItemRec.height}px`);
     }
     // console.log('isAfter', isAfter, 'overIndex', overIndex, 'currentIdndex', this.index);
+  }
+
+  /**
+   * تعیین می‌کنه که آیتم i نسبت به آیتمی که موس روشه (overIndex)
+   * باید به جلو (ahead) یا عقب (behind) رانده بشه.
+   *
+   * @param i - index آیتمی که داریم بررسی می‌کنیم
+   * @param overIndex - index آیتمی که موس روشه
+   * @param plcIndex - index آیتمی که درگ شده (یا -1 اگه از لیست دیگه اومده)
+   * @param isAfter - آیا placeholder بعد از overItem وارد DOM شده؟
+   **/
+  private getItemShiftDirection(
+    i: number,
+    overIndex: number,
+    plcIndex: number,
+    isAfter: boolean
+  ): 'ahead' | 'behind' | 'none' {
+    if (i === plcIndex) return 'none';
+    if (plcIndex < overIndex) {
+      // داریم می‌ریم به جلو در لیست
+      if (isAfter) {
+        // placeholder بعد از overItem → آیتم‌های بین current+1 تا overIndex → باید برن عقب
+        if (i > plcIndex && i <= overIndex) return 'behind';
+      } else {
+        // placeholder قبل از overItem → آیتم‌های بین current+1 تا overIndex-1 → باید برن عقب
+        if (i > plcIndex && i < overIndex) return 'behind';
+      }
+    } else if (plcIndex > overIndex) {
+      // داریم می‌ریم به عقب در لیست
+      if (isAfter) {
+        // placeholder بعد از overItem → آیتم‌های بین overIndex+1 تا current-1 → باید برن جلو
+        if (i >= overIndex && i < plcIndex) return 'ahead';
+      } else {
+        // placeholder قبل از overItem → آیتم‌های بین overIndex تا current-1 → باید برن جلو
+        if (i >= overIndex && i < plcIndex) return 'ahead';
+      }
+    }
+
+    return 'none';
   }
 
   /*------------------------------------when in place codes... ----------------------------------------------------*/
