@@ -175,15 +175,14 @@ export class NgxDragDropService {
       this.isAfter = position.y > midpoint;
     }
 
-    // console.log('isAfter', this.isAfter);
-    console.log(
-      'drag over item:',
-      this.dragOverItem?.el?.id,
-      'drop list:',
-      this.activeDropList?.el?.id,
-      'this.isAfter',
-      this.isAfter
-    );
+    // console.log(
+    //   'drag over item:',
+    //   this.dragOverItem?.el?.id,
+    //   'drop list:',
+    //   this.activeDropList?.el?.id,
+    //   'this.isAfter',
+    //   this.isAfter
+    // );
     this.placeholderService.updatePlaceholder$.next({
       currentDrag: this._activeDragInstances[0],
       dragOverItem: this.dragOverItem,
@@ -287,7 +286,7 @@ export class NgxDragDropService {
    * @param pointer view port pointer (clientX,clientY)
    */
   getPointerElement(pointer: IPosition) {
-    let pe = document.querySelector('.pointer');
+    let pe = document.querySelector('.ngxpointer');
     if (!pe) return;
 
     let x = pointer.x + window.scrollX;
@@ -295,32 +294,5 @@ export class NgxDragDropService {
 
     pe!.innerHTML = `${x},${y}(${pointer.x},${pointer.y})`;
     this._renderer.setStyle(pe, 'transform', `translate(${x}px,${y}px)`);
-    //  this.updateAllDragItemsRect();
-    //   this.updateScrollableParents();
-    //   this.setupScrollListeners();
-    // let rect = document.querySelector('#TODO')?.getBoundingClientRect();
-    // let dropLists = this.dragRegister.dropListItems.filter((x) => this.isInPointer(pointer, x.el, x.domRect));
-    // console.log(
-    //   dropLists.map((m) => m.el.id),
-    //   rect?.y,
-    //   rect?.bottom
-    // );
-  }
-
-  isInPointer(pointer: IPosition, el: HTMLElement, rect: DOMRect) {
-    let offsetScrollTop = el.scrollTop;
-    let offsetScrollLeft = el.scrollLeft;
-    let parent = el.parentElement;
-    while (parent) {
-      offsetScrollTop += parent.scrollTop;
-      offsetScrollLeft += parent.scrollLeft;
-      parent = parent.parentElement;
-    }
-    let newY = rect.top + offsetScrollTop;
-    let newX = rect.left + offsetScrollLeft;
-    let newB = Math.min(rect.height + newY, rect.height - window.innerHeight - newY);
-    let newR = Math.max(rect.width + newX, rect.width - window.innerWidth - newX);
-
-    return pointer.x >= newX && pointer.x <= newR && pointer.y >= newY && pointer.y <= newB;
   }
 }

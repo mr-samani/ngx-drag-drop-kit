@@ -11,7 +11,7 @@ export class NgxDragRegisterService {
   registerDropList(drop: NgxDropListDirective) {
     this.dropList.set(drop.el, drop);
     this.dropListItems.push(drop);
-    // console.log('registerDropList', this.dropList);
+    //  console.log('registerDropList', this.dropList);
   }
 
   removeDropList(drop: NgxDropListDirective) {
@@ -20,7 +20,7 @@ export class NgxDragRegisterService {
     if (i > -1) {
       this.dropListItems.splice(i, 1);
     }
-    // console.log('removeDropList', this.dropList);
+    //  console.log('removeDropList', this.dropList);
   }
 
   registerDragItem(drag: NgxDraggableDirective) {
@@ -30,7 +30,7 @@ export class NgxDragRegisterService {
       dropList.registerDragItem(drag);
     }
     this.dargItems.set(drag.el, drag);
-    // console.log('registerDragItem', dropList?.dragItems);
+    //  console.log('registerDragItem', dropList?.dragItems);
   }
 
   removeDragItem(drag: NgxDraggableDirective) {
@@ -39,7 +39,7 @@ export class NgxDragRegisterService {
       dropList.removeDragItem(drag);
     }
     this.dargItems.delete(drag.el);
-    // console.log('removeDragItem', dropList?.dragItems);
+    //  console.log('removeDragItem', dropList?.dragItems);
   }
 
   private findParentDropList(drag: NgxDraggableDirective): NgxDropListDirective | null {

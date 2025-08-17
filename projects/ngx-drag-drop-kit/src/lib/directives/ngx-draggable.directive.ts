@@ -7,18 +7,12 @@ import {
   InjectionToken,
   Input,
   OnDestroy,
-  OnInit,
   Output,
   Renderer2,
   RendererStyleFlags2,
 } from '@angular/core';
 import { Subscription, fromEvent } from 'rxjs';
-import {
-  getAbsoluteOffset,
-  getPointerPosition,
-  getPointerPositionOnViewPort,
-  getRelativePosition,
-} from '../../utils/get-position';
+import { getPointerPosition, getPointerPositionOnViewPort } from '../../utils/get-position';
 import { checkBoundX, checkBoundY } from '../../utils/check-boundary';
 import { NgxDropListDirective } from './ngx-drop-list.directive';
 import { NgxDragDropService } from '../services/ngx-drag-drop.service';
@@ -31,15 +25,6 @@ export const NGX_DROP_LIST = new InjectionToken<NgxDropListDirective>('NgxDropLi
 
 @Directive({
   selector: '[ngxDraggable]',
-  host: {
-    '[style.user-select]': 'dragging  ? "none" : ""',
-    '[style.pointer-events]': 'dragging  ? "none" : ""',
-    '[style.cursor]': 'dragging ? "grabbing" : ""',
-    '[style.z-index]': 'dragging ? "999999" : ""',
-    '[style.touch-action]': 'dragging ? "none" : ""',
-    '[style.-webkit-user-drag]': 'dragging ? "none" : ""',
-    '[style.-webkit-tap-highlight-color]': 'dragging ? "transparent" : ""',
-  },
   standalone: true,
   exportAs: 'NgxDraggable',
 })
@@ -59,11 +44,25 @@ export class NgxDraggableDirective implements OnDestroy, AfterViewInit {
     if (this._dragging) {
       this.previousTransitionProprety = this.el.style.transitionProperty;
       this._renderer.setStyle(this.el, 'transition-property', 'none', RendererStyleFlags2.Important);
+      this._renderer.setStyle(this.el, 'user-select', this.dragging ? 'none' : '');
+      this._renderer.setStyle(this.el, 'pointer-events', this.dragging ? 'none' : '');
+      this._renderer.setStyle(this.el, 'cursor', this.dragging ? 'grabbing' : '');
+      this._renderer.setStyle(this.el, 'z-index', this.dragging ? '999999' : '');
+      this._renderer.setStyle(this.el, 'touch-action', this.dragging ? 'none' : '');
+      this._renderer.setStyle(this.el, '-webkit-user-drag', this.dragging ? 'none' : '');
+      this._renderer.setStyle(this.el, '-webkit-tap-highlight-color', this.dragging ? 'transparent' : '');
       this.el.classList.add('dragging');
     } else {
       if (this.previousTransitionProprety)
         this._renderer.setStyle(this.el, 'transition-property', this.previousTransitionProprety);
       else this._renderer.removeStyle(this.el, 'transition-property');
+      this._renderer.removeStyle(this.el, 'user-select');
+      this._renderer.removeStyle(this.el, 'pointer-events');
+      this._renderer.removeStyle(this.el, 'cursor');
+      this._renderer.removeStyle(this.el, 'z-index');
+      this._renderer.removeStyle(this.el, 'touch-action');
+      this._renderer.removeStyle(this.el, '-webkit-user-drag');
+      this._renderer.removeStyle(this.el, '-webkit-tap-highlight-color');
 
       this.el.classList.remove('dragging');
     }

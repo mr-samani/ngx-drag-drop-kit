@@ -12,13 +12,11 @@ import {
   Output,
   Renderer2,
 } from '@angular/core';
-import { NgxDragDropService } from '../services/ngx-drag-drop.service';
-import { fromEvent, Subscription } from 'rxjs';
+import { Subscription } from 'rxjs';
 import { IDropEvent } from '../../interfaces/IDropEvent';
 import { NgxPlaceholderDirective } from './ngx-place-holder.directive';
 import { NgxDragRegisterService } from '../services/ngx-drag-register.service';
 import { NgxDraggableDirective } from './ngx-draggable.directive';
-import { getXYfromTransform } from '../../utils/get-transform';
 @Directive({
   selector: '[ngxDropList]',
   host: {
@@ -60,7 +58,6 @@ export class NgxDropListDirective<T = any> implements OnInit, AfterViewInit, OnD
   public domRect!: DOMRect;
 
   constructor(
-    private dragService: NgxDragDropService,
     private dragRegister: NgxDragRegisterService,
     elRef: ElementRef<HTMLElement>,
     private appRef: ApplicationRef,

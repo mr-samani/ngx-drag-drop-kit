@@ -1,11 +1,8 @@
 import { Inject, Injectable, Renderer2, RendererFactory2 } from '@angular/core';
 import { Subject, distinctUntilChanged } from 'rxjs';
 import { DOCUMENT } from '@angular/common';
-import { getRelativePosition } from '../../utils/get-position';
 import { IUpdatePlaceholder } from '../../interfaces/update-placeholder';
 import { getFirstLevelDraggables } from '../../utils/element.helper';
-import { NgxDragRegisterService } from './ngx-drag-register.service';
-import { getXYfromTransform } from '../../utils/get-transform';
 
 @Injectable({
   providedIn: 'root',
@@ -71,7 +68,11 @@ export class NgxDragPlaceholderService {
       if (input.currentDrag.dropList == input.dropList) {
         input.currentDrag.el.insertAdjacentElement(input.isAfter ? 'afterend' : 'beforebegin', this.placeholder);
       } else {
-        input.dropList.el.insertAdjacentElement('beforeend', this.placeholder);
+        if (input.dragOverItem) {
+          input.dragOverItem.el.insertAdjacentElement(input.isAfter ? 'afterend' : 'beforebegin', this.placeholder);
+        } else {
+          input.dropList.el.insertAdjacentElement('beforeend', this.placeholder);
+        }
       }
     }
     this.isShown = true;
@@ -105,20 +106,17 @@ export class NgxDragPlaceholderService {
     if (!dragOverItem || !overItemRec) {
       return;
     }
-    const scrollLeft = window.scrollX || document.documentElement.scrollLeft;
-    const scrollTop = window.scrollY || document.documentElement.scrollTop;
+    // console.log(input);
+    const isVertical = dropList.direction === 'vertical';
     const placeHolderRect = this.placeholder?.getBoundingClientRect();
     const plcHeight = placeHolderRect?.height ?? 0;
     const plcWidth = placeHolderRect?.width ?? 0;
-    const plcX = placeHolderRect?.x ?? 0;
-    const plcY = placeHolderRect?.y ?? 0;
 
     // ✅ جابجا کردن سایر آیتم‌ها
     const dragItems: HTMLElement[] = getFirstLevelDraggables(dropList.el);
     const overIndex = dragOverItem ? dragItems.findIndex((x) => x === dragOverItem.el) : -1;
     let currentDragIndex = currentDrag ? dragItems.findIndex((x) => x === currentDrag.el) : 0;
 
-    const isVertical = dropList.direction === 'vertical';
     for (let i = 0; i < dragItems.length; i++) {
       const el = dragItems[i];
       if (el === currentDrag.el) continue;
@@ -128,20 +126,19 @@ export class NgxDragPlaceholderService {
       let ahead = false;
       let behind = false;
 
+      // حالت self-drop در همان لیست
       if (currentDragIndex >= 0) {
-        // حالت self-drop در همان لیست
-        behind = i >= overIndex && i < currentDragIndex;
+        behind = i >= overIndex && i <= currentDragIndex;
         if (isAfter) {
           ahead = i <= overIndex && i > currentDragIndex;
         } else {
           ahead = i < overIndex && i > currentDragIndex;
         }
       } else {
-        // حالت بین دو لیست
         if (isAfter) {
-          ahead = i > overIndex; // آیتم بعد از overIndex بیاد
+          ahead = i > overIndex;
         } else {
-          ahead = i >= overIndex; // آیتم سر جای overIndex بیاد
+          ahead = false;
         }
         behind = false;
       }
@@ -168,18 +165,21 @@ export class NgxDragPlaceholderService {
     } else {
       this.index = overIndex >= 0 ? overIndex + 1 : 0;
     }
-    // update placeholder position
-
+    // ✅ تنظیم دقیق موقعیت placeholder بعد از جابجایی آیتم‌ها
     if (dragOverItem && overItemRec && dragOverItem.dropList === dropList && this.placeholder) {
-      const t = getXYfromTransform(dragOverItem.el);
-      const overPos = getRelativePosition(dragOverItem.el, dragOverItem.dropList.el); // // overItemRec; //dragOverItem.el.getBoundingClientRect();
-      const plcPos = placeHolderRect!; // this.placeholder.getBoundingClientRect();
-      let placeholderX = overPos.x - t.x;
-      let placeholderY = overPos.y - t.y;
-      if (isAfter) placeholderY += overItemRec.height;
-      const placeholderTransform = `translate(${placeholderX}px, ${placeholderY}px)`;
+      const baseCurrentX = this.placeholder.offsetLeft;
+      const baseCurrentY = this.placeholder.offsetTop;
+      const baseTargetX = dragOverItem.el.offsetLeft;
+      const baseTargetY = dragOverItem.el.offsetTop;
+      let deltaX = baseTargetX - baseCurrentX;
+      let deltaY = baseTargetY - baseCurrentY;
+      if (overIndex > currentDragIndex && !isAfter) {
+        deltaY -= overItemRec.height;
+      }
+      const placeholderTransform = `translate(${deltaX}px, ${deltaY}px)`;
       this._renderer.setStyle(this.placeholder, 'transform', placeholderTransform);
-      console.log(dragOverItem.el.id, overPos.y, t.y, plcPos.y, isAfter);
+      this._renderer.setStyle(this.placeholder, 'width', `${overItemRec.width}px`);
+      this._renderer.setStyle(this.placeholder, 'height', `${overItemRec.height}px`);
     }
     // console.log('isAfter', isAfter, 'overIndex', overIndex, 'currentIdndex', this.index);
   }

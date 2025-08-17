@@ -11,7 +11,8 @@ import { NgxDragDropKitModule } from '../../../../ngx-drag-drop-kit/src/public-a
   styleUrl: './sort-list.component.scss',
 })
 export class SortListComponent {
-  items = [
+  items: string[] = [];
+  items2 = [
     'Episode I - The Phantom Menace',
     'Episode II - Attack of the Clones',
     'Episode III - Revenge of the Sith',
@@ -36,8 +37,8 @@ export class SortListComponent {
     this.items.splice(rndPosition, 0, rndName);
   }
 
-  drop(ev: IDropEvent) {
+  drop(ev: IDropEvent, list: string[]) {
     console.log('Drop event: ', ev);
-    moveItemInArray(this.items, ev.previousIndex, ev.currentIndex);
+    moveItemInArray(list, ev.previousIndex, ev.currentIndex);
   }
 }

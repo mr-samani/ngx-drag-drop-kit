@@ -85,12 +85,13 @@
   transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
 }
 .ngx-drag-placeholder {
-  display: none;
+  display: none; 
   background: #92ddffa8;
   outline: dotted 2px #999;
   outline-offset: -4px;
   min-height: 30px;
   pointer-events: none;
   max-width: 100%;
+  z-index: 99999999999;
   // transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
 }
