@@ -9,7 +9,7 @@
       #baseList
       [connectedTo]="[baseList]">
       @for (item of items2; track item;let i = $index) {
-      <div class="example-box" [id]="'item_' + i" ngxDraggable>{{ i }}-🧊 {{ item }}</div>
+      <div class="example-box" [id]="item" ngxDraggable>{{ item }}</div>
       }
     </div>
   </div>

@@ -78,7 +78,6 @@ export class NgxDraggableDirective implements OnDestroy, AfterViewInit {
   private subscriptions: Subscription[] = [];
   public dropList?: NgxDropListDirective;
   public domRect!: DOMRect;
-
   constructor(
     elRef: ElementRef,
     private _renderer: Renderer2,

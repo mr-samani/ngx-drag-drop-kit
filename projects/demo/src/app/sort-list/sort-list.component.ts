@@ -13,15 +13,15 @@ import { NgxDragDropKitModule } from '../../../../ngx-drag-drop-kit/src/public-a
 export class SortListComponent {
   items: string[] = [];
   items2 = [
-    'Episode I - The Phantom Menace',
-    'Episode II - Attack of the Clones',
-    'Episode III - Revenge of the Sith',
-    'Episode IV - A New Hope',
-    'Episode V - The Empire Strikes Back',
-    'Episode VI - Return of the Jedi',
-    'Episode VII - The Force Awakens',
-    'Episode VIII - The Last Jedi',
-    'Episode IX - The Rise of Skywalker',
+    'Episode I',
+    'Episode II',
+    'Episode III',
+    'Episode IV',
+    'Episode V',
+    'Episode VI',
+    'Episode VII',
+    'Episode VIII',
+    'Episode IX',
   ];
 
   constructor() {
