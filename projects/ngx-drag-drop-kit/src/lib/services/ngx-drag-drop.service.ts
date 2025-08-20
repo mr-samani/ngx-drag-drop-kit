@@ -103,7 +103,6 @@ export class NgxDragDropService {
 
     this.placeholderService.updatePlaceholder$.next({
       dragItem: this._activeDragInstances[0],
-      previousDragIndex: this.previousDragIndex,
       isAfter: false,
       currentDragRec: this._activeDragInstances[0].domRect,
       destinationDropList: this.activeDropList,
@@ -114,6 +113,10 @@ export class NgxDragDropService {
   stopDrag(drag: NgxDraggableDirective) {
     this.isDragging = false;
     if (drag.dropList) drag.dropList.isDragging = false;
+    // this.dragRegister.dargItems.forEach((d) => {
+    //   this._renderer.setStyle(d.el, 'transition-property', 'none');
+    //   this._renderer.removeStyle(d.el, 'transform');
+    // });
     const index = this._activeDragInstances.indexOf(drag);
     if (index > -1) {
       drag.el.style.display = this.currentDragPreviousDisplay;
@@ -124,11 +127,10 @@ export class NgxDragDropService {
       this._activeDragInstances.splice(index, 1);
 
       if (this.placeholderService.isShown) {
-        this.droped(drag);
+        this.droped();
       }
       this.placeholderService.updatePlaceholder$.next({
         dragItem: drag,
-        previousDragIndex: this.previousDragIndex,
         isAfter: false,
         currentDragRec: drag.domRect,
         destinationDropList: this.activeDropList,
@@ -138,12 +140,12 @@ export class NgxDragDropService {
       });
       this.dragOverItem = undefined;
     }
+
     this.activeDropList = undefined;
     this.scrollSubscription?.unsubscribe();
     this.scrollSubscription = null;
     this.scrollableParents = [];
     this.previousDragIndex = 0;
-    this.placeholderService.currentDragIndex = 0;
   }
 
   dragMove(drag: NgxDraggableDirective, ev: MouseEvent | TouchEvent, transform: string) {
@@ -160,7 +162,6 @@ export class NgxDragDropService {
     if (!this.dragOverItem && this.activeDropList) {
       this.placeholderService.updatePlaceholder$.next({
         dragItem: this._activeDragInstances[0],
-        previousDragIndex: this.previousDragIndex,
         isAfter: false,
         currentDragRec: this._activeDragInstances[0].domRect,
         destinationDropList: this.activeDropList,
@@ -175,7 +176,7 @@ export class NgxDragDropService {
     }
     const scrollX = window.scrollX;
     const scrollY = window.scrollY;
-    const transformed = { x: 0, y: 0 }; //getXYfromTransform(this.dragOverItem.el); //;;
+    const transformed = this.dragOverItem.transformedXY; //{ x: 0, y: 0 }; //getXYfromTransform(this.dragOverItem.el); //;;
     let isAfter = false;
     if (this.dragOverItem.dropList?.direction === 'horizontal') {
       const midpoint = this.dragOverItem.domRect.left + scrollX + transformed.x + this.dragOverItem.domRect.width / 2;
@@ -186,7 +187,6 @@ export class NgxDragDropService {
     }
     this.placeholderService.updatePlaceholder$.next({
       dragItem: this._activeDragInstances[0],
-      previousDragIndex: this.previousDragIndex,
       isAfter: isAfter,
       dragOverItem: this.dragOverItem,
       currentDragRec: this._currentDragRect!,
@@ -196,12 +196,16 @@ export class NgxDragDropService {
     });
   }
 
-  droped(drag: NgxDraggableDirective) {
+  droped() {
     if (!this._dropEvent || !this.activeDropList) {
       return;
     }
     this._dropEvent.container = this.activeDropList;
-    this._dropEvent.currentIndex = this.placeholderService.currentDragIndex;
+    // if (this._dropEvent.container != this._dropEvent.previousContainer) {
+    this._dropEvent.currentIndex = this.placeholderService.overItemIndex;
+    // } else {
+    //   this._dropEvent.currentIndex = this.placeholderService.overItemIndex + 1;
+    // }
     this.activeDropList.onDrop(this._dropEvent);
   }
 
@@ -221,6 +225,7 @@ export class NgxDragDropService {
       dropList.dragItems.forEach((item) => {
         if (item.el.offsetParent === null) return; // hidden item
         item.updateDomRect();
+        item.transformedXY = { x: 0, y: 0 };
       });
     }
     // console.timeEnd('initUpdateAllDragItemsRect');
@@ -288,13 +293,11 @@ export class NgxDragDropService {
    * @param pointer view port pointer (clientX,clientY)
    */
   getPointerElement(pointer: IPosition) {
-    let pe = document.querySelector('.ngxpointer');
-    if (!pe) return;
-
-    let x = pointer.x + window.scrollX;
-    let y = pointer.y + window.scrollY;
-
-    pe!.innerHTML = `${x},${y}(${pointer.x},${pointer.y})`;
-    this._renderer.setStyle(pe, 'transform', `translate(${x}px,${y}px)`);
+    // let pe = document.querySelector('.ngxpointer');
+    // if (!pe) return;
+    // let x = pointer.x + window.scrollX;
+    // let y = pointer.y + window.scrollY;
+    // pe!.innerHTML = `${x},${y}(${pointer.x},${pointer.y})`;
+    // this._renderer.setStyle(pe, 'transform', `translate(${x}px,${y}px)`);
   }
 }

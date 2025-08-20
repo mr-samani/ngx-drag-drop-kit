@@ -1,5 +1,5 @@
 import { Inject, Injectable, Renderer2, RendererFactory2 } from '@angular/core';
-import { Subject, distinctUntilChanged } from 'rxjs';
+import { Subject, debounceTime, distinctUntilChanged, throttleTime } from 'rxjs';
 import { DOCUMENT } from '@angular/common';
 import { IUpdatePlaceholder } from '../../interfaces/update-placeholder';
 import { getDragItemIndex, getFirstLevelDraggables } from '../../utils/element.helper';
@@ -9,8 +9,9 @@ import { getDragItemIndex, getFirstLevelDraggables } from '../../utils/element.h
 })
 export class NgxDragPlaceholderService {
   private _renderer: Renderer2;
-  public placeholder?: HTMLElement;
-  public currentDragIndex = 0;
+  private placeholder?: HTMLElement;
+  public overItemIndex = 0;
+  private placeholderIndex = 0;
   public updatePlaceholder$ = new Subject<IUpdatePlaceholder>();
   public isShown: boolean = false;
 
@@ -27,12 +28,12 @@ export class NgxDragPlaceholderService {
             prev.destinationDropList == curr.destinationDropList;
           // console.log('mustBeCancel', mustBeCancel);
           return mustBeCancel;
-        })
-        // throttleTime(100)
+        }),
+        throttleTime(50)
+        //debounceTime(300)
       )
       .subscribe((input) => {
         this.updatePlaceHolder(input);
-        console.log(input.isAfter, 'p', input.previousDragIndex, 'c', this.currentDragIndex);
       });
   }
 
@@ -71,17 +72,20 @@ export class NgxDragPlaceholderService {
       // source is equal with destination
       if (dragItem.dropList == destinationDropList) {
         dragItem.el.insertAdjacentElement('afterend', this.placeholder);
+        this.placeholderIndex = getDragItemIndex(dragItem, dragItem.dropList);
       }
       // drag to other list
       else {
         // when has over item
         if (dragOverItem) {
           dragOverItem.el.insertAdjacentElement('afterend', this.placeholder);
+          this.placeholderIndex = getDragItemIndex(dragOverItem, dragOverItem.dropList) + 1;
         }
         // add to end of children
         else {
           destinationDropList.el.insertAdjacentElement('beforeend', this.placeholder);
-          this.currentDragIndex = destinationDropList.dragItems.length;
+          this.placeholderIndex = destinationDropList.dragItems.length + 1;
+          this.overItemIndex = destinationDropList.dragItems.length + 1;
         }
       }
     }
@@ -99,12 +103,13 @@ export class NgxDragPlaceholderService {
         this._renderer.removeStyle(el, 'transform');
       });
     this.isShown = false;
-    this.currentDragIndex = 0;
+    this.overItemIndex = 0;
+    this.placeholderIndex = 0;
   }
 
   /*--------------------------------------------*/
   private updatePlaceholderPosition(input: IUpdatePlaceholder) {
-    const { dragItem, dragOverItem, destinationDropList, isAfter, overItemRec, previousDragIndex } = input;
+    const { dragItem, dragOverItem, destinationDropList, isAfter, overItemRec } = input;
     if (!destinationDropList) return;
     if (destinationDropList.disableSort || destinationDropList.checkAllowedConnections(dragItem.dropList) == false)
       return;
@@ -118,13 +123,14 @@ export class NgxDragPlaceholderService {
       return;
     }
     const isSelfList = dragItem.dropList?.el == dragOverItem.dropList?.el;
-    let i = getDragItemIndex(dragOverItem, destinationDropList);
-    if (isSelfList) {
-      this.currentDragIndex = !isAfter ? i - 1 : i;
-    } else {
-      this.currentDragIndex = i + 1;
+    this.overItemIndex = getDragItemIndex(dragOverItem, destinationDropList);
+    // اگر رفت روی یک ایتم و جابجا شد و دوباره رفت روی همان ایتم باید مجددا جابجا شود
+    if (isAfter && isSelfList && this.overItemIndex > this.placeholderIndex) {
+      this.overItemIndex--;
+    } else if (isAfter && !isSelfList) {
+      this.overItemIndex++;
     }
-    if (this.currentDragIndex < 0) {
+    if (this.overItemIndex < 0) {
       return;
     }
 
@@ -133,22 +139,20 @@ export class NgxDragPlaceholderService {
     const placeHolderRect = this.placeholder?.getBoundingClientRect();
     const plcHeight = placeHolderRect?.height ?? 0;
     const plcWidth = placeHolderRect?.width ?? 0;
-
-    const dragItems: HTMLElement[] = getFirstLevelDraggables(destinationDropList.el);
-    const shiftMap = this.getShiftMap(dragItems.length, previousDragIndex, isSelfList);
+    const dragItems = destinationDropList.dragItems;
+    const shiftMap = this.getShiftMap(dragItems.length, isSelfList);
     console.log(
-      'previousDragIndex',
-      previousDragIndex,
-      'currentDragIndex',
-      this.currentDragIndex,
+      'placeholderIndex',
+      this.placeholderIndex,
+      'overItemIndex',
+      this.overItemIndex,
       'isAfter',
       isAfter,
       'map=',
       shiftMap
     );
     for (let i = 0; i < dragItems.length; i++) {
-      if (dragItems[i] == dragItem.el) continue;
-      const el = dragItems[i];
+      if (dragItems[i].el == dragItem.el) continue;
       let offsetX = 0;
       let offsetY = 0;
       const dir = shiftMap[i];
@@ -169,19 +173,23 @@ export class NgxDragPlaceholderService {
         }
       }
 
-      this._renderer.setStyle(el, 'transform', `translate(${offsetX}px, ${offsetY}px)`);
+      dragItems[i].transformedXY = { x: offsetX, y: offsetY };
+      this._renderer.setStyle(dragItems[i].el, 'transform', `translate(${offsetX}px, ${offsetY}px)`);
     }
 
     //placeholder
-    if (dragOverItem && overItemRec && this.placeholder) {
+    if (overItemRec && this.placeholder) {
       const baseCurrentX = this.placeholder.offsetLeft;
       const baseCurrentY = this.placeholder.offsetTop;
-      const baseTargetX = dragOverItem.el.offsetLeft;
-      const baseTargetY = dragOverItem.el.offsetTop;
-      let deltaX = baseTargetX - baseCurrentX;
-      let deltaY = baseTargetY - baseCurrentY;
-      //TODO: در هنگامی لیست مبدا و مقصد متفاوت است باید تشخیص داد رو به پایین حرکت میکنیم یا نه
-      if (this.currentDragIndex > previousDragIndex && !isAfter) {
+      let deltaX = 0;
+      let deltaY = 0;
+      if (dragItems[this.overItemIndex] && dragItems[this.overItemIndex].el != dragItem.el) {
+        const baseTargetX = dragItems[this.overItemIndex].el.offsetLeft;
+        const baseTargetY = dragItems[this.overItemIndex].el.offsetTop;
+        deltaX = baseTargetX - baseCurrentX;
+        deltaY = baseTargetY - baseCurrentY;
+      }
+      if (this.overItemIndex >= this.placeholderIndex && !isSelfList) {
         deltaY -= plcHeight;
       }
       const placeholderTransform = `translate(${deltaX}px, ${deltaY}px)`;
@@ -193,32 +201,31 @@ export class NgxDragPlaceholderService {
    * خروجی برای هر آیتم میگه باید بره جلو (ahead) یا عقب (behind) یا هیچ تغییری نکنه (none)
    *
    * @param count      تعداد آیتم‌های لیست
-   * @param previousDragIndex   ایندکس placeholder در DOM
+   * @param isSelfList  when previousContainer == currentContainer
    */
-  private getShiftMap(count: number, previousDragIndex: number, isSelfList: boolean): ('ahead' | 'behind' | 'none')[] {
+  private getShiftMap(count: number, isSelfList: boolean): ('ahead' | 'behind' | 'none')[] {
     const result: ('ahead' | 'behind' | 'none')[] = new Array(count).fill('none');
 
-    if (previousDragIndex == this.currentDragIndex && isSelfList) {
+    if (this.placeholderIndex == this.overItemIndex) {
       return result;
     }
 
-    let moveDown = false;
-    if (isSelfList && this.currentDragIndex > previousDragIndex) {
-      moveDown = true;
-    } else if (!isSelfList) {
-      //TODO: در هنگامی لیست مبدا و مقصد متفاوت است باید تشخیص داد رو به پایین حرکت میکنیم یا نه
-    }
-
     // move down or left
-    if (moveDown) {
-      for (let i = previousDragIndex; i <= this.currentDragIndex; i++) {
-        result[i] = 'behind';
+    if (this.overItemIndex > this.placeholderIndex) {
+      for (let i = this.placeholderIndex; i <= this.overItemIndex; i++) {
+        if (result[i]) result[i] = 'behind';
       }
     }
     // move up or right
     else {
-      for (let i = this.currentDragIndex; i <= previousDragIndex; i++) {
-        result[i] = 'ahead';
+      if (isSelfList) {
+        for (let i = this.overItemIndex; i <= this.placeholderIndex; i++) {
+          if (result[i]) result[i] = 'ahead';
+        }
+      } else {
+        for (let i = this.overItemIndex; i < this.placeholderIndex; i++) {
+          if (result[i]) result[i] = 'ahead';
+        }
       }
     }
 
@@ -232,7 +239,6 @@ export class NgxDragPlaceholderService {
     if (!destinationDropList) return;
     if (destinationDropList.disableSort || destinationDropList.checkAllowedConnections(dragItem.dropList) == false)
       return;
-    debugger;
     this.hidePlaceholder();
     this.placeholder = this._document.createElement('div');
     this.placeholder.style.display = 'inline-block';
@@ -246,8 +252,10 @@ export class NgxDragPlaceholderService {
     }
     if (dragOverItem && dragOverItem.dropList == destinationDropList) {
       dragOverItem.el.insertAdjacentElement(isAfter ? 'afterend' : 'beforebegin', this.placeholder);
+      this.placeholderIndex = getDragItemIndex(dragOverItem, dragOverItem.dropList);
     } else {
       destinationDropList.el.insertAdjacentElement('afterbegin', this.placeholder);
+      this.placeholderIndex = 0;
     }
     this.isShown = true;
   }
