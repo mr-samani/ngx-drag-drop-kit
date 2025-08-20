@@ -104,8 +104,8 @@ export class NgxResizableDirective implements AfterViewInit {
     this.onCornerMove(offsetX, offsetY, clientX, clientY);
   }
 
-  @HostListener('document:mouseup', ['$event'])
-  @HostListener('document:touchend', ['$event'])
+  @HostListener('window:mouseup', ['$event'])
+  @HostListener('window:touchend', ['$event'])
   private onCornerRelease() {
     if (this.resizing) {
       const realPos = this.getRealPosition();

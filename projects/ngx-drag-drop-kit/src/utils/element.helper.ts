@@ -1,3 +1,5 @@
+import { NgxDraggableDirective, NgxDropListDirective } from '../public-api';
+
 export abstract class ElementHelper {
   private static collectionHas(a: NodeListOf<Element>, b: ParentNode) {
     //helper function (see below)
@@ -39,4 +41,10 @@ export function getFirstLevelDraggables(container: HTMLElement): HTMLElement[] {
   }
 
   return firstLevel;
+}
+
+export function getDragItemIndex(dragItem: NgxDraggableDirective, dropList: NgxDropListDirective): number {
+  const dragItems: HTMLElement[] = getFirstLevelDraggables(dropList.el);
+  const index = dragItem ? dragItems.findIndex((x) => x === dragItem.el) : -1;
+  return index;
 }
