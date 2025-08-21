@@ -110,44 +110,6 @@ export class NgxDragDropService {
     });
   }
 
-  stopDrag(drag: NgxDraggableDirective) {
-    this.isDragging = false;
-    if (drag.dropList) drag.dropList.isDragging = false;
-    // this.dragRegister.dargItems.forEach((d) => {
-    //   this._renderer.setStyle(d.el, 'transition-property', 'none');
-    //   this._renderer.removeStyle(d.el, 'transform');
-    // });
-    const index = this._activeDragInstances.indexOf(drag);
-    if (index > -1) {
-      drag.el.style.display = this.currentDragPreviousDisplay;
-      this.dragElementInBody?.remove();
-      this._activeDragInstances?.forEach((el) => {
-        this._renderer.removeStyle(el.el, 'transform');
-      });
-      this._activeDragInstances.splice(index, 1);
-
-      if (this.placeholderService.isShown) {
-        this.droped();
-      }
-      this.placeholderService.updatePlaceholder$.next({
-        dragItem: drag,
-        isAfter: false,
-        currentDragRec: drag.domRect,
-        destinationDropList: this.activeDropList,
-        dragOverItem: this.dragOverItem,
-        overItemRec: this.dragOverItem?.domRect,
-        state: 'hidden',
-      });
-      this.dragOverItem = undefined;
-    }
-
-    this.activeDropList = undefined;
-    this.scrollSubscription?.unsubscribe();
-    this.scrollSubscription = null;
-    this.scrollableParents = [];
-    this.previousDragIndex = 0;
-  }
-
   dragMove(drag: NgxDraggableDirective, ev: MouseEvent | TouchEvent, transform: string) {
     if (!this.dragElementInBody || !this.isDragging) {
       return;
@@ -155,6 +117,10 @@ export class NgxDragDropService {
     this._renderer.setStyle(this.dragElementInBody, 'transform', transform);
     const viewPortPosition = getPointerPositionOnViewPort(ev);
     const finded = this.findItemUnderPointer(viewPortPosition);
+    if (!finded.dropList) {
+      return;
+    }
+
     this.dragOverItem = finded.item;
     this.activeDropList = finded.dropList;
 
@@ -195,18 +161,44 @@ export class NgxDragDropService {
       state: 'update',
     });
   }
+  stopDrag(drag: NgxDraggableDirective) {
+    this.isDragging = false;
+    if (drag.dropList) drag.dropList.isDragging = false;
+    // this.dragRegister.dargItems.forEach((d) => {
+    //   this._renderer.setStyle(d.el, 'transition-property', 'none');
+    //   this._renderer.removeStyle(d.el, 'transform');
+    // });
+    const currentIndex = this.placeholderService.overItemIndex;
+    const index = this._activeDragInstances.indexOf(drag);
+    if (index > -1) {
+      this.placeholderService.updatePlaceholder$.next({
+        dragItem: drag,
+        isAfter: false,
+        currentDragRec: drag.domRect,
+        destinationDropList: this.activeDropList,
+        dragOverItem: this.dragOverItem,
+        overItemRec: this.dragOverItem?.domRect,
+        state: 'hidden',
+      });
+      drag.el.style.display = this.currentDragPreviousDisplay;
+      this.dragElementInBody?.remove();
+      this._activeDragInstances?.forEach((el) => {
+        this._renderer.removeStyle(el.el, 'transform');
+      });
+      this._activeDragInstances.splice(index, 1);
 
-  droped() {
-    if (!this._dropEvent || !this.activeDropList) {
-      return;
+      if (this._dropEvent && this.activeDropList) {
+        this._dropEvent.container = this.activeDropList;
+        this._dropEvent.currentIndex = currentIndex;
+        this.activeDropList.onDrop(this._dropEvent);
+      }
     }
-    this._dropEvent.container = this.activeDropList;
-    // if (this._dropEvent.container != this._dropEvent.previousContainer) {
-    this._dropEvent.currentIndex = this.placeholderService.overItemIndex;
-    // } else {
-    //   this._dropEvent.currentIndex = this.placeholderService.overItemIndex + 1;
-    // }
-    this.activeDropList.onDrop(this._dropEvent);
+    this.dragOverItem = undefined;
+    this.activeDropList = undefined;
+    this.scrollSubscription?.unsubscribe();
+    this.scrollSubscription = null;
+    this.scrollableParents = [];
+    this.previousDragIndex = 0;
   }
 
   private getDragItemIndexInDropList(dragItem: NgxDraggableDirective): number {
