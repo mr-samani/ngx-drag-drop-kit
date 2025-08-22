@@ -41,3 +41,11 @@
 .custom-placeholder2 {
   border: 2px blue solid;
 }
+
+.ngxpointer {
+  position: absolute;
+  background-color: #ff0000;
+  top: 11px;
+  left: 10px;
+  z-index: 99999999;
+}

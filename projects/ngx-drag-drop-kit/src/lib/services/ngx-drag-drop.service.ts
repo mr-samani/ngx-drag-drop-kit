@@ -108,6 +108,10 @@ export class NgxDragDropService {
       destinationDropList: this.activeDropList,
       state: 'show',
     });
+    this.updateAllDragItemsRect();
+    this.sortDragItems();
+    this.updateScrollableParents();
+    this.setupScrollListeners();
   }
 
   dragMove(drag: NgxDraggableDirective, ev: MouseEvent | TouchEvent, transform: string) {
@@ -151,6 +155,8 @@ export class NgxDragDropService {
       const midpoint = this.dragOverItem.domRect.top + scrollY + transformed.y + this.dragOverItem.domRect.height / 2;
       isAfter = position.y > midpoint;
     }
+
+    console.log('after', isAfter, this.dragOverItem.el?.id);
     this.placeholderService.updatePlaceholder$.next({
       dragItem: this._activeDragInstances[0],
       isAfter: isAfter,
@@ -238,6 +244,9 @@ export class NgxDragDropService {
     const dropElm = elements.find((x) => x.hasAttribute('ngxdroplist'));
     const dragItem = dragElm ? this.dragRegister.dargItems.get(dragElm) : undefined;
     const dropList = dropElm ? this.dragRegister.dropList.get(dropElm) : undefined;
+    if (dropList && dragItem?.dropList != dropList) {
+      return { dropList, item: undefined };
+    }
     return { dropList: dragItem ? dragItem.dropList : dropList, item: dragItem };
   }
 
@@ -285,11 +294,11 @@ export class NgxDragDropService {
    * @param pointer view port pointer (clientX,clientY)
    */
   getPointerElement(pointer: IPosition) {
-    // let pe = document.querySelector('.ngxpointer');
-    // if (!pe) return;
-    // let x = pointer.x + window.scrollX;
-    // let y = pointer.y + window.scrollY;
-    // pe!.innerHTML = `${x},${y}(${pointer.x},${pointer.y})`;
-    // this._renderer.setStyle(pe, 'transform', `translate(${x}px,${y}px)`);
+    let pe = document.querySelector('.ngxpointer');
+    if (!pe) return;
+    let x = pointer.x + window.scrollX;
+    let y = pointer.y + window.scrollY;
+    pe!.innerHTML = `${x},${y}(${pointer.x},${pointer.y})`;
+    this._renderer.setStyle(pe, 'transform', `translate(${x}px,${y}px)`);
   }
 }

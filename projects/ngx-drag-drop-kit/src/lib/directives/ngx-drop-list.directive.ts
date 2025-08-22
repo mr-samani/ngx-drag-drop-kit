@@ -107,6 +107,9 @@ export class NgxDropListDirective<T = any> implements OnInit, AfterViewInit, OnD
       this.placeholderView = this.userPlaceholder.tpl.createEmbeddedView(ctx);
       this.appRef.attachView(this.placeholderView);
       const el = this.placeholderView.rootNodes[0] as HTMLElement;
+      this.renderer.setStyle(el, 'pointer-events', 'none');
+      this.renderer.setStyle(el, 'position', 'relative');
+      this.renderer.setStyle(el, 'z-index', '9999');
       return el;
     }
     const el = this.renderer.createElement('div');
