@@ -101,6 +101,7 @@ export class NgxDraggableDirective implements OnDestroy, AfterViewInit {
 
   updateDomRect() {
     this.domRect = this.el.getBoundingClientRect();
+    this.transformedXY = { x: 0, y: 0 };
   }
   findFirstParentDragRootElement() {
     if (this.dragRootElement) {

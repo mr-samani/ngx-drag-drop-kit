@@ -13,8 +13,6 @@ import { Subject } from 'rxjs/internal/Subject';
 import { fromEvent } from 'rxjs/internal/observable/fromEvent';
 import { throttleTime } from 'rxjs/internal/operators/throttleTime';
 import { IPosition } from '../../interfaces/IPosition';
-import { getXYfromTransform } from '../../utils/get-transform';
-import { Observable } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
@@ -52,10 +50,6 @@ export class NgxDragDropService {
     if (!drag.dropList) {
       return;
     }
-    this.updateAllDragItemsRect();
-    this.sortDragItems();
-    this.updateScrollableParents();
-    this.setupScrollListeners();
     this.activeDropList = drag.dropList;
     this.previousDragIndex = getDragItemIndex(drag, drag.dropList);
     if (this.previousDragIndex < 0 || !this.activeDropList) {
@@ -140,23 +134,25 @@ export class NgxDragDropService {
         state: 'update',
       });
     }
-    if (!this.activeDropList || !this.dragOverItem) return;
+    if (!this.activeDropList) return;
     if (this.activeDropList.checkAllowedConnections(this._activeDragInstances[0]?.dropList) == false) {
       return;
     }
-    const scrollX = window.scrollX;
-    const scrollY = window.scrollY;
-    const transformed = this.dragOverItem.transformedXY; //{ x: 0, y: 0 }; //getXYfromTransform(this.dragOverItem.el); //;;
     let isAfter = false;
-    if (this.dragOverItem.dropList?.direction === 'horizontal') {
-      const midpoint = this.dragOverItem.domRect.left + scrollX + transformed.x + this.dragOverItem.domRect.width / 2;
-      isAfter = this.activeDropList.isRtl ? position.x < midpoint : position.x > midpoint;
-    } else {
-      const midpoint = this.dragOverItem.domRect.top + scrollY + transformed.y + this.dragOverItem.domRect.height / 2;
-      isAfter = position.y > midpoint;
+    if (this.dragOverItem) {
+      const scrollX = window.scrollX;
+      const scrollY = window.scrollY;
+      this.dragOverItem.updateDomRect();
+      const transformed = this.dragOverItem.transformedXY; //{ x: 0, y: 0 }; //getXYfromTransform(this.dragOverItem.el); //;;
+      if (this.dragOverItem.dropList?.direction === 'horizontal') {
+        const midpoint = this.dragOverItem.domRect.left + scrollX + transformed.x + this.dragOverItem.domRect.width / 2;
+        isAfter = this.activeDropList.isRtl ? position.x < midpoint : position.x > midpoint;
+      } else {
+        const midpoint = this.dragOverItem.domRect.top + scrollY + transformed.y + this.dragOverItem.domRect.height / 2;
+        isAfter = position.y > midpoint;
+      }
     }
-
-    console.log('after', isAfter, this.dragOverItem.el?.id);
+    console.log('after', isAfter, this.dragOverItem?.el?.id);
     this.placeholderService.updatePlaceholder$.next({
       dragItem: this._activeDragInstances[0],
       isAfter: isAfter,
