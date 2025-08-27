@@ -20,7 +20,7 @@ export abstract class ElementHelper {
 }
 
 export function getFirstLevelDraggables(container: HTMLElement): HTMLElement[] {
-  const all = Array.from(container.querySelectorAll<HTMLElement>('.ngx-draggable'));
+  const all = Array.from(container.querySelectorAll<HTMLElement>('.ngx-draggable:not(.dragging)'));
   const firstLevel: HTMLElement[] = [];
 
   for (const el of all) {
@@ -43,9 +43,9 @@ export function getFirstLevelDraggables(container: HTMLElement): HTMLElement[] {
   return firstLevel;
 }
 
-export function getDragItemIndex(dragItem: NgxDraggableDirective, dropList?: NgxDropListDirective): number {
+export function getDragItemIndex(dragItem: HTMLElement, dropList?: NgxDropListDirective): number {
   if (!dropList) return -1;
   const dragItems: HTMLElement[] = getFirstLevelDraggables(dropList.el);
-  const index = dragItem ? dragItems.findIndex((x) => x === dragItem.el) : -1;
+  const index = dragItem ? dragItems.findIndex((x) => x === dragItem) : -1;
   return index;
 }

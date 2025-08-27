@@ -61,7 +61,6 @@ export class NgxDropListDirective<T = any> implements OnInit, AfterViewInit, OnD
     private dragRegister: NgxDragRegisterService,
     elRef: ElementRef<HTMLElement>,
     private appRef: ApplicationRef,
-
     private renderer: Renderer2
   ) {
     this.el = elRef.nativeElement;
@@ -102,6 +101,8 @@ export class NgxDropListDirective<T = any> implements OnInit, AfterViewInit, OnD
 
   addPlaceholder(dragRect: DOMRect): HTMLElement {
     const { width, height } = dragRect;
+
+    // حالت custom template کاربر
     if (this.userPlaceholder) {
       const ctx = { width, height };
       this.placeholderView = this.userPlaceholder.tpl.createEmbeddedView(ctx);
@@ -112,8 +113,13 @@ export class NgxDropListDirective<T = any> implements OnInit, AfterViewInit, OnD
       this.renderer.setStyle(el, 'z-index', '9999');
       return el;
     }
+
+    // 🔹 حالت پیشفرض: ساخت div با directive واقعی
     const el = this.renderer.createElement('div');
+
+    // استایل‌ها
     this.renderer.addClass(el, 'ngx-drag-placeholder');
+    this.renderer.addClass(el, 'ngx-draggable');
     this.renderer.setStyle(el, 'pointer-events', 'none');
     this.renderer.setStyle(el, 'display', 'block');
     if (width) {
@@ -124,6 +130,7 @@ export class NgxDropListDirective<T = any> implements OnInit, AfterViewInit, OnD
       this.renderer.setStyle(el, 'height', `${height}px`);
       this.renderer.setStyle(el, 'min-height', `${height}px`);
     }
+
     return el;
   }
 
