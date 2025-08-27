@@ -172,7 +172,7 @@ export class NgxDragDropService {
     //   this._renderer.setStyle(d.el, 'transition-property', 'none');
     //   this._renderer.removeStyle(d.el, 'transform');
     // });
-    const currentIndex = this.placeholderService.overItemIndex;
+    const currentIndex = this.placeholderService.currentIndex;
     const index = this._activeDragInstances.indexOf(drag);
     if (index > -1) {
       this.placeholderService.updatePlaceholder$.next({

@@ -4,8 +4,6 @@ import { DOCUMENT } from '@angular/common';
 import { IUpdatePlaceholder } from '../../interfaces/update-placeholder';
 import { getDragItemIndex, getFirstLevelDraggables } from '../../utils/element.helper';
 import { checkShiftItem } from '../../utils/check-shift-item';
-import { transferArrayItem } from '../../drag-utils';
-import { getXYfromTransform } from '../../utils/get-transform';
 import { NgxDragRegisterService } from './ngx-drag-register.service';
 
 @Injectable({
@@ -14,7 +12,8 @@ import { NgxDragRegisterService } from './ngx-drag-register.service';
 export class NgxDragPlaceholderService {
   private _renderer: Renderer2;
   private placeholder?: HTMLElement;
-  public overItemIndex = 0;
+  private overItemIndex = 0;
+  public currentIndex = 0;
   private placeholderIndex = 0;
   public updatePlaceholder$ = new Subject<IUpdatePlaceholder>();
   public isShown: boolean = false;
@@ -97,6 +96,7 @@ export class NgxDragPlaceholderService {
         }
       }
     }
+    this.currentIndex = this.placeholderIndex;
     this.isShown = true;
   }
 
@@ -113,6 +113,7 @@ export class NgxDragPlaceholderService {
     this.isShown = false;
     this.overItemIndex = 0;
     this.placeholderIndex = 0;
+    this.currentIndex = 0;
     input.destinationDropList?.disposePlaceholder();
   }
 
@@ -134,23 +135,14 @@ export class NgxDragPlaceholderService {
     const isSelfList = dragItem.dropList?.el == dragOverItem.dropList?.el;
     const dragItems = getFirstLevelDraggables(destinationDropList.el);
     this.overItemIndex = getDragItemIndex(dragOverItem.el, destinationDropList);
-    // اگر رفت روی یک ایتم و جابجا شد و دوباره رفت روی همان ایتم باید مجددا جابجا شود
-    // if (isAfter && isSelfList && this.overItemIndex > this.placeholderIndex) {
-    //   this.overItemIndex--;
-    // } else if (isAfter && !isSelfList) {
-    //   this.overItemIndex++;
-    // }
-    // if (this.overItemIndex < 0) {
-    //   return;
-    // }
-    // console.log(input);
+
     const isVertical = destinationDropList.direction === 'vertical';
     const placeHolderRect = this.placeholder?.getBoundingClientRect();
     const plcHeight = placeHolderRect?.height ?? 0;
     const plcWidth = placeHolderRect?.width ?? 0;
+
     // console.log('overItemIndex:', this.overItemIndex, 'placeholderIndex:', this.placeholderIndex);
     for (let i = 0; i < dragItems.length; i++) {
-      // if (dragItems[i].el == dragItem.el) continue;
       let offsetX = 0;
       let offsetY = 0;
       let dir = checkShiftItem({
@@ -206,10 +198,17 @@ export class NgxDragPlaceholderService {
         deltaY += plcHeight;
       }
 
-      
       const placeholderTransform = `translate(${deltaX}px, ${deltaY}px)`;
       this._renderer.setStyle(this.placeholder, 'transform', placeholderTransform);
     }
+    this.currentIndex = this.overItemIndex;
+    if (this.placeholderIndex < this.overItemIndex && isAfter) {
+      this.currentIndex--;
+    } else if (this.placeholderIndex > this.overItemIndex && !isAfter) {
+      this.currentIndex++;
+    }
+
+    console.log('this.currentIndex', this.currentIndex);
   }
 
   /*------------------------------------when in place codes... ----------------------------------------------------*/
