@@ -6,8 +6,6 @@
     "start": "ng serve --open --port=8545",
     "build": "ng build --project=demo",
     "buildDemo": "ng build demo --base-href /ngx-drag-drop-kit/  --output-path ./docs",
-
-
     "link:lib": "cd dist/ngx-drag-drop-kit && npm link",
     "link:app": "cd projects/sandbox && npm link ngx-drag-drop-kit",
     "link:all": "npm run link:lib && npm run link:app",
@@ -24,7 +22,9 @@
     "publish:all": "npm run lib:all && npm publish dist/ngx-drag-drop-kit",
     "publish:local": "npm run lib:all && npm publish dist/ngx-drag-drop-kit --registry http://localhost:4873",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "ng test",
+    "test-headless": "ng test --no-watch --no-progress --browsers=ChromeHeadless --project=ngx-drag-drop-kit",
+    "test-covrage": "ng test --no-watch --code-coverage  --no-progress --browsers=ChromeHeadless --project=ngx-drag-drop-kit"
   },
   "private": true,
   "dependencies": {

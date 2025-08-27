@@ -8,7 +8,6 @@ export interface DragContext {
   isSelfList: boolean;
 }
 
-// testCase({ index: 0, isAfter: false, isSelfList: false, overItemIndex: 4, placeholderIndex: 1 }, 'none');
 export function checkShiftItem(ctx: DragContext): DragDecision {
   const { index, placeholderIndex, overItemIndex, isAfter, isSelfList } = ctx;
 

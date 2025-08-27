@@ -20,12 +20,12 @@
   display: block;
   background: white;
   border-radius: 4px;
-  overflow: auto;
   max-height: 1000px;
   min-height: 50vh;
   .inner {
     background-color: #cccccc30;
     height: calc(100% - 45px);
+    overflow: auto;
   }
 }
 
