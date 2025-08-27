@@ -194,7 +194,7 @@ export class NgxDragPlaceholderService {
       ) {
         deltaY -= plcHeight;
       }
-      if (this.placeholderIndex > this.overItemIndex && !isAfter && isSelfList) {
+      if (this.placeholderIndex >= this.overItemIndex && !isAfter && isSelfList) {
         deltaY += plcHeight;
       }
 
