@@ -79,9 +79,6 @@ export class NgxDraggableDirective implements OnDestroy, AfterViewInit {
   public dropList?: NgxDropListDirective;
   public domRect!: DOMRect;
 
-  /** cached transform X/Y*/
-  public transformedXY: IPosition = { x: 0, y: 0 };
-
   constructor(
     elRef: ElementRef,
     private _renderer: Renderer2,
@@ -101,8 +98,15 @@ export class NgxDraggableDirective implements OnDestroy, AfterViewInit {
 
   updateDomRect() {
     this.domRect = this.el.getBoundingClientRect();
-    this.transformedXY = { x: 0, y: 0 };
   }
+  adjustDomRect(x: number, y: number) {
+    // this.domRect.top += top;
+    // this.domRect.bottom = this.domRect.top + this.domRect.height;
+    // this.domRect.left += left;
+    // this.domRect.right = this.domRect.left + this.domRect.width;
+    this.domRect = new DOMRect(this.domRect.x + x, this.domRect.y + y, this.domRect.width, this.domRect.height);
+  }
+
   findFirstParentDragRootElement() {
     if (this.dragRootElement) {
       let parentRoot: HTMLElement | null = ElementHelper.findParentBySelector(this.el, this.dragRootElement);

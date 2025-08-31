@@ -6,7 +6,5 @@ export interface IUpdatePlaceholder {
   destinationDropList?: NgxDropListDirective;
   isAfter: boolean;
   dragOverItem?: NgxDraggableDirective;
-  currentDragRec: DOMRect;
-  overItemRec?: DOMRect;
   state: 'show' | 'hidden' | 'update';
 }
