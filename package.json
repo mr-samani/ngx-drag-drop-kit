@@ -20,6 +20,7 @@
     "pack:lib": "cd dist/ngx-drag-drop-kit && npm pack",
     "lib:all": "npm run build:all && npm run pack:lib",
     "publish:all": "npm run lib:all && npm publish dist/ngx-drag-drop-kit",
+    "publish:beta": "npm run lib:all && npm publish --tag beta dist/ngx-drag-drop-kit",
     "publish:local": "npm run lib:all && npm publish dist/ngx-drag-drop-kit --registry http://localhost:4873",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",

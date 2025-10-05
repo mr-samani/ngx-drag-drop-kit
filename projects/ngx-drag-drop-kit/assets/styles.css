@@ -83,11 +83,13 @@
 
 .ngx-drag-placeholder {
   display: none;
-  background: rgba(204, 204, 204, 0.4509803922);
-  border: dotted 2px #999;
+  background: rgba(146, 221, 255, 0.6588235294);
+  outline: dotted 2px #999;
+  outline-offset: -4px;
   min-height: 30px;
   pointer-events: none;
   max-width: 100%;
+  z-index: 9999;
 }
 
 /*# sourceMappingURL=styles.css.map */

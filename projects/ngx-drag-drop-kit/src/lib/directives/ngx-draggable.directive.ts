@@ -4,6 +4,7 @@ import {
   ElementRef,
   EventEmitter,
   HostListener,
+  inject,
   InjectionToken,
   Input,
   OnDestroy,
@@ -21,6 +22,7 @@ import { AutoScroll } from '../services/auto-scroll.service';
 import { IPosition } from '../../interfaces/IPosition';
 import { ElementHelper } from '../../utils/element.helper';
 import { NgxDragRegisterService } from '../services/ngx-drag-register.service';
+import { DOCUMENT } from '@angular/common';
 export const NGX_DROP_LIST = new InjectionToken<NgxDropListDirective>('NgxDropList');
 
 @Directive({
@@ -79,14 +81,15 @@ export class NgxDraggableDirective implements OnDestroy, AfterViewInit {
   public dropList?: NgxDropListDirective;
   public domRect!: DOMRect;
 
-  constructor(
-    elRef: ElementRef,
-    private _renderer: Renderer2,
-    public _dragService: NgxDragDropService,
-    private _autoScroll: AutoScroll,
-    private dragRegister: NgxDragRegisterService
-  ) {
-    this.el = elRef.nativeElement;
+  private readonly _renderer = inject(Renderer2);
+  private readonly _dragService = inject(NgxDragDropService);
+  private readonly _autoScroll = inject(AutoScroll);
+  private readonly dragRegister = inject(NgxDragRegisterService);
+  private readonly elRef = inject(ElementRef);
+  private readonly doc = inject(DOCUMENT);
+
+  constructor() {
+    this.el = this.elRef.nativeElement;
     this.initDragHandler();
   }
 
@@ -160,8 +163,8 @@ export class NgxDraggableDirective implements OnDestroy, AfterViewInit {
     this.init();
     this.subscriptions = this.subscriptions.filter((x) => !x.closed);
     this.subscriptions.push(
-      fromEvent<MouseEvent>(document, 'mousemove').subscribe((ev) => this.onMouseMove(ev)),
-      fromEvent<TouchEvent>(document, 'touchmove').subscribe((ev) => this.onMouseMove(ev))
+      fromEvent<MouseEvent>(this.doc, 'mousemove').subscribe((ev) => this.onMouseMove(ev)),
+      fromEvent<TouchEvent>(this.doc, 'touchmove').subscribe((ev) => this.onMouseMove(ev))
     );
   }
 

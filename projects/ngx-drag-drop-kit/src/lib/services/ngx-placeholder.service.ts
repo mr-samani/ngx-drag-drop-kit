@@ -37,7 +37,7 @@ export class NgxDragPlaceholderService {
             prev.destinationDropList == curr.destinationDropList;
           // console.log('mustBeCancel', mustBeCancel);
           return mustBeCancel;
-        }),
+        })
         // throttleTime(50)
         //debounceTime(300)
       )
@@ -185,14 +185,20 @@ export class NgxDragPlaceholderService {
       let deltaY = 0;
       const bx = dragOverItem.domRect.x;
       const by = dragOverItem.domRect.y;
-      deltaX = Math.abs(bx - ax);
-      deltaY = Math.abs(by - ay);
-
-      let offsetPY = this.overItemIndex < this.placeholderIndex ? plcHeight : 0;
-      let offsetPX = this.overItemIndex < this.placeholderIndex ? plcWidth : 0;
+      deltaX = bx - ax;
+      deltaY = by - ay;
+      let offsetPY = 0;
+      let offsetPX = 0;
+      if (isAfter && this.overItemIndex <= this.placeholderIndex) {
+        offsetPY = plcHeight;
+        offsetPX = plcWidth;
+      } else if (!isAfter && this.overItemIndex < this.placeholderIndex) {
+        offsetPY = plcHeight;
+        offsetPX = plcWidth;
+      }
 
       if (isVertical) {
-        if (isAfter) deltaY = this.plcT.y - deltaY - offsetPY;
+        if (isAfter) deltaY = this.plcT.y + deltaY - offsetPY;
         else deltaY = this.plcT.y + dragOverItem.domRect.height + deltaY;
       } else {
         if (isAfter) deltaX = this.plcT.x - deltaX - offsetPX;

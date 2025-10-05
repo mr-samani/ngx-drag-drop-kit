@@ -56,7 +56,7 @@ export class NgxDragDropService {
     }
     this.updateAllDragItemsRect();
     this.isDragging = true;
-    this.activeDropList.isDragging = true;
+    this.activeDropList.dragging = true;
     const currDomRect = drag.el.getBoundingClientRect();
     this._activeDragInstances.push(drag);
     let previousIndex = this.getDragItemIndexInDropList(drag);
@@ -158,7 +158,7 @@ export class NgxDragDropService {
   }
   stopDrag(drag: NgxDraggableDirective) {
     this.isDragging = false;
-    if (drag.dropList) drag.dropList.isDragging = false;
+    if (drag.dropList) drag.dropList.dragging = false;
     // this.dragRegister.dargItems.forEach((d) => {
     //   this._renderer.setStyle(d.el, 'transition-property', 'none');
     //   this._renderer.removeStyle(d.el, 'transform');
@@ -173,7 +173,7 @@ export class NgxDragDropService {
         dragOverItem: this.dragOverItem,
         state: 'hidden',
       });
-      drag.el.style.display = this.currentDragPreviousDisplay;
+      // drag.el.style.display = this.currentDragPreviousDisplay;
       this.dragElementInBody?.remove();
       this._activeDragInstances?.forEach((el) => {
         this._renderer.removeStyle(el.el, 'transform');

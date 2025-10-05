@@ -5,6 +5,7 @@ import {
   ElementRef,
   EventEmitter,
   HostListener,
+  inject,
   Inject,
   Input,
   OnInit,
@@ -23,7 +24,6 @@ import { getRelativePosition } from '../../utils/get-position';
     '[style.user-select]': 'resizing ? "none" : ""',
     '[style.z-index]': 'resizing ? "999999" : ""',
     '[class.resizing]': 'resizing',
-    class: 'ngx-resizable',
   },
   standalone: true,
   exportAs: 'NgxResizable',
@@ -54,12 +54,12 @@ export class NgxResizableDirective implements AfterViewInit {
 
   private isAbsoluteOrFixed: boolean = false;
 
-  constructor(
-    elRef: ElementRef<HTMLElement>,
-    private renderer: Renderer2,
-    @Inject(DOCUMENT) private document: Document
-  ) {
-    this.el = elRef.nativeElement;
+  private readonly elRef = inject(ElementRef<HTMLElement>);
+  private readonly renderer = inject(Renderer2);
+  private readonly doc = inject(DOCUMENT);
+
+  constructor() {
+    this.el = this.elRef.nativeElement;
   }
 
   ngAfterViewInit(): void {
@@ -70,6 +70,7 @@ export class NgxResizableDirective implements AfterViewInit {
       this.renderer.setStyle(this.el, 'position', 'relative');
     }
     this.isRtl = selfStyle.direction === 'rtl' || this.el.closest('[dir=rtl]') !== null;
+    this.el.classList.add('ngx-resizable');
 
     this.addCornerDiv();
     this.init();
@@ -123,7 +124,7 @@ export class NgxResizableDirective implements AfterViewInit {
 
   private addCornerDiv() {
     for (const corner of this.corners) {
-      const child = this.document.createElement('div');
+      const child = this.doc.createElement('div');
       child.classList.add('ngx-corner-resize', corner);
       const self: any = this;
       child.addEventListener('mousedown', ($event) => {

@@ -6,23 +6,24 @@ import {
   ElementRef,
   EmbeddedViewRef,
   EventEmitter,
+  inject,
   Input,
   OnDestroy,
   OnInit,
   Output,
   Renderer2,
+  RendererStyleFlags2,
 } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { IDropEvent } from '../../interfaces/IDropEvent';
 import { NgxPlaceholderDirective } from './ngx-place-holder.directive';
 import { NgxDragRegisterService } from '../services/ngx-drag-register.service';
 import { NgxDraggableDirective } from './ngx-draggable.directive';
+import { DOCUMENT } from '@angular/common';
 @Directive({
   selector: '[ngxDropList]',
   host: {
     '[style.position]': '"relative"',
-    '[style.scroll-snap-type]': 'isDragging ? "none": "" ',
-    '[style.user-select]': 'isDragging ? "none" : ""',
   },
   standalone: true,
   exportAs: 'NgxDropList',
@@ -45,7 +46,20 @@ export class NgxDropListDirective<T = any> implements OnInit, AfterViewInit, OnD
 
   @Output() drop = new EventEmitter<IDropEvent>();
   el: HTMLElement;
-  isDragging = false;
+  _dragging: boolean = false;
+  set dragging(val: boolean) {
+    this._dragging = val == true;
+    if (this._dragging) {
+      this.renderer.setStyle(this.el, 'scroll-snap-type', 'none', RendererStyleFlags2.Important);
+      this.renderer.setStyle(this.el, 'user-select', this.dragging ? 'none' : '');
+    } else {
+      this.renderer.removeStyle(this.el, 'scroll-snap-type');
+      this.renderer.removeStyle(this.el, 'user-select');
+    }
+  }
+  get dragging() {
+    return this._dragging;
+  }
   isFlexWrap = false;
   initCursor = '';
   isRtl = false;
@@ -57,13 +71,13 @@ export class NgxDropListDirective<T = any> implements OnInit, AfterViewInit, OnD
   dragItems: NgxDraggableDirective[] = [];
   public domRect!: DOMRect;
 
-  constructor(
-    private dragRegister: NgxDragRegisterService,
-    elRef: ElementRef<HTMLElement>,
-    private appRef: ApplicationRef,
-    private renderer: Renderer2
-  ) {
-    this.el = elRef.nativeElement;
+  private readonly doc = inject(DOCUMENT);
+  private readonly dragRegister = inject(NgxDragRegisterService);
+  private readonly elRef = inject(ElementRef);
+  private readonly appRef = inject(ApplicationRef);
+  private readonly renderer = inject(Renderer2);
+  constructor() {
+    this.el = this.elRef.nativeElement;
     this.initCursor = this.el.style.cursor;
   }
 
