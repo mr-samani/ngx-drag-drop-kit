@@ -4,11 +4,9 @@ import {
   Directive,
   ElementRef,
   EventEmitter,
-  HostListener,
   inject,
-  Inject,
   Input,
-  OnInit,
+  OnDestroy,
   Output,
   Renderer2,
 } from '@angular/core';
@@ -16,6 +14,7 @@ import { Corner } from '../../utils/corner-type';
 import { checkBoundX, checkBoundY } from '../../utils/check-boundary';
 import { IResizableOutput } from '../../interfaces/IResizableOutput';
 import { getRelativePosition } from '../../utils/get-position';
+import { fromEvent, Subscription } from 'rxjs';
 
 @Directive({
   selector: '[ngxResizable]',
@@ -28,7 +27,7 @@ import { getRelativePosition } from '../../utils/get-position';
   standalone: true,
   exportAs: 'NgxResizable',
 })
-export class NgxResizableDirective implements AfterViewInit {
+export class NgxResizableDirective implements AfterViewInit, OnDestroy {
   private boundaryDomRect?: DOMRect;
   @Input() boundary?: HTMLElement;
   @Input() minWidth = 20;
@@ -53,6 +52,7 @@ export class NgxResizableDirective implements AfterViewInit {
   isRtl: boolean = false;
 
   private isAbsoluteOrFixed: boolean = false;
+  private subscriptions: Subscription[] = [];
 
   private readonly elRef = inject(ElementRef<HTMLElement>);
   private readonly renderer = inject(Renderer2);
@@ -60,6 +60,7 @@ export class NgxResizableDirective implements AfterViewInit {
 
   constructor() {
     this.el = this.elRef.nativeElement;
+    this.initHandler();
   }
 
   ngAfterViewInit(): void {
@@ -76,6 +77,10 @@ export class NgxResizableDirective implements AfterViewInit {
     this.init();
   }
 
+  ngOnDestroy() {
+    this.subscriptions.forEach((sub) => sub.unsubscribe());
+  }
+
   private getRealPosition() {
     const rect = this.el.getBoundingClientRect();
     const parentRect = this.el.offsetParent?.getBoundingClientRect() ?? { left: 0, top: 0 };
@@ -87,7 +92,16 @@ export class NgxResizableDirective implements AfterViewInit {
     };
   }
 
-  @HostListener('document:mousemove', ['$event'])
+  initHandler() {
+    this.subscriptions.push(
+      fromEvent<MouseEvent>(this.doc, 'mousemove').subscribe((ev) => this.onCornerMouseMove(ev)),
+      fromEvent<TouchEvent>(this.doc, 'touchmove').subscribe((ev) => this.onCornerTouchMove(ev)),
+
+      fromEvent<MouseEvent>(window, 'mouseup').subscribe((ev) => this.onCornerRelease(ev)),
+      fromEvent<TouchEvent>(window, 'touchend').subscribe((ev) => this.onCornerRelease(ev))
+    );
+  }
+
   private onCornerMouseMove(event: MouseEvent) {
     if (!this.resizing) return;
     let offsetX = event.clientX - this.px;
@@ -95,7 +109,6 @@ export class NgxResizableDirective implements AfterViewInit {
     this.onCornerMove(offsetX, offsetY, event.clientX, event.clientY);
   }
 
-  @HostListener('document:touchmove', ['$event'])
   private onCornerTouchMove(event: TouchEvent) {
     if (!this.resizing) return;
     let offsetX = event.touches[0].clientX - this.px;
@@ -105,9 +118,7 @@ export class NgxResizableDirective implements AfterViewInit {
     this.onCornerMove(offsetX, offsetY, clientX, clientY);
   }
 
-  @HostListener('window:mouseup', ['$event'])
-  @HostListener('window:touchend', ['$event'])
-  private onCornerRelease() {
+  private onCornerRelease(event: MouseEvent | TouchEvent) {
     if (this.resizing) {
       const realPos = this.getRealPosition();
       this.resizeEnd.emit({

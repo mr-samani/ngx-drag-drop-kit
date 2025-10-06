@@ -1,0 +1,6 @@
+<div ngxDropList class="example-list" (drop)="drop($event, items)" id="baseList" #baseList [connectedTo]="[baseList]">
+  @for (item of items; track item;let i = $index) {
+  <div class="box" [id]="item" ngxDraggable>{{ item }}</div>
+  }
+</div>
+<pre>{{ items | json }}</pre>

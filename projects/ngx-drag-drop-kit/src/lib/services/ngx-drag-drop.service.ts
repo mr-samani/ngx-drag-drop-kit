@@ -135,7 +135,7 @@ export class NgxDragDropService {
         isAfter = position.y > midpoint;
       }
     }
-    console.log('after', isAfter, this.dragOverItem?.el?.id, finded.dropList?.el?.id);
+    // console.log('after', isAfter, this.dragOverItem?.el?.id, finded.dropList?.el?.id);
 
     if (this.activeDropList != finded.dropList) {
       this.activeDropList = finded.dropList;
@@ -163,6 +163,7 @@ export class NgxDragDropService {
     //   this._renderer.setStyle(d.el, 'transition-property', 'none');
     //   this._renderer.removeStyle(d.el, 'transform');
     // });
+    
     const currentIndex = this.placeholderService.currentIndex;
     const index = this._activeDragInstances.indexOf(drag);
     if (index > -1) {
@@ -173,10 +174,10 @@ export class NgxDragDropService {
         dragOverItem: this.dragOverItem,
         state: 'hidden',
       });
-      // drag.el.style.display = this.currentDragPreviousDisplay;
       this.dragElementInBody?.remove();
       this._activeDragInstances?.forEach((el) => {
         this._renderer.removeStyle(el.el, 'transform');
+        this._renderer.removeStyle(el.el, 'display');
       });
       this._activeDragInstances.splice(index, 1);
 
@@ -235,9 +236,9 @@ export class NgxDragDropService {
       result = { dropList, item: undefined };
     }
     result = { dropList: dragItem ? dragItem.dropList : dropList, item: dragItem };
-    if (!result.dropList) {
-      console.log(result, elements, document.elementFromPoint(Math.floor(pointer.x), Math.floor(pointer.y)));
-    }
+    // if (!result.dropList) {
+    //   console.log(result, elements, document.elementFromPoint(Math.floor(pointer.x), Math.floor(pointer.y)));
+    // }
     return result;
   }
 

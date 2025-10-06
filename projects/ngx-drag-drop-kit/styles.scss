@@ -81,9 +81,12 @@
   }
 }
 
-.ngx-draggable:not(.ngx-drag-placeholder) {
-  transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+.ngx-drop-list.dragging {
+  .ngx-draggable:not(.ngx-drag-placeholder) {
+    transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+  }
 }
+
 .ngx-drag-placeholder {
   display: none;
   background: #92ddffa8;

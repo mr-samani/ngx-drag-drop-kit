@@ -14,7 +14,6 @@ import {
   ViewChild,
   ViewContainerRef,
   ViewEncapsulation,
-  viewChild,
 } from '@angular/core';
 import { IGridLayoutOptions } from '../options/options';
 import { DEFAULT_GRID_LAYOUT_CONFIG, GridLayoutService } from '../services/grid-layout.service';

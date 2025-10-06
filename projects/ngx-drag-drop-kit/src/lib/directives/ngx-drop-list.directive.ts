@@ -52,9 +52,11 @@ export class NgxDropListDirective<T = any> implements OnInit, AfterViewInit, OnD
     if (this._dragging) {
       this.renderer.setStyle(this.el, 'scroll-snap-type', 'none', RendererStyleFlags2.Important);
       this.renderer.setStyle(this.el, 'user-select', this.dragging ? 'none' : '');
+      this.renderer.addClass(this.el, 'dragging');
     } else {
       this.renderer.removeStyle(this.el, 'scroll-snap-type');
       this.renderer.removeStyle(this.el, 'user-select');
+      this.renderer.removeClass(this.el, 'dragging');
     }
   }
   get dragging() {
@@ -79,6 +81,7 @@ export class NgxDropListDirective<T = any> implements OnInit, AfterViewInit, OnD
   constructor() {
     this.el = this.elRef.nativeElement;
     this.initCursor = this.el.style.cursor;
+    this.el.classList.add('ngx-drop-list');
   }
 
   ngOnInit(): void {

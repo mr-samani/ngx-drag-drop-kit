@@ -8,10 +8,11 @@ import { NestedTreeSortComponent } from './nested-tree-sort/nested-tree-sort.com
 import { GridLayoutComponent } from './grid-layout/grid-layout.component';
 import { TestComponent } from './test/test.component';
 import { ResizableLayoutComponent } from './resizable-layout/resizable-layout.component';
+import { DynamicHtmlComponent } from './dynamic-html/dynamic-html.component';
 
 export const routes: Routes = [
   { path: 'test', component: TestComponent },
-  { path: '', redirectTo: 'grid-layout', pathMatch: 'full' },
+  { path: '', redirectTo: 'dynamic-html', pathMatch: 'full' },
   //{ path: '', redirectTo: 'drag-drop', pathMatch: 'full' },
   { path: 'drag-resize', component: DragResizeComponent },
   { path: 'sort-list', component: SortListComponent },
@@ -22,4 +23,6 @@ export const routes: Routes = [
 
   { path: 'grid-layout', component: GridLayoutComponent },
   { path: 'resizable-layout', component: ResizableLayoutComponent },
+
+  { path: 'dynamic-html', component: DynamicHtmlComponent },
 ];

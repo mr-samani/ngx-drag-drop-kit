@@ -3,7 +3,6 @@ import {
   Directive,
   ElementRef,
   EventEmitter,
-  HostListener,
   inject,
   InjectionToken,
   Input,
@@ -139,12 +138,13 @@ export class NgxDraggableDirective implements OnDestroy, AfterViewInit {
   initDragHandler() {
     this.subscriptions.push(
       fromEvent<MouseEvent>(this.el, 'mousedown').subscribe((ev) => this.onMouseDown(ev)),
-      fromEvent<TouchEvent>(this.el, 'touchstart').subscribe((ev) => this.onMouseDown(ev))
+      fromEvent<TouchEvent>(this.el, 'touchstart').subscribe((ev) => this.onMouseDown(ev)),
+
+      fromEvent<PointerEvent>(window, 'pointerup', { capture: true }).subscribe((ev) => this.onEndDrag(ev)),
+      fromEvent<PointerEvent>(window, 'pointercancel', { capture: true }).subscribe((ev) => this.onEndDrag(ev))
     );
   }
 
-  @HostListener('window:mouseup', ['$event'])
-  @HostListener('window:touchend', ['$event'])
   onEndDrag(ev: MouseEvent | TouchEvent) {
     if (this.dragging) {
       this._dragService.stopDrag(this);

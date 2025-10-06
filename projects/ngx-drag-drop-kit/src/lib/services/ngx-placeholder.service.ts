@@ -97,8 +97,8 @@ export class NgxDragPlaceholderService {
           this.overItemIndex = destinationDropList.dragItems.length;
         }
       }
+      this.currentIndex = this.placeholderIndex;
     }
-    this.currentIndex = this.placeholderIndex;
     this.isShown = true;
   }
 
@@ -205,7 +205,7 @@ export class NgxDragPlaceholderService {
         else deltaX = this.plcT.x + dragOverItem.domRect.width + deltaX;
       }
       this.plcT = { x: deltaX, y: deltaY };
-      console.log('plc', this.placeholderIndex, 'oi', this.overItemIndex, 'after', isAfter, 'self', isSelfList);
+      // console.log('plc', this.placeholderIndex, 'oi', this.overItemIndex, 'after', isAfter, 'self', isSelfList);
       const placeholderTransform = `translate(${deltaX}px, ${deltaY}px)`;
       this._renderer.setStyle(this.placeholder, 'transform', placeholderTransform);
     }
@@ -217,7 +217,7 @@ export class NgxDragPlaceholderService {
       this.currentIndex++;
     }
 
-    console.log('this.currentIndex', this.currentIndex);
+    // console.log('this.currentIndex', this.currentIndex);
   }
 
   /*------------------------------------when in place codes... ----------------------------------------------------*/
