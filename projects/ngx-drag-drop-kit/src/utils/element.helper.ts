@@ -42,10 +42,3 @@ export function getFirstLevelDraggables(container: HTMLElement): HTMLElement[] {
 
   return firstLevel;
 }
-
-export function getDragItemIndex(dragItem: HTMLElement, dropList?: NgxDropListDirective): number {
-  if (!dropList) return -1;
-  const dragItems: HTMLElement[] = getFirstLevelDraggables(dropList.el);
-  const index = dragItem ? dragItems.findIndex((x) => x === dragItem) : -1;
-  return index;
-}

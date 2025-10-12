@@ -13,8 +13,8 @@ export class DynamicHtmlComponent implements OnInit {
   items: string[] = [];
   constructor() {
     this.items = [];
-    for (let i = 1; i <= 5; i++) {
-      this.items.push('Episode ' + i);
+    for (let i = 1; i <= 3; i++) {
+      this.items.push('report element ' + i);
     }
   }
 

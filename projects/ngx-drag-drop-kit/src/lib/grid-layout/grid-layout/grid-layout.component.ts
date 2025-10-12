@@ -20,7 +20,7 @@ import { DEFAULT_GRID_LAYOUT_CONFIG, GridLayoutService } from '../services/grid-
 import { GridItemComponent } from '../grid-item/grid-item.component';
 import { mergeDeep } from '../../../utils/deep-merge';
 import { getFirstCollision } from '../utils/grid.utils';
-import { LayoutOutput } from "../options/layout-output";
+import { LayoutOutput } from '../options/layout-output';
 
 @Component({
   selector: 'grid-layout',
@@ -156,8 +156,11 @@ export class GridLayoutComponent implements OnInit, AfterViewInit {
     return hasDuplicated;
   }
 
-  // TODO:return random string strong
   private generateRandomId() {
-    return 'RandomId' + Math.round(Math.random() * 9999);
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+      const r = (Math.random() * 16) | 0,
+        v = c === 'x' ? r : (r & 0x3) | 0x8;
+      return v.toString(16);
+    });
   }
 }

@@ -49,4 +49,13 @@ export class NgxDragRegisterService {
     const dropListDirective = this.dropList.get(container);
     return dropListDirective ?? null;
   }
+
+
+
+  getDragItemIndex(drag: NgxDraggableDirective): number {
+    const dropList = drag.dropList;
+    if (!dropList) return -1;
+    return dropList.dragItems.indexOf(drag);
+  }
+
 }
