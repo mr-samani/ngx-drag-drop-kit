@@ -181,8 +181,6 @@ export class NgxDragDropService {
     this.previousDragIndex = 0;
   }
 
-
-
   private sortDragItems() {
     for (const dropList of this.dragRegister.dropListItems) {
       dropList.dragItems = dropList.dragItems.sort((a, b) => {
@@ -201,8 +199,9 @@ export class NgxDragDropService {
     const dropList = dropElm ? this.dragRegister.dropList.get(dropElm) : undefined;
     if (dropList && dragItem?.dropList != dropList) {
       result = { dropList, item: undefined };
+    } else {
+      result = { dropList: dragItem ? dragItem.dropList : dropList, item: dragItem };
     }
-    result = { dropList: dragItem ? dragItem.dropList : dropList, item: dragItem };
     // if (!result.dropList) {
     //   console.log(result, elements, document.elementFromPoint(Math.floor(pointer.x), Math.floor(pointer.y)));
     // }
