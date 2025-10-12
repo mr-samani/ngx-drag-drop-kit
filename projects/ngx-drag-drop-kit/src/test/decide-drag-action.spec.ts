@@ -1,4 +1,4 @@
-import { checkShiftItem, DragContext, DragDecision } from '../utils/check-shift-item';
+import { DragContext, DragDecision, checkShiftItem } from '../utils/check-shift-item';
 
 describe('checkShiftItem=> Sort List - Move down', () => {
   function testCase(ctx: DragContext, expected: DragDecision) {
@@ -233,4 +233,5 @@ describe('checkShiftItem=> Kanban view - Insert on middle and move up', () => {
   testCase({ index: 3, isAfter: true, isSelfList: false, overItemIndex: 0, placeholderIndex: 2 }, 'none');
   testCase({ index: 4, isAfter: true, isSelfList: false, overItemIndex: 0, placeholderIndex: 2 }, 'none');
   testCase({ index: 5, isAfter: true, isSelfList: false, overItemIndex: 0, placeholderIndex: 2 }, 'none');
+
 });

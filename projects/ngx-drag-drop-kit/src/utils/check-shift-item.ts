@@ -2,35 +2,48 @@ export type DragDecision = 'none' | 'behind' | 'ahead';
 
 export interface DragContext {
   index: number;
-  placeholderIndex: number;
-  overItemIndex: number;
   isAfter: boolean;
   isSelfList: boolean;
+  overItemIndex: number;
+  placeholderIndex: number;
 }
 
 export function checkShiftItem(ctx: DragContext): DragDecision {
-  const { index, placeholderIndex, overItemIndex, isAfter, isSelfList } = ctx;
+  const { index, isAfter, isSelfList, overItemIndex, placeholderIndex } = ctx;
 
-  if (overItemIndex === placeholderIndex) {
-    return 'none';
-  }
-
-  const target = isAfter ? overItemIndex : overItemIndex + 1;
-
-  if (target === placeholderIndex) {
-    return 'none';
-  }
-
-  if (target > placeholderIndex) {
-    const start = isSelfList ? placeholderIndex + 1 : placeholderIndex;
-    if (start <= index && index < target) {
-      return 'behind';
+  // Same list logic (sorting within the same list)
+  if (isSelfList) {
+    if (!isAfter) {
+      // Moving down: items AFTER placeholder up to and including overItem should move behind
+      if (index > placeholderIndex && index <= overItemIndex) {
+        return 'behind';
+      }
+      return 'none';
+    } else {
+      // Moving up: items FROM overItem up to (but not including) placeholder should move ahead
+      if (index >= overItemIndex && index < placeholderIndex) {
+        return 'ahead';
+      }
+      return 'none';
     }
-  } else if (target < placeholderIndex) {
-    if (target <= index && index < placeholderIndex) {
-      return 'ahead';
+  } 
+  // Different list logic (Kanban - moving to another list)
+  else {
+    if (!isAfter) {
+      // Moving down in target list:
+      // Items FROM placeholder (INCLUSIVE) to overItem (INCLUSIVE) should move behind
+      // BUT only if overItem is actually AFTER placeholder (we've moved down)
+      if (overItemIndex > placeholderIndex && index >= placeholderIndex && index <= overItemIndex) {
+        return 'behind';
+      }
+      return 'none';
+    } else {
+      // Moving up in target list:
+      // Items FROM overItem (inclusive) to placeholder (exclusive) should move ahead
+      if (index >= overItemIndex && index < placeholderIndex) {
+        return 'ahead';
+      }
+      return 'none';
     }
   }
-
-  return 'none';
 }
