@@ -50,7 +50,7 @@ export class NgxDragDropService {
     }
     this.activeDropList = drag.dropList;
 
-    this.updateAllDragItemsRect();
+    this.dragRegister.updateAllDragItemsRect();
     this.sortDragItems();
 
     this.isDragging = true;
@@ -181,18 +181,7 @@ export class NgxDragDropService {
     this.previousDragIndex = 0;
   }
 
-  updateAllDragItemsRect() {
-    // console.time('initUpdateAllDragItemsRect');
-    for (const dropList of this.dragRegister.dropListItems) {
-      if (dropList.el.offsetParent === null) continue; // یعنی hidden هست
-      dropList.updateDomRect();
-      dropList.dragItems.forEach((item) => {
-        if (item.el.offsetParent === null) return; // hidden item
-        item.updateDomRect();
-      });
-    }
-    // console.timeEnd('initUpdateAllDragItemsRect');
-  }
+
 
   private sortDragItems() {
     for (const dropList of this.dragRegister.dropListItems) {
@@ -256,7 +245,7 @@ export class NgxDragDropService {
 
     this.rectUpdateSubject
       .pipe(throttleTime(16, undefined, { leading: true, trailing: true }))
-      .subscribe(() => this.updateAllDragItemsRect());
+      .subscribe(() => this.dragRegister.updateAllDragItemsRect());
   }
 
   /**

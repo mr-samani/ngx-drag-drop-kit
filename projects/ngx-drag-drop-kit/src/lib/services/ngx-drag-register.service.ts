@@ -58,4 +58,22 @@ export class NgxDragRegisterService {
     return dropList.dragItems.indexOf(drag);
   }
 
+
+
+
+    updateAllDragItemsRect() {
+      // console.time('initUpdateAllDragItemsRect');
+      for (const dropList of this.dropListItems) {
+        if (dropList.el.offsetParent === null) continue; // یعنی hidden هست
+        dropList.updateDomRect();
+        dropList.dragItems.forEach((item) => {
+          if (item.el.offsetParent === null) return; // hidden item
+          item.updateDomRect();
+        });
+      }
+      // console.timeEnd('initUpdateAllDragItemsRect');
+    }
+
+
+
 }

@@ -145,6 +145,30 @@ export class NgxDragPlaceholderService {
     const plcHeight = placeHolderRect?.height ?? 0;
     const plcWidth = placeHolderRect?.width ?? 0;
 
+    // //placeholder
+    if (dragOverItem && this.placeholder && placeHolderRect) {
+      const ax = placeHolderRect.x;
+      const ay = placeHolderRect.y;
+      let deltaX = 0;
+      let deltaY = 0;
+      const bx = dragOverItem.domRect.x;
+      const by = dragOverItem.domRect.y;
+      deltaX = bx - ax;
+      deltaY = by - ay;
+
+      if (isVertical) {
+        deltaY = this.plcT.y + deltaY;
+      } else {
+        if (isAfter) deltaX = this.plcT.x - deltaX;
+        else deltaX = this.plcT.x + dragOverItem.domRect.width + deltaX;
+      }
+      this.plcT = { x: deltaX, y: deltaY };
+      // console.log('plc', this.placeholderIndex, 'oi', this.overItemIndex, 'after', isAfter, 'self', isSelfList);
+      const placeholderTransform = `translate(${deltaX}px, ${deltaY}px)`;
+      this._renderer.setStyle(this.placeholder, 'transform', placeholderTransform);
+    }
+
+    // move other draggable items
     // console.log('overItemIndex:', this.overItemIndex, 'placeholderIndex:', this.placeholderIndex);
     for (let i = 0; i < dragItems.length; i++) {
       if (dragItems[i] == this.placeholder) continue;
@@ -173,44 +197,12 @@ export class NgxDragPlaceholderService {
           offsetX = -plcWidth * direction;
         }
       }
-      let drg = this.dragRegister.dargItems.get(dragItems[i]);
-      if (drg) drg.adjustDomRect(offsetX, offsetY);
+      // let drg = this.dragRegister.dargItems.get(dragItems[i]);
+      // if (drg) drg.adjustDomRect(offsetX, offsetY);
       this._renderer.setStyle(dragItems[i], 'transform', `translate(${offsetX}px, ${offsetY}px)`);
     }
-    dragOverItem.updateDomRect();
 
-    //placeholder
-    if (dragOverItem && this.placeholder && placeHolderRect) {
-      const ax = placeHolderRect.x;
-      const ay = placeHolderRect.y;
-      let deltaX = 0;
-      let deltaY = 0;
-      const bx = dragOverItem.domRect.x;
-      const by = dragOverItem.domRect.y;
-      deltaX = bx - ax;
-      deltaY = by - ay;
-      let offsetPY = 0;
-      let offsetPX = 0;
-      if (isAfter && this.overItemIndex <= this.placeholderIndex) {
-        offsetPY = plcHeight;
-        offsetPX = plcWidth;
-      } else if (!isAfter && this.overItemIndex < this.placeholderIndex) {
-        offsetPY = plcHeight;
-        offsetPX = plcWidth;
-      }
-
-      if (isVertical) {
-        if (isAfter) deltaY = this.plcT.y + deltaY - offsetPY;
-        else deltaY = this.plcT.y + dragOverItem.domRect.height + deltaY;
-      } else {
-        if (isAfter) deltaX = this.plcT.x - deltaX - offsetPX;
-        else deltaX = this.plcT.x + dragOverItem.domRect.width + deltaX;
-      }
-      this.plcT = { x: deltaX, y: deltaY };
-      // console.log('plc', this.placeholderIndex, 'oi', this.overItemIndex, 'after', isAfter, 'self', isSelfList);
-      const placeholderTransform = `translate(${deltaX}px, ${deltaY}px)`;
-      this._renderer.setStyle(this.placeholder, 'transform', placeholderTransform);
-    }
+    this.dragRegister.updateAllDragItemsRect();
 
     //TODO: check this
     this.currentIndex = this.overItemIndex;
