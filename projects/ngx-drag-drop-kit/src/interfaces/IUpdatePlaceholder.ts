@@ -3,7 +3,8 @@ import { IDropList } from './IDropList';
 
 export interface IUpdatePlaceholder {
   dragItem: IDragItem;
-  destinationDropList?: IDropList;
+  destinationDropList: IDropList;
+  sourceDropList: IDropList;
   /**
    * placeholder index
    */

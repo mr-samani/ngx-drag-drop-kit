@@ -96,7 +96,7 @@ export class NgxDragDropService {
   }
 
   dragMove(drag: NgxDraggableDirective, ev: MouseEvent | TouchEvent, transform: string) {
-    if (!this.dragElementInBody || !this.isDragging) {
+    if (!this.dragElementInBody || !this.isDragging || !this._activeDragInstances[0].dropList) {
       return;
     }
     this._renderer.setStyle(this.dragElementInBody, 'transform', transform);
@@ -135,6 +135,7 @@ export class NgxDragDropService {
     }
     this.placeholderService.updatePlaceholder$.next({
       dragItem: this._activeDragInstances[0],
+      sourceDropList: this._activeDragInstances[0].dropList,
       destinationDropList: this.activeDropList,
       newIndex: this._newIndex,
       previousIndex: this._previousDragIndex,

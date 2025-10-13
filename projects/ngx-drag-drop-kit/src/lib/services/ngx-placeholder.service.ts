@@ -118,10 +118,6 @@ export class NgxDragPlaceholderService {
     // === شناسایی placeholder و dragged element ===
     const draggedEl = input.dragItem.el;
 
-    // فرض: indices در newIndex/previousIndex مطابق ایندکس‌های items هستند.
-    // اگر mapping متفاوت است باید indexMap ساخته شود؛ اینجا فرض استاندارد گرفتیم.
-    // => items[i] متناظر با index i است.
-
     // محاسبه و اعمال transform برای هر آیتم
     items.forEach((el, idx) => {
       // اگر المنت، المنت درگ‌شده است (عنصری که مخفی شده) باید transform پاک شود
@@ -185,46 +181,9 @@ export class NgxDragPlaceholderService {
       el.style.transform = '';
     });
 
-    // (اختیاری) اضافه کردن transition کوتاه برای smoothness — اگر می‌خواهی animation بهتر باشه
-    // ولی گاهی در drag حس بدی میده؛ در صورت نیاز uncomment کن:
-    // items.forEach(el => el.style.transition = 'transform 120ms ease');
-
-    // پایان
   }
 
-  private applyTransformsOLD(input: IUpdatePlaceholder): void {
-    if (!this.state.element || !input.destinationDropList) {
-      return;
-    }
-    const isVertical = input.destinationDropList.direction === 'vertical';
-    const dragItems = this.getVisibleDragItems(input.destinationDropList.el);
-    const newIndex = input.newIndex;
-    const previousIndex = input.previousIndex;
-    if (newIndex === -1 || newIndex === previousIndex) {
-      return;
-    }
 
-    dragItems.forEach((element, index) => {
-      if (index === newIndex || index === previousIndex) {
-        element.style.transform = '';
-        return;
-      }
-      if (
-        (newIndex < previousIndex && index >= newIndex && index < previousIndex) ||
-        (newIndex > previousIndex && index <= newIndex && index > previousIndex)
-      ) {
-        // محاسبه جهت و مقدار transform
-        const itemHeight = this.state.rect?.height || 0;
-        const itemWidth = this.state.rect?.width || 0;
-        const transform = isVertical
-          ? `translateY(${newIndex < previousIndex ? itemHeight : -itemHeight}px)`
-          : `translateX(${newIndex < previousIndex ? itemWidth : -itemWidth}px)`;
-        element.style.transform = transform;
-      } else {
-        element.style.transform = '';
-      }
-    });
-  }
 
   private showFlexWrap(input: IUpdatePlaceholder): void {
     const { dragItem, destinationDropList } = input;
