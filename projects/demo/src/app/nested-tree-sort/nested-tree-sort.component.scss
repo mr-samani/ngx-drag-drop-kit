@@ -39,9 +39,47 @@
 }
 .custom-placeholder {
   border: 2px red solid;
+  &:after,
+  &::before {
+    position: absolute;
+    content: ' ';
+    border: 8px red solid;
+    top: -8px;
+  }
+  &:after {
+    border-bottom-color: transparent;
+    border-top-color: transparent;
+    border-left-color: transparent;
+    right: -2px;
+  }
+  &:before {
+    border-bottom-color: transparent;
+    border-top-color: transparent;
+    border-right-color: transparent;
+    left: -2px;
+  }
 }
 .custom-placeholder2 {
   border: 2px blue solid;
+  &:after,
+  &::before {
+    position: absolute;
+    content: ' ';
+    border: 8px blue solid;
+    top: -8px;
+  }
+  &:after {
+    border-bottom-color: transparent;
+    border-top-color: transparent;
+    border-left-color: transparent;
+    right: -2px;
+  }
+  &:before {
+    border-bottom-color: transparent;
+    border-top-color: transparent;
+    border-right-color: transparent;
+    left: -2px;
+  }
 }
 
 .ngxpointer {

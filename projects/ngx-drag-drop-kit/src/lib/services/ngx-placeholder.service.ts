@@ -1,6 +1,6 @@
 import { DOCUMENT } from '@angular/common';
 import { Injectable, Renderer2, RendererFactory2, Inject } from '@angular/core';
-import { Subject, distinctUntilChanged } from 'rxjs';
+import { Subject, distinctUntilChanged, throttle, throttleTime } from 'rxjs';
 import { IDragItem } from '../../interfaces/IDragItem';
 import { IDropList } from '../../interfaces/IDropList';
 import { DragDecision } from '../../utils/check-shift-item';
@@ -47,7 +47,8 @@ export class NgxDragPlaceholderService {
             prev.dragItem === curr.dragItem &&
             prev.destinationDropList === curr.destinationDropList &&
             prev.isAfter === curr.isAfter
-        )
+        ),
+        throttleTime(200)
       )
       .subscribe((input) => this.update(input));
   }
@@ -117,31 +118,31 @@ export class NgxDragPlaceholderService {
     const prevIdx = isSameList ? previousIndex : items.findIndex((item) => item === placeholderEl);
 
     items.forEach((el, idx) => {
-      this.renderer.setStyle(el, 'transition', 'transform 250ms cubic-bezier(0, 0, 0.2, 1)');
-
       // آیتمی که در حال درگ است نباید transform داشته باشد
       if (el === draggedEl) {
         this.renderer.setStyle(el, 'transform', '');
         return;
       }
 
-      // محاسبه اندازه واقعی آیتم
-      const itemSize = isVertical ? el.offsetHeight || plcSize : el.offsetWidth || plcSize;
-
       // Placeholder movement
       if (el === placeholderEl) {
         const delta = newIndex - prevIdx;
+        let sumOfItemSizes =
+          items.slice(prevIdx, newIndex + 2).reduce((acc, item) => {
+            return acc + (isVertical ? item.offsetHeight : item.offsetWidth);
+          }, 0) - plcSize;
         this.renderer.setStyle(
           el,
           'transform',
           delta === 0
             ? ''
             : isVertical
-            ? `translate3d(0, ${delta * itemSize}px, 0)`
-            : `translate3d(${delta * itemSize}px, 0, 0)`
+            ? `translate3d(0, ${sumOfItemSizes}px, 0)`
+            : `translate3d(${sumOfItemSizes}px, 0, 0)`
         );
         return;
       }
+      this.renderer.setStyle(el, 'transition', 'transform 250ms cubic-bezier(0, 0, 0.2, 1)');
 
       // تعیین محدوده آیتم‌هایی که باید جابجا شوند
       const checkIdx = newIndex >= prevIdx ? idx - 1 : idx;
@@ -155,14 +156,14 @@ export class NgxDragPlaceholderService {
           this.renderer.setStyle(
             el,
             'transform',
-            checkIdx >= newIndex && checkIdx < prevIdx ? this.getTransform(isVertical, +itemSize) : ''
+            checkIdx >= newIndex && checkIdx < prevIdx ? this.getTransform(isVertical, +plcSize) : ''
           );
         } else if (newIndex > prevIdx) {
           // حرکت به پایین
           this.renderer.setStyle(
             el,
             'transform',
-            checkIdx >= prevIdx && checkIdx <= newIndex ? this.getTransform(isVertical, -itemSize) : ''
+            checkIdx >= prevIdx && checkIdx <= newIndex ? this.getTransform(isVertical, -plcSize) : ''
           );
         } else {
           this.renderer.setStyle(el, 'transform', '');
@@ -178,14 +179,14 @@ export class NgxDragPlaceholderService {
         this.renderer.setStyle(
           el,
           'transform',
-          checkIdx >= newIndex && checkIdx < prevIdx ? this.getTransform(isVertical, +itemSize) : ''
+          checkIdx >= newIndex && checkIdx < prevIdx ? this.getTransform(isVertical, +plcSize) : ''
         );
       } else if (newIndex > prevIdx) {
         // حرکت به پایین
         this.renderer.setStyle(
           el,
           'transform',
-          checkIdx >= prevIdx && checkIdx < newIndex ? this.getTransform(isVertical, -itemSize) : ''
+          checkIdx >= prevIdx && checkIdx < newIndex ? this.getTransform(isVertical, -plcSize) : ''
         );
       } else {
         this.renderer.setStyle(el, 'transform', '');

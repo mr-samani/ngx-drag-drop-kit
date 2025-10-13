@@ -83,17 +83,27 @@ export class NgxDragRegisterService {
    * @returns droplist
    */
   _getDropListFromPointerPosition(pointer: { x: number; y: number }): IDropList | undefined {
-    for (let list of this.dropListArray) {
-      const listElement = list.el;
-      if (!listElement) continue;
+    let matchedLists: { list: IDropList; area: number }[] = [];
 
-      const rect = listElement.getBoundingClientRect();
+    for (const list of this.dropListArray) {
+      const el = list.el;
+      if (!el) continue;
 
-      if (pointer.x >= rect.left && pointer.x <= rect.right && pointer.y >= rect.top && pointer.y <= rect.bottom) {
-        return list;
+      const rect = el.getBoundingClientRect();
+      const inside =
+        pointer.x >= rect.left && pointer.x <= rect.right && pointer.y >= rect.top && pointer.y <= rect.bottom;
+
+      if (inside) {
+        const area = (rect.right - rect.left) * (rect.bottom - rect.top);
+        matchedLists.push({ list, area });
       }
     }
-    return undefined;
+
+    if (matchedLists.length === 0) return undefined;
+
+    // داخلی‌ترین = کوچک‌ترین مساحت (rect کوچکتر)
+    matchedLists.sort((a, b) => a.area - b.area);
+    return matchedLists[0].list;
   }
 
   /**
@@ -120,11 +130,10 @@ export class NgxDragRegisterService {
         // محاسبه center این آیتم
         const center = start + (end - start) / 2;
         index = i;
-        // تصمیم‌گیری: کدام طرف center است؟
         if (pointer[axis] < center) {
-          isAfter = false; // نصف بالایی/چپی → همین index
+          isAfter = false;
         } else {
-          isAfter = true; // نصف پایینی/راستی → index بعدی
+          isAfter = true;
         }
         break;
       }

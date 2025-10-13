@@ -115,14 +115,14 @@ export class NgxDragDropService {
       viewportPointer,
       isVertical
     );
-    console.log(
-      'newIndex:',
-      foundIndex.index,
-      'previousIndex:',
-      this._previousDragIndex,
-      'isAfter:',
-      foundIndex.isAfter
-    );
+    // console.log(
+    //   'newIndex:',
+    //   foundIndex.index,
+    //   'previousIndex:',
+    //   this._previousDragIndex,
+    //   'isAfter:',
+    //   foundIndex.isAfter
+    // );
     this._newIndex = foundIndex.index;
     if (this.activeDropList !== dropList) {
       this.activeDropList = dropList;
