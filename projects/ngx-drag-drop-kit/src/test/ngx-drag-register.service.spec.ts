@@ -30,6 +30,7 @@ describe('NgxDragRegisterService', () => {
       checkAllowedConnections: jasmine.createSpy('checkAllowedConnections').and.returnValue(true),
       disposePlaceholder: jasmine.createSpy('disposePlaceholder'),
       onDrop: jasmine.createSpy('onDrop'),
+      addPlaceholder: jasmine.createSpy('addPlaceholder').and.returnValue(document.createElement('div')),
     };
 
     mockDragItem = {
