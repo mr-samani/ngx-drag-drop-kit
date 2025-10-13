@@ -17,11 +17,12 @@ import { checkBoundX, checkBoundY } from '../../utils/check-boundary';
 import { NgxDropListDirective } from './ngx-drop-list.directive';
 import { NgxDragDropService } from '../services/ngx-drag-drop.service';
 import { getXYfromTransform } from '../../utils/get-transform';
-import { AutoScroll } from '../services/auto-scroll.service';
 import { IPosition } from '../../interfaces/IPosition';
 import { ElementHelper } from '../../utils/element.helper';
 import { NgxDragRegisterService } from '../services/ngx-drag-register.service';
 import { DOCUMENT } from '@angular/common';
+import { AutoScrollService } from '../services/auto-scroll.service';
+import { IDragItem } from '../../interfaces/IDragItem';
 export const NGX_DROP_LIST = new InjectionToken<NgxDropListDirective>('NgxDropList');
 
 @Directive({
@@ -29,7 +30,7 @@ export const NGX_DROP_LIST = new InjectionToken<NgxDropListDirective>('NgxDropLi
   standalone: true,
   exportAs: 'NgxDraggable',
 })
-export class NgxDraggableDirective implements OnDestroy, AfterViewInit {
+export class NgxDraggableDirective implements IDragItem, OnDestroy, AfterViewInit {
   private boundaryDomRect?: DOMRect;
   @Input() boundary?: HTMLElement;
 
@@ -45,13 +46,14 @@ export class NgxDraggableDirective implements OnDestroy, AfterViewInit {
     if (this._dragging) {
       this.previousTransitionProprety = this.el.style.transitionProperty;
       this._renderer.setStyle(this.el, 'transition-property', 'none', RendererStyleFlags2.Important);
-      this._renderer.setStyle(this.el, 'user-select', this.dragging ? 'none' : '');
-      this._renderer.setStyle(this.el, 'pointer-events', this.dragging ? 'none' : '');
-      this._renderer.setStyle(this.el, 'cursor', this.dragging ? 'grabbing' : '');
-      this._renderer.setStyle(this.el, 'z-index', this.dragging ? '999999' : '');
-      this._renderer.setStyle(this.el, 'touch-action', this.dragging ? 'none' : '');
-      this._renderer.setStyle(this.el, '-webkit-user-drag', this.dragging ? 'none' : '');
-      this._renderer.setStyle(this.el, '-webkit-tap-highlight-color', this.dragging ? 'transparent' : '');
+      this._renderer.setStyle(this.el, 'user-select', 'none');
+      this._renderer.setStyle(this.el, 'pointer-events', 'none');
+      this._renderer.setStyle(this.el, 'cursor', 'grabbing');
+      this._renderer.setStyle(this.el, 'z-index', '999999');
+      this._renderer.setStyle(this.el, 'touch-action', 'none');
+      this._renderer.setStyle(this.el, '-webkit-user-drag', 'none');
+      this._renderer.setStyle(this.el, '-webkit-tap-highlight-color', 'transparent');
+      this._renderer.setStyle(this.el, 'will-change', 'transform');
       this.el.classList.add('dragging');
     } else {
       if (this.previousTransitionProprety)
@@ -64,6 +66,7 @@ export class NgxDraggableDirective implements OnDestroy, AfterViewInit {
       this._renderer.removeStyle(this.el, 'touch-action');
       this._renderer.removeStyle(this.el, '-webkit-user-drag');
       this._renderer.removeStyle(this.el, '-webkit-tap-highlight-color');
+      this._renderer.removeStyle(this.el, 'will-change');
 
       this.el.classList.remove('dragging');
     }
@@ -82,7 +85,7 @@ export class NgxDraggableDirective implements OnDestroy, AfterViewInit {
 
   private readonly _renderer = inject(Renderer2);
   private readonly _dragService = inject(NgxDragDropService);
-  private readonly _autoScroll = inject(AutoScroll);
+  private readonly _autoScroll = inject(AutoScrollService);
   private readonly dragRegister = inject(NgxDragRegisterService);
   private readonly elRef = inject(ElementRef);
   private readonly doc = inject(DOCUMENT);
@@ -121,7 +124,7 @@ export class NgxDraggableDirective implements OnDestroy, AfterViewInit {
   }
   ngOnDestroy() {
     this.subscriptions.forEach((sub) => sub.unsubscribe());
-    this._autoScroll._stopScrolling();
+    this._autoScroll.stop();
     // this._autoScroll._stopScrollTimers.complete();
     this.dragRegister.removeDragItem(this);
   }
@@ -152,7 +155,7 @@ export class NgxDraggableDirective implements OnDestroy, AfterViewInit {
     }
     this.dragging = false;
     this.isTouched = false;
-    this._autoScroll._stopScrolling();
+    this._autoScroll.stop();
   }
 
   onMouseDown(ev: MouseEvent | TouchEvent) {

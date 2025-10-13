@@ -11,25 +11,10 @@ import { NgxDragDropKitModule } from '../../../../ngx-drag-drop-kit/src/public-a
   styleUrl: './sort-list.component.scss',
 })
 export class SortListComponent {
-  items: string[] = [];
-  items2 = [
-    'Episode I',
-    'Episode II',
-    'Episode III',
-    'Episode IV',
-    'Episode V',
-    'Episode VI',
-    'Episode VII',
-    'Episode VIII',
-    'Episode IX',
-  ];
+  items: string[] = Array.from({ length: 30 }).map((m, i) => 'Item ' + i);
+  items2 = Array.from({ length: 5 }).map((m, i) => 'Item ' + i);
 
-  constructor() {
-    this.items = [];
-    for (let i = 1; i <= 30; i++) {
-      this.items.push('Episode ' + i);
-    }
-  }
+  constructor() {}
 
   add() {
     let rndPosition = Math.floor(Math.random() * this.items.length);

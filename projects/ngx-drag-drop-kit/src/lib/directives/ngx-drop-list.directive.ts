@@ -20,6 +20,7 @@ import { NgxPlaceholderDirective } from './ngx-place-holder.directive';
 import { NgxDragRegisterService } from '../services/ngx-drag-register.service';
 import { NgxDraggableDirective } from './ngx-draggable.directive';
 import { DOCUMENT } from '@angular/common';
+import { IDropList } from '../../interfaces/IDropList';
 @Directive({
   selector: '[ngxDropList]',
   host: {
@@ -28,7 +29,7 @@ import { DOCUMENT } from '@angular/common';
   standalone: true,
   exportAs: 'NgxDropList',
 })
-export class NgxDropListDirective<T = any> implements OnInit, AfterViewInit, OnDestroy {
+export class NgxDropListDirective<T = any> implements IDropList, OnInit, AfterViewInit, OnDestroy {
   @Input() data?: T;
   @Input() disableSort: boolean = false;
   @Input() direction: 'horizontal' | 'vertical' = 'vertical';

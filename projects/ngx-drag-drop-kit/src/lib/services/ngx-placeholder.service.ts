@@ -1,294 +1,272 @@
-import { Inject, Injectable, Renderer2, RendererFactory2 } from '@angular/core';
-import { Subject, distinctUntilChanged } from 'rxjs';
 import { DOCUMENT } from '@angular/common';
-import { IUpdatePlaceholder } from '../../interfaces/update-placeholder';
-import { getFirstLevelDraggables } from '../../utils/element.helper';
-import { checkShiftItem } from '../../utils/check-shift-item';
+import { Injectable, Renderer2, RendererFactory2, Inject } from '@angular/core';
+import { Subject, distinctUntilChanged } from 'rxjs';
+import { IDragItem } from '../../interfaces/IDragItem';
+import { IDropList } from '../../interfaces/IDropList';
+import { DragDecision } from '../../utils/check-shift-item';
 import { NgxDragRegisterService } from './ngx-drag-register.service';
+import { IUpdatePlaceholder } from '../../interfaces/IUpdatePlaceholder';
 
-@Injectable({
-  providedIn: 'root',
-})
+interface PlaceholderState {
+  element: HTMLElement | null;
+  rect: DOMRect | null;
+  isShown: boolean;
+}
+
+@Injectable({ providedIn: 'root' })
 export class NgxDragPlaceholderService {
-  private _renderer: Renderer2;
-  private placeholder?: HTMLElement;
-  /** placeholder transformed value (save previous value) */
-  private plcT = { x: 0, y: 0 };
-  private overItemIndex = 0;
-  public currentIndex = 0;
-  private placeholderIndex = 0;
+  private renderer: Renderer2;
+  private state: PlaceholderState = {
+    element: null,
+    isShown: false,
+    rect: null,
+  };
+
   public updatePlaceholder$ = new Subject<IUpdatePlaceholder>();
-  public isShown: boolean = false;
+
+  get isShown(): boolean {
+    return this.state.isShown;
+  }
 
   constructor(
     rendererFactory: RendererFactory2,
-    @Inject(DOCUMENT) private _document: Document,
+    @Inject(DOCUMENT) private document: Document,
     private dragRegister: NgxDragRegisterService
   ) {
-    this._renderer = rendererFactory.createRenderer(null, null);
+    this.renderer = rendererFactory.createRenderer(null, null);
+    this.initSubscription();
+  }
+
+  private initSubscription(): void {
     this.updatePlaceholder$
       .pipe(
-        distinctUntilChanged((prev, curr) => {
-          let mustBeCancel =
-            prev.state == curr.state &&
-            prev.dragOverItem == curr.dragOverItem &&
-            prev.dragItem == curr.dragItem &&
-            prev.isAfter == curr.isAfter &&
-            prev.destinationDropList == curr.destinationDropList;
-          return mustBeCancel;
-        })
+        distinctUntilChanged(
+          (prev, curr) =>
+            prev.newIndex === curr.newIndex &&
+            prev.previousIndex === curr.previousIndex &&
+            prev.dragItem === curr.dragItem &&
+            prev.destinationDropList === curr.destinationDropList
+        )
       )
-      .subscribe((input) => {
-        this.updatePlaceHolder(input);
-      });
+      .subscribe((input) => this.update(input));
   }
 
-  private updatePlaceHolder(input: IUpdatePlaceholder) {
-    switch (input.state) {
-      case 'show':
-        this.showPlaceholder(input);
-        break;
-      case 'hidden':
-        this.hidePlaceholder(input);
-        break;
-      case 'update':
-        this.updatePlaceholderPosition(input);
-        break;
+  public hide(destinationDropList?: IDropList): void {
+    this.state.element?.remove();
+    this.clearTransforms();
+    this.resetState();
+    destinationDropList?.disposePlaceholder?.();
+  }
+
+  private update(input: IUpdatePlaceholder): void {
+    const { destinationDropList } = input;
+    if (destinationDropList?.isFlexWrap) {
+      this.showFlexWrap(input);
+      return;
     }
+
+    if (!this.state.element) {
+      return;
+    }
+    this.applyTransforms(input);
+    // this.dragRegister.updateAllDragItemsRect();
   }
 
-  /**
-   * create placeholder after drag item
-   * @param input
-   * @returns
-   */
-  private showPlaceholder(input: IUpdatePlaceholder) {
-    const { dragItem, destinationDropList, dragOverItem, isAfter } = input;
+  public createPlaceholder(
+    destinationDropList: IDropList,
+    dragItem: IDragItem,
+    dragOverItem?: IDragItem,
+    isAfter = false
+  ): void {
+    this.hide(destinationDropList);
     if (!destinationDropList) return;
-    if (destinationDropList.disableSort || destinationDropList.checkAllowedConnections(dragItem.dropList) == false)
-      return;
-    if (destinationDropList.isFlexWrap) {
-      return this.inPlaceShowPlaceholder(input);
-    }
-    if (!this.placeholder || this.placeholder.parentElement != destinationDropList.el) {
-      this.hidePlaceholder(input);
-    }
-    if (!this.placeholder) {
-      this.placeholder = destinationDropList.addPlaceholder(dragItem.domRect);
-      // source is equal with destination
-      if (dragItem.dropList == destinationDropList) {
-        dragItem.el.insertAdjacentElement(isAfter ? 'afterend' : 'beforebegin', this.placeholder);
-        this.placeholderIndex = this.dragRegister.getDragItemIndex(dragItem);
-      }
-      // drag to other list (Kanban)
-      else {
-        // when has over item
-        if (dragOverItem) {
-          dragOverItem.el.insertAdjacentElement(isAfter ? 'afterend' : 'beforebegin', this.placeholder);
-          const overIdx = this.dragRegister.getDragItemIndex(dragOverItem);
-          // FIXED: placeholder index should be where it's inserted in DOM
-          this.placeholderIndex = isAfter ? overIdx + 1 : overIdx;
-        }
-        // add to end of children
-        else {
-          destinationDropList.el.insertAdjacentElement('beforeend', this.placeholder);
-          this.placeholderIndex = destinationDropList.dragItems.length;
-        }
-      }
 
-      this.currentIndex = this.placeholderIndex;
-      this.overItemIndex = this.placeholderIndex; // Initialize overItemIndex
-    }
+    this.state.element = destinationDropList.addPlaceholder(dragItem.domRect);
+    const isSameList = dragItem.dropList === destinationDropList;
 
-    this.isShown = true;
-  }
-
-  private hidePlaceholder(input: IUpdatePlaceholder) {
-    if (this.placeholder) {
-      this.placeholder.remove();
-    }
-    this.placeholder = undefined;
-    document
-      .querySelectorAll('.ngx-draggable:not(.dargging):not(.ngx-drag-in-body),.ngx-drag-placeholder')
-      .forEach((el) => {
-        this._renderer.removeStyle(el, 'transform');
-      });
-    this.isShown = false;
-    this.overItemIndex = 0;
-    this.placeholderIndex = 0;
-    this.currentIndex = 0;
-    this.plcT = { x: 0, y: 0 };
-    input.destinationDropList?.disposePlaceholder();
-  }
-
-  /*--------------------------------------------*/
-  private updatePlaceholderPosition(input: IUpdatePlaceholder) {
-    const { dragItem, dragOverItem, destinationDropList, isAfter } = input;
-    if (!destinationDropList) return;
-    if (destinationDropList.disableSort || destinationDropList.checkAllowedConnections(dragItem.dropList) == false)
-      return;
-    if (destinationDropList.isFlexWrap) {
-      this.inPlaceUpdatePlaceholderPosition(input);
-      return;
-    }
-    this.showPlaceholder(input);
-
-    if (!dragOverItem) {
-      return;
-    }
-
-    const isSelfList = dragItem.dropList?.el == dragOverItem.dropList?.el;
-    const newOverItemIndex = this.dragRegister.getDragItemIndex(dragOverItem);
-    const isVertical = destinationDropList.direction === 'vertical';
-    const placeHolderRect = this.placeholder?.getBoundingClientRect();
-    const plcHeight = placeHolderRect?.height ?? 0;
-    const plcWidth = placeHolderRect?.width ?? 0;
-
-    // FIXED: Only update if overItemIndex actually changed or isAfter changed
-    const shouldUpdate = newOverItemIndex !== this.overItemIndex;
-    this.overItemIndex = newOverItemIndex;
-
-    if (!shouldUpdate && this.placeholder && placeHolderRect) {
-      // No movement needed, just return
-      return;
-    }
-
-    // Move placeholder using transform
-    if (dragOverItem && this.placeholder && placeHolderRect) {
-      const ax = placeHolderRect.x;
-      const ay = placeHolderRect.y;
-      const bx = dragOverItem.domRect.x;
-      const by = dragOverItem.domRect.y;
-
-      if (isVertical) {
-        // FIXED: Simpler vertical calculation
-        const deltaY = by - ay;
-        this.plcT.y += deltaY;
-        this._renderer.setStyle(this.placeholder, 'transform', `translate(0px, ${this.plcT.y}px)`);
+    if (isSameList) {
+      dragItem.el.insertAdjacentElement(isAfter ? 'afterend' : 'beforebegin', this.state.element);
+    } else {
+      if (dragOverItem) {
+        dragOverItem.el.insertAdjacentElement(isAfter ? 'afterend' : 'beforebegin', this.state.element);
       } else {
-        // FIXED: Simpler horizontal calculation
-        const deltaX = bx - ax;
-        const direction = destinationDropList.isRtl ? -1 : 1;
-        
-        if (isAfter) {
-          // Move to after the overItem
-          this.plcT.x += (deltaX + dragOverItem.domRect.width) * direction;
+        destinationDropList.el.insertAdjacentElement('beforeend', this.state.element);
+      }
+    }
+    this.state.rect = this.state.element.getBoundingClientRect();
+    this.state.isShown = true;
+  }
+
+  private applyTransforms(input: IUpdatePlaceholder): void {
+    if (!this.state.element || !input.destinationDropList) {
+      return;
+    }
+
+    const isVertical = input.destinationDropList.direction === 'vertical';
+    const items = this.getVisibleDragItems(input.destinationDropList.el) || [];
+    const newIndex = input.newIndex;
+    const previousIndex = input.previousIndex;
+
+    const plcSize = isVertical ? this.state.rect?.height || 0 : this.state.rect?.width || 0;
+
+    if (newIndex === -1 || newIndex === previousIndex) {
+      // هیچ تغییری لازم نیست
+      return;
+    }
+
+    // === شناسایی placeholder و dragged element ===
+    const draggedEl = input.dragItem.el;
+
+    // فرض: indices در newIndex/previousIndex مطابق ایندکس‌های items هستند.
+    // اگر mapping متفاوت است باید indexMap ساخته شود؛ اینجا فرض استاندارد گرفتیم.
+    // => items[i] متناظر با index i است.
+
+    // محاسبه و اعمال transform برای هر آیتم
+    items.forEach((el, idx) => {
+      // اگر المنت، المنت درگ‌شده است (عنصری که مخفی شده) باید transform پاک شود
+      if (draggedEl && el === draggedEl) {
+        el.style.transform = '';
+        return;
+      }
+
+      // helper: اندازه هر آیتم (ارتفاع یا عرض)
+      const itemHeight = el.offsetHeight || 0;
+      const itemWidth = el.offsetWidth || 0;
+      const itemSize = isVertical ? itemHeight : itemWidth;
+      //_______________Move  placeholder element
+      if (this.state.element && el === this.state.element) {
+        const delta = newIndex - previousIndex; // مثبت => به سمت پایین، منفی => به سمت بالا
+        if (delta === 0) {
+          el.style.transform = '';
+          return;
+        }
+
+        let shift = delta * itemSize;
+        // if (newIndex > previousIndex) {
+        //   shift = shift - plcSize;
+        // }
+        const transform = isVertical ? `translate3d(0, ${shift}px, 0)` : `translate3d(${shift}px, 0, 0)`;
+        // از translate3d برای GPU acceleration استفاده می‌کنیم
+        el.style.transform = transform;
+        return;
+      }
+      //_______________End of Move  placeholder element
+
+      // بقیه آیتم‌ها:
+      // حالت درگ به بالا: newIndex < previousIndex
+      // TODO
+      let checkIdx = idx; // newIndex > previousIndex ? idx - 1 : idx;
+      if (newIndex < previousIndex) {
+        // آیتم‌هایی که در بازه [newIndex, previousIndex - 1] هستند باید به پایین شیفت کنند (+itemSize)
+        if (checkIdx >= newIndex && checkIdx < previousIndex) {
+          const shift = itemSize; // پایین = مثبت در محور Y
+          const transform = isVertical ? `translate3d(0, ${shift}px, 0)` : `translate3d(${shift}px, 0, 0)`;
+          el.style.transform = transform;
+          return;
         } else {
-          // Move to before the overItem
-          this.plcT.x += deltaX * direction;
-        }
-        
-        this._renderer.setStyle(this.placeholder, 'transform', `translate(${this.plcT.x}px, 0px)`);
-      }
-    }
-
-    const dragItems = getFirstLevelDraggables(destinationDropList.el).filter((item) => item != this.placeholder);
-    
-    // Move other draggable items
-    for (let i = 0; i < dragItems.length; i++) {
-      let offsetX = 0;
-      let offsetY = 0;
-      
-      const dir = checkShiftItem({
-        index: i,
-        isAfter,
-        isSelfList,
-        overItemIndex: this.overItemIndex,
-        placeholderIndex: this.placeholderIndex,
-      });
-
-      if (isVertical) {
-        if (dir == 'ahead') {
-          offsetY = +plcHeight;
-        } else if (dir == 'behind') {
-          offsetY = -plcHeight;
-        }
-      } else {
-        // horizontal
-        const direction = destinationDropList.isRtl ? -1 : 1;
-        if (dir == 'ahead') {
-          offsetX = +plcWidth * direction;
-        } else if (dir == 'behind') {
-          offsetX = -plcWidth * direction;
+          el.style.transform = '';
+          return;
         }
       }
-      
-      this._renderer.setStyle(dragItems[i], 'transform', `translate(${offsetX}px, ${offsetY}px)`);
-    }
 
-    this.dragRegister.updateAllDragItemsRect();
+      // حالت درگ به پایین: newIndex > previousIndex
+      if (newIndex > previousIndex) {
+        // آیتم‌هایی که در بازه [previousIndex + 1, newIndex] هستند باید به بالا شیفت کنند (-itemSize)
+        if (checkIdx > previousIndex && checkIdx <= newIndex) {
+          const shift = -itemSize; // بالا = منفی در محور Y
+          const transform = isVertical ? `translate3d(0, ${shift}px, 0)` : `translate3d(${shift}px, 0, 0)`;
+          el.style.transform = transform;
+          return;
+        } else {
+          el.style.transform = '';
+          return;
+        }
+      }
 
-    // FIXED: Calculate currentIndex correctly
-    // currentIndex is where the item will be placed when dropped
-    this.currentIndex = this.calculateCurrentIndex(isSelfList, isAfter);
+      // fallback: پاکسازی
+      el.style.transform = '';
+    });
 
-    console.log('placeholderIndex:', this.placeholderIndex, 'overItemIndex:', this.overItemIndex, 'currentIndex:', this.currentIndex, 'isAfter:', isAfter);
+    // (اختیاری) اضافه کردن transition کوتاه برای smoothness — اگر می‌خواهی animation بهتر باشه
+    // ولی گاهی در drag حس بدی میده؛ در صورت نیاز uncomment کن:
+    // items.forEach(el => el.style.transition = 'transform 120ms ease');
+
+    // پایان
   }
 
-  /**
-   * Calculate the final index where item will be placed
-   */
-  private calculateCurrentIndex(isSelfList: boolean, isAfter: boolean): number {
-    if (isSelfList) {
-      // Same list: moving within same list
-      if (this.overItemIndex > this.placeholderIndex) {
-        // Moving down
-        return isAfter ? this.overItemIndex : this.overItemIndex - 1;
-      } else if (this.overItemIndex < this.placeholderIndex) {
-        // Moving up
-        return isAfter ? this.overItemIndex + 1 : this.overItemIndex;
-      } else {
-        // Same position
-        return this.placeholderIndex;
-      }
-    } else {
-      // Different list (Kanban)
-      return isAfter ? this.overItemIndex + 1 : this.overItemIndex;
-    }
-  }
-
-  /*------------------------------------when in place codes... ----------------------------------------------------*/
-
-  private inPlaceShowPlaceholder(input: IUpdatePlaceholder) {
-    const { dragItem, destinationDropList, isAfter, dragOverItem } = input;
-    if (!destinationDropList) return;
-    if (destinationDropList.disableSort || destinationDropList.checkAllowedConnections(dragItem.dropList) == false)
+  private applyTransformsOLD(input: IUpdatePlaceholder): void {
+    if (!this.state.element || !input.destinationDropList) {
       return;
-    this.hidePlaceholder(input);
-    this.placeholder = this._document.createElement('div');
-    this.placeholder.style.display = 'inline-block';
-    this.placeholder.style.pointerEvents = 'none';
-    this.placeholder.style.position = 'relative';
-
-    this.placeholder.className = 'ngx-drag-placeholder';
-    if (dragItem) {
-      this._renderer.setStyle(this.placeholder, 'width', dragItem.domRect.width + 'px');
-      this._renderer.setStyle(this.placeholder, 'height', dragItem.domRect.height + 'px');
+    }
+    const isVertical = input.destinationDropList.direction === 'vertical';
+    const dragItems = this.getVisibleDragItems(input.destinationDropList.el);
+    const newIndex = input.newIndex;
+    const previousIndex = input.previousIndex;
+    if (newIndex === -1 || newIndex === previousIndex) {
+      return;
     }
 
-    if (dragOverItem && dragOverItem.dropList == destinationDropList) {
-      dragOverItem.el.insertAdjacentElement(isAfter ? 'afterend' : 'beforebegin', this.placeholder);
-      const overIdx = this.dragRegister.getDragItemIndex(dragOverItem);
-      this.placeholderIndex = isAfter ? overIdx + 1 : overIdx;
-    } else {
-      destinationDropList.el.insertAdjacentElement('beforeend', this.placeholder);
-      this.placeholderIndex = destinationDropList.dragItems.length;
-    }
-    this.isShown = true;
+    dragItems.forEach((element, index) => {
+      if (index === newIndex || index === previousIndex) {
+        element.style.transform = '';
+        return;
+      }
+      if (
+        (newIndex < previousIndex && index >= newIndex && index < previousIndex) ||
+        (newIndex > previousIndex && index <= newIndex && index > previousIndex)
+      ) {
+        // محاسبه جهت و مقدار transform
+        const itemHeight = this.state.rect?.height || 0;
+        const itemWidth = this.state.rect?.width || 0;
+        const transform = isVertical
+          ? `translateY(${newIndex < previousIndex ? itemHeight : -itemHeight}px)`
+          : `translateX(${newIndex < previousIndex ? itemWidth : -itemWidth}px)`;
+        element.style.transform = transform;
+      } else {
+        element.style.transform = '';
+      }
+    });
   }
 
-  /*--------------------------------------------*/
+  private showFlexWrap(input: IUpdatePlaceholder): void {
+    const { dragItem, destinationDropList } = input;
 
-  private inPlaceUpdatePlaceholderPosition(input: IUpdatePlaceholder) {
-    const { dragItem, destinationDropList, dragOverItem } = input;
-    if (!destinationDropList) return;
-    if (destinationDropList.disableSort || destinationDropList.checkAllowedConnections(dragItem.dropList) == false)
-      return;
-    this.inPlaceShowPlaceholder(input);
-    if (!this.isShown) return;
-    let els: HTMLElement[] = [];
-    if (dragOverItem && dragOverItem.dropList) {
-      els = Array.from(dragOverItem.dropList.el.querySelectorAll('.ngx-draggable,.ngx-drag-placeholder'));
-    }
+    this.hide(destinationDropList);
+
+    this.state.element = this.document.createElement('div');
+    this.state.element.className = 'ngx-drag-placeholder';
+
+    this.renderer.setStyle(this.state.element, 'display', 'inline-block');
+    this.renderer.setStyle(this.state.element, 'pointerEvents', 'none');
+    this.renderer.setStyle(this.state.element, 'width', `${dragItem.domRect.width}px`);
+    this.renderer.setStyle(this.state.element, 'height', `${dragItem.domRect.height}px`);
+
+    // if (dragOverItem && dragOverItem.dropList === destinationDropList) {
+    //   //  dragOverItem.el.insertAdjacentElement(isAfter ? 'afterend' : 'beforebegin', this.state.element);
+    //   const overIdx = this.dragRegister.getDragItemIndex(dragOverItem);
+    //   // this.state.index = isAfter ? overIdx + 1 : overIdx;
+    // } else {
+    //   destinationDropList?.el.insertAdjacentElement('beforeend', this.state.element);
+    //   this.state.index = destinationDropList?.dragItems.length ?? 0;
+    // }
+    this.state.isShown = true;
+    this.state.rect = this.state.element.getBoundingClientRect();
+  }
+
+  private getVisibleDragItems(container: HTMLElement): HTMLElement[] {
+    return Array.from(container.querySelectorAll<HTMLElement>('.ngx-draggable'));
+    // .filter(
+    //   (el) => el !== this.state.element && !el.classList.contains('dragging')
+    // );
+  }
+
+  private clearTransforms(): void {
+    this.document
+      .querySelectorAll('.ngx-draggable:not(.dragging):not(.ngx-drag-in-body)')
+      .forEach((el) => this.renderer.removeStyle(el, 'transform'));
+  }
+
+  private resetState(): void {
+    this.state = { element: null, isShown: false, rect: null };
   }
 }

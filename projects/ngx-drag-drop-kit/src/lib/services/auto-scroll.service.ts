@@ -1,147 +1,216 @@
 import { DOCUMENT } from '@angular/common';
-import { Inject, Injectable, NgZone } from '@angular/core';
-import { Subject, animationFrameScheduler, interval, takeUntil } from 'rxjs';
-import { getScrollableElement } from '../../utils/get-scrollable-element';
+import { Inject, Injectable, NgZone, Renderer2, RendererFactory2 } from '@angular/core';
+import { Subject, animationFrameScheduler, interval, takeUntil, fromEvent, Subscription, throttleTime } from 'rxjs';
 
-/** Vertical direction in which we can auto-scroll. */
-export enum AutoScrollVerticalDirection {
-  NONE,
-  UP,
-  DOWN,
+// ============================================================================
+// AUTO SCROLL SERVICE - Refactored
+// ============================================================================
+
+export enum AutoScrollDirection {
+  NONE = 0,
+  UP = 1,
+  DOWN = 2,
+  LEFT = 3,
+  RIGHT = 4,
 }
 
-/** Horizontal direction in which we can auto-scroll. */
-export enum AutoScrollHorizontalDirection {
-  NONE,
-  LEFT,
-  RIGHT,
+interface AutoScrollConfig {
+  speed: number;
+  threshold: number;
 }
 
-@Injectable({
-  providedIn: 'root',
-})
-export class AutoScroll {
-  private scrollSpeed = 5;
-  private scrollThreshold = 130;
+interface ScrollState {
+  node: HTMLElement | null;
+  verticalDirection: AutoScrollDirection;
+  horizontalDirection: AutoScrollDirection;
+}
 
-  /** Used to signal to the current auto-scroll sequence when to stop. */
-  private readonly _stopScrollTimers = new Subject<void>();
+@Injectable({ providedIn: 'root' })
+export class AutoScrollService {
+  private readonly config: AutoScrollConfig = {
+    speed: 5,
+    threshold: 130,
+  };
 
-  /** Node that is being auto-scrolled. */
-  private _scrollNode: HTMLElement | null = null;
+  private readonly stopSignal$ = new Subject<void>();
+  private state: ScrollState = {
+    node: null,
+    verticalDirection: AutoScrollDirection.NONE,
+    horizontalDirection: AutoScrollDirection.NONE,
+  };
 
-  /** Vertical direction in which the list is currently scrolling. */
-  private _verticalScrollDirection = AutoScrollVerticalDirection.NONE;
+  constructor(
+    @Inject(DOCUMENT) private document: Document,
+    private ngZone: NgZone
+  ) {}
 
-  /** Horizontal direction in which the list is currently scrolling. */
-  private _horizontalScrollDirection = AutoScrollHorizontalDirection.NONE;
+  handleAutoScroll(event: MouseEvent | TouchEvent): void {
+    const { clientX, clientY } = this.getPointerPosition(event);
+    const scrollNode = this.findScrollableElement(clientX, clientY);
 
-  constructor(@Inject(DOCUMENT) private _document: Document, private _ngZone: NgZone) {}
-
-  /**
-   * Handles the auto-scroll logic based on the mouse or touch event.
-   * @param ev MouseEvent or TouchEvent used to determine scroll behavior.
-   */
-  handleAutoScroll(ev: MouseEvent | TouchEvent) {
-    const clientX = ev instanceof MouseEvent ? ev.clientX : ev.targetTouches[0].clientX;
-    const clientY = ev instanceof MouseEvent ? ev.clientY : ev.targetTouches[0].clientY;
-
-    let elementsOnPoint = this._document.elementsFromPoint(clientX, clientY);
-    this._scrollNode = getScrollableElement(elementsOnPoint);
-
-    if (!this._scrollNode) {
-      this._stopScrolling();
+    if (!scrollNode) {
+      this.stop();
       return;
     }
 
-    const scrollNodePosition = this._scrollNode.getBoundingClientRect();
-    const viewportX = clientX - Math.max(scrollNodePosition.x, 0);
-    const viewportY = clientY - Math.max(scrollNodePosition.y, 0);
-    const viewportWidth = this._scrollNode.clientWidth;
-    const viewportHeight = this._scrollNode.clientHeight;
+    this.state.node = scrollNode;
+    this.updateScrollDirections(clientX, clientY);
 
-    const edgeTop = this.scrollThreshold;
-    const edgeLeft = this.scrollThreshold;
-    const edgeBottom = viewportHeight - this.scrollThreshold;
-    const edgeRight = viewportWidth - this.scrollThreshold;
-
-    const isInLeftEdge = viewportX < edgeLeft;
-    const isInRightEdge = viewportX > edgeRight;
-    const isInTopEdge = viewportY < edgeTop;
-    const isInBottomEdge = viewportY > edgeBottom;
-
-    const innerWidth = Math.max(
-      this._scrollNode.scrollWidth,
-      this._scrollNode.offsetWidth,
-      this._scrollNode.clientWidth
-    );
-    const innerHeight = Math.max(
-      this._scrollNode.scrollHeight,
-      this._scrollNode.offsetHeight,
-      this._scrollNode.clientHeight
-    );
-
-    const maxScrollX = innerWidth - viewportWidth;
-    const maxScrollY = innerHeight - viewportHeight;
-
-    const currentScrollX = this._scrollNode.scrollLeft;
-    const currentScrollY = this._scrollNode.scrollTop;
-
-    const canScrollUp = currentScrollY > 0;
-    const canScrollDown = currentScrollY < maxScrollY;
-    const canScrollLeft = currentScrollX > 0;
-    const canScrollRight = currentScrollX < maxScrollX;
-
-    this._horizontalScrollDirection = AutoScrollHorizontalDirection.NONE;
-    this._verticalScrollDirection = AutoScrollVerticalDirection.NONE;
-
-    if (isInLeftEdge && canScrollLeft) {
-      this._horizontalScrollDirection = AutoScrollHorizontalDirection.LEFT;
-    } else if (isInRightEdge && canScrollRight) {
-      this._horizontalScrollDirection = AutoScrollHorizontalDirection.RIGHT;
-    }
-
-    if (isInTopEdge && canScrollUp) {
-      this._verticalScrollDirection = AutoScrollVerticalDirection.UP;
-    } else if (isInBottomEdge && canScrollDown) {
-      this._verticalScrollDirection = AutoScrollVerticalDirection.DOWN;
-    }
-
-    if (
-      this._verticalScrollDirection !== AutoScrollVerticalDirection.NONE ||
-      this._horizontalScrollDirection !== AutoScrollHorizontalDirection.NONE
-    ) {
-      this._ngZone.runOutsideAngular(() => this._startScrollInterval());
+    if (this.shouldScroll()) {
+      this.ngZone.runOutsideAngular(() => this.startScrolling());
     } else {
-      this._stopScrolling();
+      this.stop();
     }
   }
 
-  /** Starts the interval that'll auto-scroll the element. */
-  private _startScrollInterval() {
-    this._stopScrolling();
+  stop(): void {
+    this.stopSignal$.next();
+    this.resetState();
+  }
+
+  setConfig(config: Partial<AutoScrollConfig>): void {
+    Object.assign(this.config, config);
+  }
+
+  private getPointerPosition(event: MouseEvent | TouchEvent): { clientX: number; clientY: number } {
+    if (event instanceof MouseEvent) {
+      return { clientX: event.clientX, clientY: event.clientY };
+    }
+    return {
+      clientX: event.targetTouches[0].clientX,
+      clientY: event.targetTouches[0].clientY,
+    };
+  }
+
+  private findScrollableElement(clientX: number, clientY: number): HTMLElement | null {
+    const elements = this.document.elementsFromPoint(clientX, clientY);
+    
+    for (const element of elements) {
+      if (this.isScrollable(element as HTMLElement)) {
+        return element as HTMLElement;
+      }
+    }
+    
+    return null;
+  }
+
+  private isScrollable(element: HTMLElement): boolean {
+    const style = window.getComputedStyle(element);
+    const overflowRegex = /auto|scroll/;
+    
+    return (
+      overflowRegex.test(style.overflow) ||
+      overflowRegex.test(style.overflowY) ||
+      overflowRegex.test(style.overflowX)
+    );
+  }
+
+  private updateScrollDirections(clientX: number, clientY: number): void {
+    if (!this.state.node) return;
+
+    const rect = this.state.node.getBoundingClientRect();
+    const viewportX = clientX - Math.max(rect.x, 0);
+    const viewportY = clientY - Math.max(rect.y, 0);
+
+    const { scrollCapabilities, edges } = this.calculateScrollMetrics();
+
+    this.state.horizontalDirection = AutoScrollDirection.NONE;
+    this.state.verticalDirection = AutoScrollDirection.NONE;
+
+    // Horizontal
+    if (viewportX < edges.left && scrollCapabilities.canScrollLeft) {
+      this.state.horizontalDirection = AutoScrollDirection.LEFT;
+    } else if (viewportX > edges.right && scrollCapabilities.canScrollRight) {
+      this.state.horizontalDirection = AutoScrollDirection.RIGHT;
+    }
+
+    // Vertical
+    if (viewportY < edges.top && scrollCapabilities.canScrollUp) {
+      this.state.verticalDirection = AutoScrollDirection.UP;
+    } else if (viewportY > edges.bottom && scrollCapabilities.canScrollDown) {
+      this.state.verticalDirection = AutoScrollDirection.DOWN;
+    }
+  }
+
+  private calculateScrollMetrics() {
+    if (!this.state.node) {
+      return {
+        scrollCapabilities: {
+          canScrollUp: false,
+          canScrollDown: false,
+          canScrollLeft: false,
+          canScrollRight: false,
+        },
+        edges: { top: 0, left: 0, bottom: 0, right: 0 },
+      };
+    }
+
+    const node = this.state.node;
+    const innerWidth = Math.max(node.scrollWidth, node.offsetWidth, node.clientWidth);
+    const innerHeight = Math.max(node.scrollHeight, node.offsetHeight, node.clientHeight);
+    const maxScrollX = innerWidth - node.clientWidth;
+    const maxScrollY = innerHeight - node.clientHeight;
+
+    return {
+      scrollCapabilities: {
+        canScrollUp: node.scrollTop > 0,
+        canScrollDown: node.scrollTop < maxScrollY,
+        canScrollLeft: node.scrollLeft > 0,
+        canScrollRight: node.scrollLeft < maxScrollX,
+      },
+      edges: {
+        top: this.config.threshold,
+        left: this.config.threshold,
+        bottom: node.clientHeight - this.config.threshold,
+        right: node.clientWidth - this.config.threshold,
+      },
+    };
+  }
+
+  private shouldScroll(): boolean {
+    return (
+      this.state.verticalDirection !== AutoScrollDirection.NONE ||
+      this.state.horizontalDirection !== AutoScrollDirection.NONE
+    );
+  }
+
+  private startScrolling(): void {
+    this.stop();
 
     interval(0, animationFrameScheduler)
-      .pipe(takeUntil(this._stopScrollTimers))
-      .subscribe(() => {
-        if (!this._scrollNode) return;
-
-        if (this._verticalScrollDirection === AutoScrollVerticalDirection.UP) {
-          this._scrollNode.scrollBy(0, -this.scrollSpeed);
-        } else if (this._verticalScrollDirection === AutoScrollVerticalDirection.DOWN) {
-          this._scrollNode.scrollBy(0, this.scrollSpeed);
-        }
-
-        if (this._horizontalScrollDirection === AutoScrollHorizontalDirection.LEFT) {
-          this._scrollNode.scrollBy(-this.scrollSpeed, 0);
-        } else if (this._horizontalScrollDirection === AutoScrollHorizontalDirection.RIGHT) {
-          this._scrollNode.scrollBy(this.scrollSpeed, 0);
-        }
-      });
+      .pipe(takeUntil(this.stopSignal$))
+      .subscribe(() => this.performScroll());
   }
 
-  /** Stops any currently-running auto-scroll sequences. */
-  _stopScrolling() {
-    this._stopScrollTimers.next();
+  private performScroll(): void {
+    if (!this.state.node) return;
+
+    const { verticalDirection, horizontalDirection } = this.state;
+    let deltaX = 0;
+    let deltaY = 0;
+
+    // Vertical scrolling
+    if (verticalDirection === AutoScrollDirection.UP) {
+      deltaY = -this.config.speed;
+    } else if (verticalDirection === AutoScrollDirection.DOWN) {
+      deltaY = this.config.speed;
+    }
+
+    // Horizontal scrolling
+    if (horizontalDirection === AutoScrollDirection.LEFT) {
+      deltaX = -this.config.speed;
+    } else if (horizontalDirection === AutoScrollDirection.RIGHT) {
+      deltaX = this.config.speed;
+    }
+
+    this.state.node.scrollBy(deltaX, deltaY);
+  }
+
+  private resetState(): void {
+    this.state = {
+      node: null,
+      verticalDirection: AutoScrollDirection.NONE,
+      horizontalDirection: AutoScrollDirection.NONE,
+    };
   }
 }

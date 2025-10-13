@@ -1,5 +1,5 @@
-import { NgxDraggableDirective } from '../lib/directives/ngx-draggable.directive';
-import { NgxDropListDirective } from '../lib/directives/ngx-drop-list.directive';
+import { IDragItem } from './IDragItem';
+import { IDropList } from './IDropList';
 
 export interface IDropEvent<DataType = any> {
   /** Index of the item when it was picked up. */
@@ -7,9 +7,9 @@ export interface IDropEvent<DataType = any> {
   /** Current index of the item. */
   currentIndex: number;
   /** Item that is being dropped. */
-  item: NgxDraggableDirective;
+  item: IDragItem;
   /** Container in which the item was dropped. */
-  container: NgxDropListDirective<DataType>;
+  container: IDropList;
   /** Container from which the item was picked up. Can be the same as the `container`. */
-  previousContainer: NgxDropListDirective<DataType>;
+  previousContainer: IDropList;
 }
