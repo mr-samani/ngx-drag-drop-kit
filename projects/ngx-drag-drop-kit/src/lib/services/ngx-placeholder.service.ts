@@ -1,9 +1,8 @@
 import { DOCUMENT } from '@angular/common';
 import { Injectable, Renderer2, RendererFactory2, Inject } from '@angular/core';
-import { Subject, distinctUntilChanged, throttle, throttleTime } from 'rxjs';
+import { Subject, distinctUntilChanged, throttleTime } from 'rxjs';
 import { IDragItem } from '../../interfaces/IDragItem';
 import { IDropList } from '../../interfaces/IDropList';
-import { DragDecision } from '../../utils/check-shift-item';
 import { NgxDragRegisterService } from './ngx-drag-register.service';
 import { IUpdatePlaceholder } from '../../interfaces/IUpdatePlaceholder';
 
@@ -47,8 +46,8 @@ export class NgxDragPlaceholderService {
             prev.dragItem === curr.dragItem &&
             prev.destinationDropList === curr.destinationDropList &&
             prev.isAfter === curr.isAfter
-        ),
-        throttleTime(200)
+        )
+        //  throttleTime(200)
       )
       .subscribe((input) => this.update(input));
   }
@@ -127,18 +126,14 @@ export class NgxDragPlaceholderService {
       // Placeholder movement
       if (el === placeholderEl) {
         const delta = newIndex - prevIdx;
-        let sumOfItemSizes =
-          items.slice(prevIdx, newIndex + 2).reduce((acc, item) => {
-            return acc + (isVertical ? item.offsetHeight : item.offsetWidth);
-          }, 0) - plcSize;
         this.renderer.setStyle(
           el,
           'transform',
           delta === 0
             ? ''
             : isVertical
-            ? `translate3d(0, ${sumOfItemSizes}px, 0)`
-            : `translate3d(${sumOfItemSizes}px, 0, 0)`
+            ? `translate3d(0, ${delta * plcSize}px, 0)`
+            : `translate3d(${delta * plcSize}px, 0, 0)`
         );
         return;
       }

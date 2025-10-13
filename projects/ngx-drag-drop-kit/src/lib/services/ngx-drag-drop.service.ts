@@ -2,7 +2,7 @@ import { Inject, Injectable, Renderer2, RendererFactory2, RendererStyleFlags2 } 
 import { IDropEvent } from '../../interfaces/IDropEvent';
 import { NgxDraggableDirective } from '../directives/ngx-draggable.directive';
 import { DOCUMENT } from '@angular/common';
-import { getPointerPosition, getPointerPositionOnViewPort } from '../../utils/get-position';
+import { getPointerPositionOnViewPort } from '../../utils/get-position';
 import { NgxDragPlaceholderService } from './ngx-placeholder.service';
 import { copyEssentialStyles } from '../../utils/clone-style';
 import { NgxDragRegisterService } from './ngx-drag-register.service';

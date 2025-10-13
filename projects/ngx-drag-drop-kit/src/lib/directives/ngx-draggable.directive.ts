@@ -188,7 +188,7 @@ export class NgxDraggableDirective implements IDragItem, OnDestroy, AfterViewIni
     const offsetX = position.x - this.previousXY.x;
     const offsetY = position.y - this.previousXY.y;
     const transform = this.updatePosition(offsetX, offsetY, position);
-    // this._autoScroll.handleAutoScroll(ev);
+    this._autoScroll.handleAutoScroll(ev);
     this._dragService.dragMove(this, ev, transform);
     this.dragMove.emit({ x: this.x, y: this.y });
     // console.timeEnd('drgmv');
