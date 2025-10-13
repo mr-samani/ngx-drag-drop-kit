@@ -110,15 +110,20 @@ export class NgxDragDropService {
       return;
     }
     const isVertical = dropList.direction === 'vertical';
-    let i = this.dragRegister._getItemIndexFromPointerPosition(
+    let foundIndex = this.dragRegister._getItemIndexFromPointerPosition(
       dropList.dragItems,
-      drag.el,
       viewportPointer,
-      isVertical,
-      this._newIndex
+      isVertical
     );
-    console.log('newIndex:', i, 'previousIndex:', this._previousDragIndex);
-    this._newIndex = i;
+    console.log(
+      'newIndex:',
+      foundIndex.index,
+      'previousIndex:',
+      this._previousDragIndex,
+      'isAfter:',
+      foundIndex.isAfter
+    );
+    this._newIndex = foundIndex.index;
     if (this.activeDropList !== dropList) {
       this.activeDropList = dropList;
       this.placeholderService.createPlaceholder(
@@ -128,12 +133,13 @@ export class NgxDragDropService {
         false
       );
     }
-    // this.placeholderService.updatePlaceholder$.next({
-    //   dragItem: this._activeDragInstances[0],
-    //   destinationDropList: this.activeDropList,
-    //   newIndex: this._newIndex,
-    //   previousIndex: this._previousDragIndex,
-    // });
+    this.placeholderService.updatePlaceholder$.next({
+      dragItem: this._activeDragInstances[0],
+      destinationDropList: this.activeDropList,
+      newIndex: this._newIndex,
+      previousIndex: this._previousDragIndex,
+      isAfter: foundIndex.isAfter,
+    });
   }
   stopDrag(drag: NgxDraggableDirective) {
     this.isDragging = false;
@@ -227,6 +233,6 @@ export class NgxDragDropService {
     let x = pointer.x + window.scrollX;
     let y = pointer.y + window.scrollY;
     pe!.innerHTML = `${x},${y}(${pointer.x},${pointer.y})`;
-    this._renderer.setStyle(pe, 'transform', `translate(${x}px,${y}px)`);
+    this._renderer.setStyle(pe, 'transform', `translate3d(${x}px,${y}px,0)`);
   }
 }

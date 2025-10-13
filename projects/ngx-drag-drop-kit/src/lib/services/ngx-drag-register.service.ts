@@ -99,45 +99,41 @@ export class NgxDragRegisterService {
   /**
    * Get Item index from viewport pointer
    * @param items draggable items
-   * @param drag current draggable element
    * @param pointer viewport pointer
    * @param isVertical is vertical
-   * @param placeHolderIndex placeholder index
    * @returns item index
    */
   _getItemIndexFromPointerPosition(
     items: IDragItem[],
-    drag: HTMLElement,
     pointer: { x: number; y: number },
-    isVertical: boolean,
-    placeHolderIndex: number
-  ): number {
+    isVertical: boolean
+  ): { index: number; isAfter: boolean } {
     const axis = isVertical ? 'y' : 'x';
     let index = -1;
+    let isAfter = false;
     for (let i = 0; i < items.length; i++) {
       const rect = items[i].domRect;
       const start = Math.floor(isVertical ? rect.top : rect.left);
       const end = Math.floor(isVertical ? rect.bottom : rect.right);
-      const isSelf = drag == items[i].el;
       // آیا موس داخل این آیتم است؟
       if (pointer[axis] >= start && pointer[axis] <= end) {
         // محاسبه center این آیتم
         const center = start + (end - start) / 2;
-
+        index = i;
         // تصمیم‌گیری: کدام طرف center است؟
-        if (pointer[axis] < center || isSelf) {
-          index = i; // نصف بالایی/چپی → همین index
+        if (pointer[axis] < center) {
+          isAfter = false; // نصف بالایی/چپی → همین index
         } else {
-          index = i + 1; // نصف پایینی/راستی → index بعدی
+          isAfter = true; // نصف پایینی/راستی → index بعدی
         }
         break;
       }
     }
     if (index === -1) {
-      return items.length; // انتهای لیست
+      index = items.length; // انتهای لیست
     }
 
-    return index;
+    return { index, isAfter };
   }
 
   _getDragItemFromIndex(dropList: IDropList, index: number): IDragItem | undefined {

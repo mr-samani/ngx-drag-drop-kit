@@ -203,7 +203,7 @@ export class NgxDraggableDirective implements IDragItem, OnDestroy, AfterViewIni
       this.y += offsetY;
       this.previousXY.y = position.y;
     }
-    let transform = `translate(${this.x}px, ${this.y}px)`;
+    let transform = `translate3d(${this.x}px, ${this.y}px, 0)`;
 
     if (!this.dropList || !this.dropList.disableSort) {
       this._renderer.setStyle(this.el, 'transform', transform);

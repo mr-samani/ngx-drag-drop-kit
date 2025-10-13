@@ -45,7 +45,8 @@ export class NgxDragPlaceholderService {
             prev.newIndex === curr.newIndex &&
             prev.previousIndex === curr.previousIndex &&
             prev.dragItem === curr.dragItem &&
-            prev.destinationDropList === curr.destinationDropList
+            prev.destinationDropList === curr.destinationDropList &&
+            prev.isAfter === curr.isAfter
         )
       )
       .subscribe((input) => this.update(input));
@@ -109,7 +110,7 @@ export class NgxDragPlaceholderService {
 
     const plcSize = isVertical ? this.state.rect?.height || 0 : this.state.rect?.width || 0;
 
-    if (newIndex === -1 || newIndex === previousIndex) {
+    if (newIndex === -1) {
       // هیچ تغییری لازم نیست
       return;
     }
@@ -142,9 +143,6 @@ export class NgxDragPlaceholderService {
         }
 
         let shift = delta * itemSize;
-        // if (newIndex > previousIndex) {
-        //   shift = shift - plcSize;
-        // }
         const transform = isVertical ? `translate3d(0, ${shift}px, 0)` : `translate3d(${shift}px, 0, 0)`;
         // از translate3d برای GPU acceleration استفاده می‌کنیم
         el.style.transform = transform;
@@ -155,7 +153,7 @@ export class NgxDragPlaceholderService {
       // بقیه آیتم‌ها:
       // حالت درگ به بالا: newIndex < previousIndex
       // TODO
-      let checkIdx = idx; // newIndex > previousIndex ? idx - 1 : idx;
+      let checkIdx = newIndex >= previousIndex ? idx - 1 : idx;
       if (newIndex < previousIndex) {
         // آیتم‌هایی که در بازه [newIndex, previousIndex - 1] هستند باید به پایین شیفت کنند (+itemSize)
         if (checkIdx >= newIndex && checkIdx < previousIndex) {
@@ -172,7 +170,7 @@ export class NgxDragPlaceholderService {
       // حالت درگ به پایین: newIndex > previousIndex
       if (newIndex > previousIndex) {
         // آیتم‌هایی که در بازه [previousIndex + 1, newIndex] هستند باید به بالا شیفت کنند (-itemSize)
-        if (checkIdx > previousIndex && checkIdx <= newIndex) {
+        if (checkIdx >= previousIndex && checkIdx <= newIndex) {
           const shift = -itemSize; // بالا = منفی در محور Y
           const transform = isVertical ? `translate3d(0, ${shift}px, 0)` : `translate3d(${shift}px, 0, 0)`;
           el.style.transform = transform;
