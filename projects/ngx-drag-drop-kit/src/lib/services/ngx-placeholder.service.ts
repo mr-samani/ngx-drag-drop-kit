@@ -99,110 +99,103 @@ export class NgxDragPlaceholderService {
   }
 
   private applyTransforms(input: IUpdatePlaceholder): void {
-    if (!this.state.element || !input.destinationDropList || input.newIndex === -1) {
+    const { destinationDropList, sourceDropList, newIndex, previousIndex, dragItem } = input;
+
+    if (!this.state.element || !destinationDropList || newIndex === -1) {
       return;
     }
 
-    const isVertical = input.destinationDropList.direction === 'vertical';
-    const items = this.getVisibleDragItems(input.destinationDropList.el) || [];
-    const isSameList = input.sourceDropList.el === input.destinationDropList.el;
-    const newIndex = input.newIndex;
-    const previousIndex = isSameList ? input.previousIndex : items.findIndex((item) => item === this.state.element);
+    const isVertical = destinationDropList.direction === 'vertical';
+    const items = this.getVisibleDragItems(destinationDropList.el) || [];
+    const isSameList = sourceDropList.el === destinationDropList.el;
+
+    const draggedEl = dragItem.el;
+    const placeholderEl = this.state.element;
     const plcSize = isVertical ? this.state.rect?.height || 0 : this.state.rect?.width || 0;
-    const draggedEl = input.dragItem.el;
 
-    // محاسبه و اعمال transform برای هر آیتم
+    // در حالت cross-list، previousIndex را با توجه به جایگاه placeholder در مقصد محاسبه می‌کنیم
+    const prevIdx = isSameList ? previousIndex : items.findIndex((item) => item === placeholderEl);
+
     items.forEach((el, idx) => {
-      // اگر المنت، المنت درگ‌شده است (عنصری که مخفی شده) باید transform پاک شود
-      if (draggedEl && el === draggedEl) {
-        el.style.transform = '';
+      this.renderer.setStyle(el, 'transition', 'transform 250ms cubic-bezier(0, 0, 0.2, 1)');
+
+      // آیتمی که در حال درگ است نباید transform داشته باشد
+      if (el === draggedEl) {
+        this.renderer.setStyle(el, 'transform', '');
         return;
       }
 
-      // helper: اندازه هر آیتم (ارتفاع یا عرض)
-      const itemHeight = el.offsetHeight || 0;
-      const itemWidth = el.offsetWidth || 0;
-      const itemSize = isVertical ? itemHeight : itemWidth;
+      // محاسبه اندازه واقعی آیتم
+      const itemSize = isVertical ? el.offsetHeight || plcSize : el.offsetWidth || plcSize;
 
-      //_______________Move placeholder element
-      if (this.state.element && el === this.state.element) {
-        const delta = newIndex - previousIndex; // مثبت => به سمت پایین، منفی => به سمت بالا
-        if (delta === 0) {
-          el.style.transform = '';
-          return;
-        }
-
-        let shift = delta * itemSize;
-        const transform = isVertical ? `translate3d(0, ${shift}px, 0)` : `translate3d(${shift}px, 0, 0)`;
-        // از translate3d برای GPU acceleration استفاده می‌کنیم
-        el.style.transform = transform;
+      // Placeholder movement
+      if (el === placeholderEl) {
+        const delta = newIndex - prevIdx;
+        this.renderer.setStyle(
+          el,
+          'transform',
+          delta === 0
+            ? ''
+            : isVertical
+            ? `translate3d(0, ${delta * itemSize}px, 0)`
+            : `translate3d(${delta * itemSize}px, 0, 0)`
+        );
         return;
       }
-      //_______________End of Move placeholder element
 
-      // بقیه آیتم‌ها:
+      // تعیین محدوده آیتم‌هایی که باید جابجا شوند
+      const checkIdx = newIndex >= prevIdx ? idx - 1 : idx;
+
+      // -----------------------
+      // حالت ۱: درون همان لیست
+      // -----------------------
       if (isSameList) {
-        let checkIdx = newIndex >= previousIndex ? idx - 1 : idx;
-        if (newIndex < previousIndex) {
-          // آیتم‌هایی که در بازه [newIndex, previousIndex - 1] هستند باید به پایین شیفت کنند (+itemSize)
-          if (checkIdx >= newIndex && checkIdx < previousIndex) {
-            const shift = itemSize; // پایین = مثبت در محور Y
-            const transform = isVertical ? `translate3d(0, ${shift}px, 0)` : `translate3d(${shift}px, 0, 0)`;
-            el.style.transform = transform;
-            return;
-          } else {
-            el.style.transform = '';
-            return;
-          }
+        if (newIndex < prevIdx) {
+          // حرکت به بالا
+          this.renderer.setStyle(
+            el,
+            'transform',
+            checkIdx >= newIndex && checkIdx < prevIdx ? this.getTransform(isVertical, +itemSize) : ''
+          );
+        } else if (newIndex > prevIdx) {
+          // حرکت به پایین
+          this.renderer.setStyle(
+            el,
+            'transform',
+            checkIdx >= prevIdx && checkIdx <= newIndex ? this.getTransform(isVertical, -itemSize) : ''
+          );
+        } else {
+          this.renderer.setStyle(el, 'transform', '');
         }
-
-        // حالت درگ به پایین: newIndex > previousIndex
-        if (newIndex > previousIndex) {
-          // آیتم‌هایی که در بازه [previousIndex + 1, newIndex] هستند باید به بالا شیفت کنند (-itemSize)
-          if (checkIdx >= previousIndex && checkIdx <= newIndex) {
-            const shift = -itemSize; // بالا = منفی در محور Y
-            const transform = isVertical ? `translate3d(0, ${shift}px, 0)` : `translate3d(${shift}px, 0, 0)`;
-            el.style.transform = transform;
-            return;
-          } else {
-            el.style.transform = '';
-            return;
-          }
-        }
-      } else {
-        let checkIdx = newIndex >= previousIndex ? idx - 1 : idx;
-
-        // حالت درگ به بالا: newIndex < previousIndex
-        if (newIndex < previousIndex) {
-          // آیتم‌هایی که در بازه [newIndex, previousIndex - 1] هستند باید به پایین شیفت کنند (+itemSize)
-          if (checkIdx >= newIndex && checkIdx < previousIndex) {
-            const shift = itemSize; // پایین = مثبت در محور Y
-            const transform = isVertical ? `translate3d(0, ${shift}px, 0)` : `translate3d(${shift}px, 0, 0)`;
-            el.style.transform = transform;
-            return;
-          } else {
-            el.style.transform = '';
-            return;
-          }
-        }
-        // حالت درگ به پایین: newIndex > previousIndex
-        if (newIndex > previousIndex) {
-          // آیتم‌هایی که در بازه [previousIndex + 1, newIndex] هستند باید به بالا شیفت کنند (-itemSize)
-          if (checkIdx >= previousIndex && checkIdx < newIndex) {
-            const shift = -itemSize; // بالا = منفی در محور Y
-            const transform = isVertical ? `translate3d(0, ${shift}px, 0)` : `translate3d(${shift}px, 0, 0)`;
-            el.style.transform = transform;
-            return;
-          } else {
-            el.style.transform = '';
-            return;
-          }
-        }
+        return;
       }
-      // fallback: پاکسازی
-      el.style.transform = '';
-      return;
+
+      // -----------------------
+      // حالت ۲: بین دو لیست (CrossList)
+      // -----------------------
+      if (newIndex < prevIdx) {
+        // حرکت به بالا
+        this.renderer.setStyle(
+          el,
+          'transform',
+          checkIdx >= newIndex && checkIdx < prevIdx ? this.getTransform(isVertical, +itemSize) : ''
+        );
+      } else if (newIndex > prevIdx) {
+        // حرکت به پایین
+        this.renderer.setStyle(
+          el,
+          'transform',
+          checkIdx >= prevIdx && checkIdx < newIndex ? this.getTransform(isVertical, -itemSize) : ''
+        );
+      } else {
+        this.renderer.setStyle(el, 'transform', '');
+      }
     });
+  }
+
+  /** Helper برای ساخت transform با GPU acceleration */
+  private getTransform(isVertical: boolean, shift: number): string {
+    return isVertical ? `translate3d(0, ${shift}px, 0)` : `translate3d(${shift}px, 0, 0)`;
   }
 
   private showFlexWrap(input: IUpdatePlaceholder): void {
