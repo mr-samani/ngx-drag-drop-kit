@@ -115,6 +115,7 @@ export class NgxDragRegisterService {
    */
   _getItemIndexFromPointerPosition(
     items: IDragItem[],
+    currentDrag: IDragItem,
     pointer: { x: number; y: number },
     isVertical: boolean
   ): { index: number; isAfter: boolean } {
@@ -122,6 +123,7 @@ export class NgxDragRegisterService {
     let index = -1;
     let isAfter = false;
     for (let i = 0; i < items.length; i++) {
+      if (items[i].el == currentDrag.el) continue;
       const rect = items[i].domRect;
       const start = Math.floor(isVertical ? rect.top : rect.left);
       const end = Math.floor(isVertical ? rect.bottom : rect.right);
@@ -138,9 +140,9 @@ export class NgxDragRegisterService {
         break;
       }
     }
-    if (index === -1) {
-      index = items.length; // انتهای لیست
-    }
+    // if (index === -1) {
+    //   index = items.length; // انتهای لیست
+    // }
 
     return { index, isAfter };
   }
