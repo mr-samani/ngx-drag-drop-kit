@@ -20,7 +20,7 @@ export class NestedTreeSortComponent {
 
   constructor() {
     this.items = [];
-    for (let i = 1; i < 10; i++) {
+    for (let i = 0; i < 10; i++) {
       this.items.push({
         name: 'Item ' + i,
         children: [],

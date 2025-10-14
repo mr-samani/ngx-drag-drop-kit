@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { IDropList } from '../../interfaces/IDropList';
 import { IDragItem } from '../../interfaces/IDragItem';
+import { IPosition } from '../../interfaces/IPosition';
 
 @Injectable({ providedIn: 'root' })
 export class NgxDragRegisterService {
@@ -114,37 +115,52 @@ export class NgxDragRegisterService {
    * @returns item index
    */
   _getItemIndexFromPointerPosition(
-    items: IDragItem[],
-    currentDrag: IDragItem,
-    pointer: { x: number; y: number },
+    dropList: IDropList,
+    drag: IDragItem,
+    pointer: IPosition,
     isVertical: boolean
-  ): { index: number; isAfter: boolean } {
+  ): number {
+    const items = dropList.dragItems;
     const axis = isVertical ? 'y' : 'x';
     let index = -1;
     let isAfter = false;
+
     for (let i = 0; i < items.length; i++) {
-      if (items[i].el == currentDrag.el) continue;
+      const rect = items[i].domRect;
+      const start = Math.floor(isVertical ? rect.top : rect.left);
+      const end = Math.floor(isVertical ? rect.bottom : rect.right);
+
+      // آیا موس داخل این آیتم است؟
+      if (pointer[axis] >= start && pointer[axis] <= end) {
+        // محاسبه center این آیتم
+        const center = start + (end - start) / 2;
+
+        if (pointer[axis] < center || items[i].el == drag.el) {
+          index = i;
+          isAfter = false;
+        } else {
+          index = i + 1;
+          isAfter = true;
+        }
+      }
+    }
+    // items.forEach((m) => console.log(m.el.getBoundingClientRect().y, m.el.id, m.domRect.y));
+    console.log('index', index, 'isAfter', isAfter, dropList.el?.id);
+    return index;
+  }
+
+  _getDragItemFromPointerPosition(items: IDragItem[], pointer: IPosition, isVertical: boolean): IDragItem | undefined {
+    const axis = isVertical ? 'y' : 'x';
+    for (let i = 0; i < items.length; i++) {
       const rect = items[i].domRect;
       const start = Math.floor(isVertical ? rect.top : rect.left);
       const end = Math.floor(isVertical ? rect.bottom : rect.right);
       // آیا موس داخل این آیتم است؟
       if (pointer[axis] >= start && pointer[axis] <= end) {
-        // محاسبه center این آیتم
-        const center = start + (end - start) / 2;
-        index = i;
-        if (pointer[axis] < center) {
-          isAfter = false;
-        } else {
-          isAfter = true;
-        }
-        break;
+        return items[i];
       }
     }
-    // if (index === -1) {
-    //   index = items.length; // انتهای لیست
-    // }
-
-    return { index, isAfter };
+    return undefined;
   }
 
   _getDragItemFromIndex(dropList: IDropList, index: number): IDragItem | undefined {

@@ -12,6 +12,8 @@ import { fromEvent } from 'rxjs/internal/observable/fromEvent';
 import { throttleTime } from 'rxjs/internal/operators/throttleTime';
 import { IPosition } from '../../interfaces/IPosition';
 import { IDropList } from '../../interfaces/IDropList';
+import { findScrollableToParents } from '../../utils/findScrollableElement';
+import { IDragItem } from '../../interfaces/IDragItem';
 
 @Injectable({
   providedIn: 'root',
@@ -19,7 +21,7 @@ import { IDropList } from '../../interfaces/IDropList';
 export class NgxDragDropService {
   isDragging = false;
 
-  private _activeDragInstances: NgxDraggableDirective[] = [];
+  private _activeDragInstances: IDragItem[] = [];
   private activeDropList?: IDropList;
   private _renderer: Renderer2;
   private _dropEvent: IDropEvent | null = null;
@@ -44,17 +46,16 @@ export class NgxDragDropService {
     this._renderer = rendererFactory.createRenderer(null, null);
   }
 
-  startDrag(drag: NgxDraggableDirective) {
+  startDrag(drag: IDragItem) {
     if (!drag.dropList) {
       return;
     }
     this.activeDropList = drag.dropList;
 
-    this.dragRegister.updateAllDragItemsRect();
-    this.sortDragItems();
-
     this.isDragging = true;
     this.activeDropList.dragging = true;
+    this.dragRegister.updateAllDragItemsRect();
+    this.sortDragItems();
     const currDomRect = drag.domRect;
     this._activeDragInstances.push(drag);
     this._previousDragIndex = this.dragRegister.getDragItemIndex(drag);
@@ -95,7 +96,7 @@ export class NgxDragDropService {
     this.placeholderService.createPlaceholder(this.activeDropList, this._activeDragInstances[0]);
   }
 
-  dragMove(drag: NgxDraggableDirective, ev: MouseEvent | TouchEvent, transform: string) {
+  dragMove(drag: IDragItem, ev: MouseEvent | TouchEvent, transform: string) {
     if (!this.dragElementInBody || !this.isDragging || !this._activeDragInstances[0].dropList) {
       return;
     }
@@ -110,45 +111,35 @@ export class NgxDragDropService {
       return;
     }
     const isVertical = dropList.direction === 'vertical';
-    let foundIndex = this.dragRegister._getItemIndexFromPointerPosition(
-      dropList.dragItems,
-      viewportPointer,
-      isVertical
-    );
-    // console.log(
-    //   'newIndex:',
-    //   foundIndex.index,
-    //   'previousIndex:',
-    //   this._previousDragIndex,
-    //   'isAfter:',
-    //   foundIndex.isAfter
-    // );
-    this._newIndex = foundIndex.index;
+    let foundIndex = this.dragRegister._getItemIndexFromPointerPosition(dropList, drag, viewportPointer, isVertical);
+
+    this._newIndex = foundIndex > -1 && foundIndex < dropList.dragItems.length ? foundIndex : this._newIndex;
     if (this.activeDropList !== dropList) {
-      this.activeDropList = dropList;
-      this.placeholderService.createPlaceholder(
-        dropList,
-        this._activeDragInstances[0],
-        this.dragRegister._getDragItemFromIndex(dropList, this._newIndex),
-        false
+      const overDragItem = this.dragRegister._getDragItemFromPointerPosition(
+        dropList.dragItems,
+        viewportPointer,
+        isVertical
       );
+      this.activeDropList = dropList;
+      this.placeholderService.createPlaceholder(dropList, this._activeDragInstances[0], overDragItem);
+    } else {
+      // console.log('newIndex:', this._newIndex, 'foundIndex:', foundIndex);
+      this.placeholderService.updatePlaceholder$.next({
+        dragItem: this._activeDragInstances[0],
+        sourceDropList: this._activeDragInstances[0].dropList,
+        destinationDropList: this.activeDropList,
+        newIndex: this._newIndex,
+      });
     }
-    this.placeholderService.updatePlaceholder$.next({
-      dragItem: this._activeDragInstances[0],
-      sourceDropList: this._activeDragInstances[0].dropList,
-      destinationDropList: this.activeDropList,
-      newIndex: this._newIndex,
-      previousIndex: this._previousDragIndex,
-      isAfter: foundIndex.isAfter,
-    });
   }
-  stopDrag(drag: NgxDraggableDirective) {
+  stopDrag(drag: IDragItem) {
     this.isDragging = false;
     if (drag.dropList) drag.dropList.dragging = false;
-    // this.dragRegister.dargItems.forEach((d) => {
-    //   this._renderer.setStyle(d.el, 'transition-property', 'none');
-    //   this._renderer.removeStyle(d.el, 'transform');
-    // });
+    this.dragRegister.dargItems.forEach((d) => {
+      // this._renderer.setStyle(d.el, 'transition-property', 'none');
+      // this._renderer.removeStyle(d.el, 'transform');
+      this._renderer.removeStyle(d.el, 'transition');
+    });
 
     const index = this._activeDragInstances.indexOf(drag);
     if (index > -1) {
@@ -183,34 +174,13 @@ export class NgxDragDropService {
     }
   }
 
-  // Find all scrollable parents
-  private updateScrollableParents() {
-    this.scrollableParents = [];
-    this.dragRegister.dropListItems.forEach((target) => {
-      let parent: HTMLElement | null = target.el;
-      while (parent) {
-        const style = window.getComputedStyle(parent);
-        if (
-          style.overflow === 'auto' ||
-          style.overflow === 'scroll' ||
-          style.overflowY === 'auto' ||
-          style.overflowY === 'scroll' ||
-          style.overflowX === 'auto' ||
-          style.overflowX === 'scroll'
-        ) {
-          if (!this.scrollableParents.includes(parent)) {
-            this.scrollableParents.push(parent);
-          }
-        }
-        parent = parent.parentElement;
-      }
-    });
-    // console.log('scrollableParents:', this.scrollableParents);
-  }
-
   // Setup scroll listeners with throttling
   private setupScrollListeners() {
-    this.updateScrollableParents();
+    this.scrollableParents = findScrollableToParents(
+      this._document,
+      this.dragRegister.dropListItems.map((item) => item.el)
+    );
+    console.log('scrollableParents:', this.scrollableParents);
     if (this.scrollSubscription) return;
 
     this.scrollSubscription = fromEvent(this.scrollableParents, 'scroll')

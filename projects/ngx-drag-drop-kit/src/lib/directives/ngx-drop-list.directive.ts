@@ -18,9 +18,9 @@ import { Subscription } from 'rxjs';
 import { IDropEvent } from '../../interfaces/IDropEvent';
 import { NgxPlaceholderDirective } from './ngx-place-holder.directive';
 import { NgxDragRegisterService } from '../services/ngx-drag-register.service';
-import { NgxDraggableDirective } from './ngx-draggable.directive';
 import { DOCUMENT } from '@angular/common';
 import { IDropList } from '../../interfaces/IDropList';
+import { IDragItem } from '../../interfaces/IDragItem';
 @Directive({
   selector: '[ngxDropList]',
   host: {
@@ -71,7 +71,7 @@ export class NgxDropListDirective<T = any> implements IDropList, OnInit, AfterVi
   /**
    * NOTE: index of drag items is not valid
    */
-  dragItems: NgxDraggableDirective[] = [];
+  dragItems: IDragItem[] = [];
   public domRect!: DOMRect;
 
   private readonly doc = inject(DOCUMENT);
@@ -103,10 +103,10 @@ export class NgxDropListDirective<T = any> implements IDropList, OnInit, AfterVi
     this.disposePlaceholder();
   }
 
-  registerDragItem(drag: NgxDraggableDirective) {
+  registerDragItem(drag: IDragItem) {
     this.dragItems.push(drag);
   }
-  removeDragItem(drag: NgxDraggableDirective) {
+  removeDragItem(drag: IDragItem) {
     let indx = this.dragItems.findIndex((x) => x == drag);
     if (indx > -1) {
       this.dragItems.splice(indx, 1);

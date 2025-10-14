@@ -9,11 +9,4 @@ export interface IUpdatePlaceholder {
    * placeholder index
    */
   newIndex: number;
-  /**
-   * current drag index
-   */
-  previousIndex: number;
-
-  /** pointer is greater than center */
-  isAfter: boolean;
 }
