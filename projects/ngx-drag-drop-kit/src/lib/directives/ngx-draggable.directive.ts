@@ -3,6 +3,7 @@ import {
   Directive,
   ElementRef,
   EventEmitter,
+  Inject,
   inject,
   InjectionToken,
   Input,
@@ -22,7 +23,7 @@ import { ElementHelper } from '../../utils/element.helper';
 import { NgxDragRegisterService } from '../services/ngx-drag-register.service';
 import { DOCUMENT } from '@angular/common';
 import { AutoScrollService } from '../services/auto-scroll.service';
-import { IDragItem } from '../../interfaces/IDragItem';
+import { DragItemRef } from './DragItemRef';
 export const NGX_DROP_LIST = new InjectionToken<NgxDropListDirective>('NgxDropList');
 
 @Directive({
@@ -30,7 +31,7 @@ export const NGX_DROP_LIST = new InjectionToken<NgxDropListDirective>('NgxDropLi
   standalone: true,
   exportAs: 'NgxDraggable',
 })
-export class NgxDraggableDirective implements IDragItem, OnDestroy, AfterViewInit {
+export class NgxDraggableDirective extends DragItemRef implements OnDestroy, AfterViewInit {
   private boundaryDomRect?: DOMRect;
   @Input() boundary?: HTMLElement;
 
@@ -75,23 +76,21 @@ export class NgxDraggableDirective implements IDragItem, OnDestroy, AfterViewIni
     return this._dragging;
   }
   isTouched = false;
-  el: HTMLElement;
   protected x: number = 0;
   protected y: number = 0;
   private previousXY: IPosition = { x: 0, y: 0 };
   private subscriptions: Subscription[] = [];
-  public dropList?: NgxDropListDirective;
-  public domRect!: DOMRect;
 
-  private readonly _renderer = inject(Renderer2);
-  private readonly _dragService = inject(NgxDragDropService);
-  private readonly _autoScroll = inject(AutoScrollService);
-  private readonly dragRegister = inject(NgxDragRegisterService);
-  private readonly elRef = inject(ElementRef);
-  private readonly doc = inject(DOCUMENT);
-
-  constructor() {
-    this.el = this.elRef.nativeElement;
+  constructor(
+    elRef: ElementRef,
+    private dragRegister: NgxDragRegisterService,
+    private _dragService: NgxDragDropService,
+    private _autoScroll: AutoScrollService,
+    @Inject(DOCUMENT) private doc: Document,
+    private _renderer: Renderer2
+  ) {
+    super(elRef.nativeElement);
+    this.el = elRef.nativeElement;
     this.initDragHandler();
   }
 
@@ -101,15 +100,20 @@ export class NgxDraggableDirective implements IDragItem, OnDestroy, AfterViewIni
     this.updateDomRect();
   }
 
-  updateDomRect() {
-    this.domRect = this.el.getBoundingClientRect();
-  }
+
+
+
   adjustDomRect(x: number, y: number) {
-    // this.domRect.top += top;
-    // this.domRect.bottom = this.domRect.top + this.domRect.height;
-    // this.domRect.left += left;
-    // this.domRect.right = this.domRect.left + this.domRect.width;
-    this.domRect = new DOMRect(this.domRect.x + x, this.domRect.y + y, this.domRect.width, this.domRect.height);
+    // this._domRect.top = this._domRect.y;
+    // this._domRect.left = this._domRect.x;
+    // this._domRect.bottom = this._domRect.y + this._domRect.height;
+    // this._domRect.right = this._domRect.x + this._domRect.width;
+    this._domRect = new DOMRect(
+      this._domRect.left + x,
+      this._domRect.top + y,
+      this._domRect.width,
+      this._domRect.height
+    );
   }
 
   findFirstParentDragRootElement() {
@@ -133,6 +137,7 @@ export class NgxDraggableDirective implements IDragItem, OnDestroy, AfterViewIni
     const xy = getXYfromTransform(this.el);
     this.x = xy.x;
     this.y = xy.y;
+    this.transform = xy;
     if (this.boundary) {
       this.boundaryDomRect = this.boundary.getBoundingClientRect();
     }

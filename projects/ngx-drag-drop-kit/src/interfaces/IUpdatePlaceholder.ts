@@ -1,8 +1,9 @@
-import { IDragItem } from './IDragItem';
+import { DragItemRef } from '../lib/directives/DragItemRef';
 import { IDropList } from './IDropList';
 
 export interface IUpdatePlaceholder {
-  dragItem: IDragItem;
+  dragItem: DragItemRef;
+  dragOverItem?: DragItemRef;
   destinationDropList: IDropList;
   sourceDropList: IDropList;
   /**

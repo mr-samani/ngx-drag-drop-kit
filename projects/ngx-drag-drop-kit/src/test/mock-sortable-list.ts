@@ -1,4 +1,4 @@
-import { IDragItem } from '../interfaces/IDragItem';
+import { DragItemRef } from '../DragItemRef';
 import { IDropList } from '../interfaces/IDropList';
 
 export const MockDropList: IDropList = {
@@ -18,7 +18,7 @@ export const MockDropList: IDropList = {
   onDrop: jasmine.createSpy('onDrop'),
   addPlaceholder: jasmine.createSpy('addPlaceholder').and.returnValue(document.createElement('div')),
 };
-export const MockDragItems: IDragItem[] = [];
+export const MockDragItems: DragItemRef[] = [];
 
 for (let i = 0; i < 30; i++) {
   MockDragItems.push({

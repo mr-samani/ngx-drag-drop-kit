@@ -1,19 +1,19 @@
 import { Injectable } from '@angular/core';
 import { IDropList } from '../../interfaces/IDropList';
-import { IDragItem } from '../../interfaces/IDragItem';
 import { IPosition } from '../../interfaces/IPosition';
+import { DragItemRef } from '../directives/DragItemRef';
 
 @Injectable({ providedIn: 'root' })
 export class NgxDragRegisterService {
   private dropListMap = new Map<Element, IDropList>();
-  private dragItemMap = new Map<HTMLElement, IDragItem>();
+  private dragItemMap = new Map<HTMLElement, DragItemRef>();
   private dropListArray: IDropList[] = [];
 
   get dropListItems(): ReadonlyArray<IDropList> {
     return this.dropListArray;
   }
 
-  get dargItems(): ReadonlyMap<HTMLElement, IDragItem> {
+  get dargItems(): ReadonlyMap<HTMLElement, DragItemRef> {
     return this.dragItemMap;
   }
   get dropList(): ReadonlyMap<Element, IDropList> {
@@ -36,7 +36,7 @@ export class NgxDragRegisterService {
     }
   }
 
-  registerDragItem(dragItem: IDragItem): void {
+  registerDragItem(dragItem: DragItemRef): void {
     const dropList = this.findParentDropList(dragItem.el);
     if (dropList) {
       dragItem.dropList = dropList;
@@ -45,30 +45,34 @@ export class NgxDragRegisterService {
     this.dragItemMap.set(dragItem.el, dragItem);
   }
 
-  removeDragItem(dragItem: IDragItem): void {
+  removeDragItem(dragItem: DragItemRef): void {
     if (dragItem.dropList) {
       dragItem.dropList.removeDragItem(dragItem);
     }
     this.dragItemMap.delete(dragItem.el);
   }
 
-  getDragItemIndex(dragItem: IDragItem): number {
+  getDragItemIndex(dragItem: DragItemRef): number {
     if (!dragItem.dropList) return -1;
     return dragItem.dropList.dragItems.indexOf(dragItem);
   }
 
-  updateAllDragItemsRect(): void {
-    for (const dropList of this.dropListArray) {
+  updateAllDragItemsRect(dropList: IDropList[] = this.dropListArray): void {
+    for (const lst of dropList) {
       // Skip hidden elements
-      if (dropList.el.offsetParent === null) continue;
+      if (lst.el.offsetParent === null) continue;
 
-      dropList.updateDomRect();
+      lst.updateDomRect();
 
-      for (const item of dropList.dragItems) {
+      for (const item of lst.dragItems) {
         // Skip hidden items
         if (item.el.offsetParent === null) continue;
         item.updateDomRect();
       }
+      // todo: IN RTL and horizontal sort must be reverse
+      lst.dragItems = lst.dragItems.sort((a, b) => {
+        return lst.direction === 'horizontal' ? a.domRect.left - b.domRect.left : a.domRect.top - b.domRect.top;
+      });
     }
   }
 
@@ -116,40 +120,66 @@ export class NgxDragRegisterService {
    */
   _getItemIndexFromPointerPosition(
     dropList: IDropList,
-    drag: IDragItem,
+    drag: DragItemRef,
     pointer: IPosition,
-    isVertical: boolean
-  ): number {
-    const items = dropList.dragItems;
+    isVertical: boolean,
+    isSameList: boolean,
+    previousIndex: number
+  ): { index: number; isAfter: boolean; dragItem: DragItemRef | undefined } {
     const axis = isVertical ? 'y' : 'x';
+    const items = dropList.dragItems.filter((i) => i !== drag);
     let index = -1;
     let isAfter = false;
+    const threshold = 0.1; // 10% از ارتفاع یا عرض آیتم
 
     for (let i = 0; i < items.length; i++) {
       const rect = items[i].domRect;
-      const start = Math.floor(isVertical ? rect.top : rect.left);
-      const end = Math.floor(isVertical ? rect.bottom : rect.right);
+      const start = isVertical ? rect.top : rect.left;
+      const end = isVertical ? rect.bottom : rect.right;
+      const center = start + (end - start) / 2;
+      const size = end - start;
 
-      // آیا موس داخل این آیتم است؟
       if (pointer[axis] >= start && pointer[axis] <= end) {
-        // محاسبه center این آیتم
-        const center = start + (end - start) / 2;
+        const upperZone = center - size * threshold;
+        const lowerZone = center + size * threshold;
 
-        if (pointer[axis] < center || items[i].el == drag.el) {
+        if (pointer[axis] < upperZone) {
           index = i;
           isAfter = false;
-        } else {
-          index = i + 1;
+        } else if (pointer[axis] > lowerZone) {
+          index = i; //+ 1;
           isAfter = true;
+        } else {
+          // موس خیلی نزدیک وسط آیتمه → تغییر نده
+          index = previousIndex;
+          isAfter = false;
         }
+        break;
       }
     }
-    // items.forEach((m) => console.log(m.el.getBoundingClientRect().y, m.el.id, m.domRect.y));
-    console.log('index', index, 'isAfter', isAfter, dropList.el?.id);
-    return index;
+
+    // وقتی موس خارج از محدوده آیتم‌هاست
+    // if (index < 0) {
+    //   if (!items[0] || pointer[axis] < (isVertical ? items[0].domRect.top : items[0].domRect.left)) {
+    //     index = 0;
+    //     isAfter = false;
+    //   } else if (
+    //     pointer[axis] > (isVertical ? items[items.length - 1].domRect.bottom : items[items.length - 1].domRect.right)
+    //   ) {
+    //     index = items.length;
+    //     isAfter = true;
+    //   } else {
+    //     index = previousIndex;
+    //   }
+    // }
+
+    // if (isSameList && index > items.length) index = items.length;
+    const dragItem = this._getDragItemFromIndex(dropList, index);
+    console.log(dragItem?.el.id, 'index', index);
+    return { index, isAfter, dragItem };
   }
 
-  _getDragItemFromPointerPosition(items: IDragItem[], pointer: IPosition, isVertical: boolean): IDragItem | undefined {
+  _getDragItemFromPointerPosition(items: DragItemRef[], pointer: IPosition, isVertical: boolean): DragItemRef | undefined {
     const axis = isVertical ? 'y' : 'x';
     for (let i = 0; i < items.length; i++) {
       const rect = items[i].domRect;
@@ -163,7 +193,7 @@ export class NgxDragRegisterService {
     return undefined;
   }
 
-  _getDragItemFromIndex(dropList: IDropList, index: number): IDragItem | undefined {
+  _getDragItemFromIndex(dropList: IDropList, index: number): DragItemRef | undefined {
     return dropList.dragItems[index];
   }
 }

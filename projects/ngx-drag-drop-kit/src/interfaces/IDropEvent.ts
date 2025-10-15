@@ -1,4 +1,4 @@
-import { IDragItem } from './IDragItem';
+import { DragItemRef } from '../lib/directives/DragItemRef';
 import { IDropList } from './IDropList';
 
 export interface IDropEvent<DataType = any> {
@@ -7,7 +7,7 @@ export interface IDropEvent<DataType = any> {
   /** Current index of the item. */
   currentIndex: number;
   /** Item that is being dropped. */
-  item: IDragItem;
+  item: DragItemRef;
   /** Container in which the item was dropped. */
   container: IDropList;
   /** Container from which the item was picked up. Can be the same as the `container`. */

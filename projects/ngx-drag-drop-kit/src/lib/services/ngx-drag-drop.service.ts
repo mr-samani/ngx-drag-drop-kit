@@ -1,6 +1,5 @@
 import { Inject, Injectable, Renderer2, RendererFactory2, RendererStyleFlags2 } from '@angular/core';
 import { IDropEvent } from '../../interfaces/IDropEvent';
-import { NgxDraggableDirective } from '../directives/ngx-draggable.directive';
 import { DOCUMENT } from '@angular/common';
 import { getPointerPositionOnViewPort } from '../../utils/get-position';
 import { NgxDragPlaceholderService } from './ngx-placeholder.service';
@@ -13,7 +12,7 @@ import { throttleTime } from 'rxjs/internal/operators/throttleTime';
 import { IPosition } from '../../interfaces/IPosition';
 import { IDropList } from '../../interfaces/IDropList';
 import { findScrollableToParents } from '../../utils/findScrollableElement';
-import { IDragItem } from '../../interfaces/IDragItem';
+import { DragItemRef } from '../directives/DragItemRef';
 
 @Injectable({
   providedIn: 'root',
@@ -21,7 +20,7 @@ import { IDragItem } from '../../interfaces/IDragItem';
 export class NgxDragDropService {
   isDragging = false;
 
-  private _activeDragInstances: IDragItem[] = [];
+  private _activeDragInstances: DragItemRef[] = [];
   private activeDropList?: IDropList;
   private _renderer: Renderer2;
   private _dropEvent: IDropEvent | null = null;
@@ -46,7 +45,7 @@ export class NgxDragDropService {
     this._renderer = rendererFactory.createRenderer(null, null);
   }
 
-  startDrag(drag: IDragItem) {
+  startDrag(drag: DragItemRef) {
     if (!drag.dropList) {
       return;
     }
@@ -55,7 +54,6 @@ export class NgxDragDropService {
     this.isDragging = true;
     this.activeDropList.dragging = true;
     this.dragRegister.updateAllDragItemsRect();
-    this.sortDragItems();
     const currDomRect = drag.domRect;
     this._activeDragInstances.push(drag);
     this._previousDragIndex = this.dragRegister.getDragItemIndex(drag);
@@ -96,7 +94,7 @@ export class NgxDragDropService {
     this.placeholderService.createPlaceholder(this.activeDropList, this._activeDragInstances[0]);
   }
 
-  dragMove(drag: IDragItem, ev: MouseEvent | TouchEvent, transform: string) {
+  dragMove(drag: DragItemRef, ev: MouseEvent | TouchEvent, transform: string) {
     if (!this.dragElementInBody || !this.isDragging || !this._activeDragInstances[0].dropList) {
       return;
     }
@@ -111,9 +109,18 @@ export class NgxDragDropService {
       return;
     }
     const isVertical = dropList.direction === 'vertical';
-    let foundIndex = this.dragRegister._getItemIndexFromPointerPosition(dropList, drag, viewportPointer, isVertical);
+    const isSameList = this._activeDragInstances[0].dropList === dropList;
+    const dragOverData = this.dragRegister._getItemIndexFromPointerPosition(
+      dropList,
+      drag,
+      viewportPointer,
+      isVertical,
+      isSameList,
+      this._newIndex
+    );
+    this._newIndex = dragOverData.index;
+    const dragOverItem = dragOverData.dragItem;
 
-    this._newIndex = foundIndex > -1 && foundIndex < dropList.dragItems.length ? foundIndex : this._newIndex;
     if (this.activeDropList !== dropList) {
       const overDragItem = this.dragRegister._getDragItemFromPointerPosition(
         dropList.dragItems,
@@ -126,13 +133,14 @@ export class NgxDragDropService {
       // console.log('newIndex:', this._newIndex, 'foundIndex:', foundIndex);
       this.placeholderService.updatePlaceholder$.next({
         dragItem: this._activeDragInstances[0],
+        dragOverItem: dragOverItem,
         sourceDropList: this._activeDragInstances[0].dropList,
         destinationDropList: this.activeDropList,
         newIndex: this._newIndex,
       });
     }
   }
-  stopDrag(drag: IDragItem) {
+  stopDrag(drag: DragItemRef) {
     this.isDragging = false;
     if (drag.dropList) drag.dropList.dragging = false;
     this.dragRegister.dargItems.forEach((d) => {
@@ -163,15 +171,6 @@ export class NgxDragDropService {
     this.scrollableParents = [];
     this._previousDragIndex = 0;
     this._newIndex = 0;
-  }
-
-  private sortDragItems() {
-    for (const dropList of this.dragRegister.dropListItems) {
-      dropList.dragItems = dropList.dragItems.sort((a, b) => {
-        if (a.domRect.top !== b.domRect.top) return a.domRect.top - b.domRect.top;
-        return a.domRect.left - b.domRect.left;
-      });
-    }
   }
 
   // Setup scroll listeners with throttling
