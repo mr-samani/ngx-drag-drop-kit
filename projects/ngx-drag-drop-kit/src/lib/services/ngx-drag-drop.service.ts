@@ -109,14 +109,11 @@ export class NgxDragDropService {
       return;
     }
     const isVertical = dropList.direction === 'vertical';
-    const isSameList = this._activeDragInstances[0].dropList === dropList;
     const dragOverData = this.dragRegister._getItemIndexFromPointerPosition(
       dropList,
       drag,
       viewportPointer,
-      isVertical,
-      isSameList,
-      this._newIndex
+      isVertical
     );
     this._newIndex = dragOverData.index;
     const dragOverItem = dragOverData.dragItem;
@@ -130,7 +127,6 @@ export class NgxDragDropService {
       this.activeDropList = dropList;
       this.placeholderService.createPlaceholder(dropList, this._activeDragInstances[0], overDragItem);
     } else {
-      // console.log('newIndex:', this._newIndex, 'foundIndex:', foundIndex);
       this.placeholderService.updatePlaceholder$.next({
         dragItem: this._activeDragInstances[0],
         dragOverItem: dragOverItem,

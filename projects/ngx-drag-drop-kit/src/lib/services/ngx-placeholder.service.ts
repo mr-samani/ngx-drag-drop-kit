@@ -114,21 +114,21 @@ export class NgxDragPlaceholderService {
     this.state.isShown = true;
     this.state.dragItem = new DragItemRef(this.state.element);
     this.state.dragItem._domRect = this.state.rect;
+    this.state.dragItem.isPlaceholder = true;
 
     this.dragRegister.registerDragItem(this.state.dragItem);
-    requestAnimationFrame(() => {
-      this.dragRegister.updateAllDragItemsRect([destinationDropList]);
-    });
+    //setTimeout(() => {
+    this.dragRegister.updateAllDragItemsRect([destinationDropList]);
+    //}, 100);
   }
 
   private applyTransforms(input: IUpdatePlaceholder): void {
-    const { destinationDropList, sourceDropList, newIndex, dragItem, dragOverItem } = input;
+    const { destinationDropList, sourceDropList, newIndex, dragOverItem } = input;
 
     if (!this.state.element || !destinationDropList || newIndex === -1) return;
 
     const isVertical = destinationDropList.direction === 'vertical';
     const isSameList = sourceDropList.el === destinationDropList.el;
-    const draggedEl = dragItem.el;
     const items = destinationDropList.dragItems;
 
     const placeholderIndex = this.state.index;
@@ -147,11 +147,9 @@ export class NgxDragPlaceholderService {
 
     // ---- reset transforms for all items first ----
     for (const item of items) {
+      if (item.isPlaceholder || item.isDragging) continue;
       this.renderer.setStyle(item.el, 'transform', '');
-      item.transform = { x: 0, y: 0 };
-      if (item.el !== draggedEl) {
-        this.renderer.setStyle(item.el, 'transition', 'transform 250ms cubic-bezier(0,0,0.2,1)');
-      }
+      this.renderer.setStyle(item.el, 'transition', 'transform 250ms cubic-bezier(0,0,0.2,1)');
     }
     // ---- compute affected range ----
     const [start, end] = moveDirection === 'Forward' ? [placeholderIndex, newIndex] : [newIndex, placeholderIndex];
@@ -161,9 +159,10 @@ export class NgxDragPlaceholderService {
     const shiftValue = placeholderSize * directionFactor;
 
     // ---- apply transforms ----
-    for (let i = start; i <= end && i < items.length; i++) {
-      const item = items[i];
-      if (item.el === draggedEl) continue;
+    const otherItems = isSameList ? items.filter((x) => !x.isPlaceholder) : items;
+    for (let i = start; i <= end && i < otherItems.length; i++) {
+      const item = otherItems[i];
+      if (item.isPlaceholder || item.isDragging) continue;
 
       const shouldMove = this.shouldMoveItem(i, placeholderIndex, newIndex, moveDirection, isSameList);
 
@@ -171,7 +170,6 @@ export class NgxDragPlaceholderService {
 
       const transform = this.getTransform(isVertical, shiftValue);
       this.renderer.setStyle(item.el, 'transform', transform);
-      this.adjustDragItemDomRect(item, isVertical, placeholderSize, moveDirection);
     }
   }
 
@@ -202,66 +200,6 @@ export class NgxDragPlaceholderService {
   /** Returns CSS transform string based on orientation and shift distance */
   private getTransform(isVertical: boolean, shift: number): string {
     return isVertical ? `translate3d(0, ${shift}px, 0)` : `translate3d(${shift}px, 0, 0)`;
-  }
-
-  private movePlaceholder(
-    items: DragItemRef[],
-    newIndex: number,
-    isVertical: boolean,
-    moveDirection: MoveDirection,
-    draggedEl: HTMLElement
-  ) {
-    const placeholderEl = this.state.element;
-    if (!placeholderEl) {
-      return;
-    }
-    const plcIdx = this.state.index;
-    // اگر تغییری نیست
-    if (moveDirection == 'None') {
-      this.renderer.setStyle(placeholderEl, 'transform', '');
-      return;
-    }
-    // محاسبه میانگین سایز آیتم‌ها
-    let totalSize = 0;
-    let count = 0;
-
-    const start = Math.min(plcIdx, newIndex);
-    const end = Math.max(plcIdx, newIndex);
-
-    for (let i = start; i <= end && i < items.length; i++) {
-      const item = items[i];
-      if (!item || item.el === placeholderEl || item.el === draggedEl) continue;
-
-      const size = isVertical ? item.el.offsetHeight : item.el.offsetWidth;
-      totalSize += size;
-      count++;
-    }
-
-    const direction = moveDirection == 'Forward' ? 1 : -1;
-    const shift = totalSize * direction;
-    const transform = isVertical ? `translate3d(0, ${shift}px, 0)` : `translate3d(${shift}px, 0, 0)`;
-    this.renderer.setStyle(placeholderEl, 'transform', transform);
-    this.renderer.setStyle(placeholderEl, 'transition', 'transform 250ms cubic-bezier(0.4, 0, 0.2, 1)');
-  }
-
-  private adjustDragItemDomRect(
-    dragItem: DragItemRef,
-    isVertical: boolean,
-    shift: number,
-    moveDirection: MoveDirection
-  ) {
-    dragItem.transform = {
-      x: isVertical ? 0 : shift,
-      y: isVertical ? shift : 0,
-    };
-    // const direction = moveDirection === 'Backward' ? +1 : -1;
-    // const deltaX = isVertical ? 0 : shift * direction;
-    // const deltaY = isVertical ? shift * direction : 0;
-    // dragItem.adjustDomRect(deltaX, deltaY);
-    // فقط برای تست و دیباگ (با انیمیشن هماهنگ)
-    // requestAnimationFrame(() => {
-    //   dragItem.updateDomRect();
-    // });
   }
 
   private showFlexWrap(input: IUpdatePlaceholder): void {

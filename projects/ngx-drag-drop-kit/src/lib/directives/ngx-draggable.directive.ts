@@ -41,10 +41,9 @@ export class NgxDraggableDirective extends DragItemRef implements OnDestroy, Aft
   @Output() dragEnd = new EventEmitter<IPosition>();
 
   private previousTransitionProprety?: string;
-  _dragging: boolean = false;
   set dragging(val: boolean) {
-    this._dragging = val == true;
-    if (this._dragging) {
+    this.isDragging = val == true;
+    if (this.isDragging) {
       this.previousTransitionProprety = this.el.style.transitionProperty;
       this._renderer.setStyle(this.el, 'transition-property', 'none', RendererStyleFlags2.Important);
       this._renderer.setStyle(this.el, 'user-select', 'none');
@@ -73,7 +72,7 @@ export class NgxDraggableDirective extends DragItemRef implements OnDestroy, Aft
     }
   }
   get dragging() {
-    return this._dragging;
+    return this.isDragging;
   }
   isTouched = false;
   protected x: number = 0;
@@ -99,9 +98,6 @@ export class NgxDraggableDirective extends DragItemRef implements OnDestroy, Aft
     this.init();
     this.updateDomRect();
   }
-
-
-
 
   adjustDomRect(x: number, y: number) {
     // this._domRect.top = this._domRect.y;
@@ -137,7 +133,6 @@ export class NgxDraggableDirective extends DragItemRef implements OnDestroy, Aft
     const xy = getXYfromTransform(this.el);
     this.x = xy.x;
     this.y = xy.y;
-    this.transform = xy;
     if (this.boundary) {
       this.boundaryDomRect = this.boundary.getBoundingClientRect();
     }
