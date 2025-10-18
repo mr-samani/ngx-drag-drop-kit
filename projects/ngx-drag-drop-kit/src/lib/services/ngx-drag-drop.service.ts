@@ -157,7 +157,7 @@ export class NgxDragDropService {
 
       if (this._dropEvent && this.activeDropList) {
         this._dropEvent.container = this.activeDropList;
-        this._dropEvent.currentIndex = this._newIndex;
+        this._dropEvent.currentIndex = this._newIndex > 0 ? this._newIndex : 0;
         this.activeDropList.onDrop(this._dropEvent);
       }
     }

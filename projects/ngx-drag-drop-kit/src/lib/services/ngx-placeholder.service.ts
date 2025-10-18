@@ -117,9 +117,9 @@ export class NgxDragPlaceholderService {
     this.state.dragItem.isPlaceholder = true;
 
     this.dragRegister.registerDragItem(this.state.dragItem);
-    //setTimeout(() => {
-    this.dragRegister.updateAllDragItemsRect([destinationDropList]);
-    //}, 100);
+    setTimeout(() => {
+      this.dragRegister.updateAllDragItemsRect([destinationDropList]);
+    }, 100);
   }
 
   private applyTransforms(input: IUpdatePlaceholder): void {
@@ -138,11 +138,13 @@ export class NgxDragPlaceholderService {
       newIndex === placeholderIndex ? 'None' : newIndex > placeholderIndex ? 'Forward' : 'Backward';
     if (dragOverItem && this.state.rect) {
       const newPosition = dragOverItem.domRect;
-      this.renderer.setStyle(
-        this.state.element,
-        'transform',
-        `translate3d(${newPosition.left - this.state.rect.left}px, ${newPosition.top - this.state.rect.top}px, 0)`
-      );
+      let deltaX = newPosition.left - this.state.rect.left;
+      let deltaY = newPosition.top - this.state.rect.top;
+      if (moveDirection === 'Forward') {
+        deltaX += newPosition.width - this.state.rect.width;
+        deltaY += newPosition.height - this.state.rect.height;
+      }
+      this.renderer.setStyle(this.state.element, 'transform', `translate3d(${deltaX}px, ${deltaY}px, 0)`);
     }
 
     // ---- reset transforms for all items first ----

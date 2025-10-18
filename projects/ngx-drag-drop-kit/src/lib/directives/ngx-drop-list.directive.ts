@@ -127,6 +127,7 @@ export class NgxDropListDirective<T = any> implements IDropList, OnInit, AfterVi
       el = this.placeholderViewRef.rootNodes[0] as HTMLElement;
     } else {
       el = this.renderer.createElement('div');
+      this.renderer.addClass(el, 'ngx-drag-placeholder');
       if (width) {
         // this.renderer.setStyle(el, 'width', `${width}px`);
         this.renderer.setStyle(el, 'min-width', `${width}px`);
@@ -140,9 +141,7 @@ export class NgxDropListDirective<T = any> implements IDropList, OnInit, AfterVi
     this.renderer.setStyle(el, 'z-index', '9999');
     this.renderer.setStyle(el, 'position', 'relative');
     this.renderer.setStyle(el, 'pointer-events', 'none');
-    this.renderer.addClass(el, 'ngx-drag-placeholder');
     this.renderer.addClass(el, 'ngx-draggable');
-    this.renderer.setAttribute(el, 'id', 'ngx-drag-placeholder');
     return el;
   }
 

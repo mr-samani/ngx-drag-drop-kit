@@ -161,7 +161,7 @@ export class NgxDragRegisterService {
     }
 
     const dragItem = this._getDragItemFromIndex(dropList, index, drag.dropList == dropList);
-    console.log(dragItem?.el.id, 'index', index);
+    console.log(dropList.el?.id, dragItem?.el.id, 'index', index);
     return { index, isAfter, dragItem };
   }
 

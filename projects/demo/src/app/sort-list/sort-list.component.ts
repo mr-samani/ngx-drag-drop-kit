@@ -12,7 +12,10 @@ import { NgxDragDropKitModule } from '../../../../ngx-drag-drop-kit/src/public-a
 })
 export class SortListComponent {
   items: string[] = Array.from({ length: 30 }).map((m, i) => 'Item ' + i);
-  items2 = Array.from({ length: 5 }).map((m, i) => 'Item ' + i);
+  items2: { title: string; size: number }[] = Array.from({ length: 5 }).map((m, i) => ({
+    title: 'Item ' + i,
+    size: [25, 50, 100, 150][Math.floor(Math.random() * 4)],
+  }));
 
   constructor() {}
 
@@ -22,7 +25,7 @@ export class SortListComponent {
     this.items.splice(rndPosition, 0, rndName);
   }
 
-  drop(ev: IDropEvent, list: string[]) {
+  drop(ev: IDropEvent, list: any[]) {
     console.log('Drop event: ', ev);
     moveItemInArray(list, ev.previousIndex, ev.currentIndex);
   }
