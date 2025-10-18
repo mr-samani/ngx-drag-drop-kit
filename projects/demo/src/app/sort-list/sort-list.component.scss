@@ -41,3 +41,25 @@
     max-width: 100%;
   }
 }
+.custom-placeholder {
+  border: 2px #008a3c solid;
+  &:after,
+  &::before {
+    position: absolute;
+    content: ' ';
+    border: 8px #008a3c solid;
+    top: -8px;
+  }
+  &:after {
+    border-bottom-color: transparent;
+    border-top-color: transparent;
+    border-left-color: transparent;
+    right: -2px;
+  }
+  &:before {
+    border-bottom-color: transparent;
+    border-top-color: transparent;
+    border-right-color: transparent;
+    left: -2px;
+  }
+}

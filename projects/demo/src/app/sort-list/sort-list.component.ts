@@ -12,7 +12,8 @@ import { NgxDragDropKitModule } from '../../../../ngx-drag-drop-kit/src/public-a
 })
 export class SortListComponent {
   items: string[] = Array.from({ length: 30 }).map((m, i) => 'Item ' + i);
-  items2: { title: string; size: number }[] = Array.from({ length: 5 }).map((m, i) => ({
+  items2: { id: string; title: string; size: number }[] = Array.from({ length: 5 }).map((m, i) => ({
+    id: 'item_' + i,
     title: 'Item ' + i,
     size: [25, 50, 100, 150][Math.floor(Math.random() * 4)],
   }));

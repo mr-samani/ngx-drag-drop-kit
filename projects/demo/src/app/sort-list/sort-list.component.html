@@ -8,8 +8,11 @@
       id="baseList"
       #baseList
       [connectedTo]="[baseList]">
+      <div class="custom-placeholder" *ngxPlaceholder></div>
       @for (item of items2; track item;let i = $index) {
-      <div class="example-box" [id]="item" ngxDraggable [style.height.px]="item.size">{{ item.title }}</div>
+      <div class="example-box" [id]="item.id" ngxDraggable [style.height.px]="item.size">
+        {{ item.title }}
+      </div>
       }
     </div>
   </div>

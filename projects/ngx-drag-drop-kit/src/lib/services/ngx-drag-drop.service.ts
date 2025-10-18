@@ -101,7 +101,7 @@ export class NgxDragDropService {
     this._renderer.setStyle(this.dragElementInBody, 'transform', transform);
     const viewportPointer = getPointerPositionOnViewPort(ev);
     const dropList = this.dragRegister._getDropListFromPointerPosition(viewportPointer);
-    // console.log('Active Drop List:', dropList?.el?.id);
+    console.log('Active Drop List:', dropList?.el?.id);
     if (!dropList) {
       return;
     }
@@ -126,15 +126,14 @@ export class NgxDragDropService {
       );
       this.activeDropList = dropList;
       this.placeholderService.createPlaceholder(dropList, this._activeDragInstances[0], overDragItem);
-    } else {
-      this.placeholderService.updatePlaceholder$.next({
-        dragItem: this._activeDragInstances[0],
-        dragOverItem: dragOverItem,
-        sourceDropList: this._activeDragInstances[0].dropList,
-        destinationDropList: this.activeDropList,
-        newIndex: this._newIndex,
-      });
     }
+    this.placeholderService.updatePlaceholder$.next({
+      dragItem: this._activeDragInstances[0],
+      dragOverItem: dragOverItem,
+      sourceDropList: this._activeDragInstances[0].dropList,
+      destinationDropList: this.activeDropList,
+      newIndex: this._newIndex,
+    });
   }
   stopDrag(drag: DragItemRef) {
     this.isDragging = false;

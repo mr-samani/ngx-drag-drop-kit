@@ -117,9 +117,10 @@ export class NgxDragPlaceholderService {
     this.state.dragItem.isPlaceholder = true;
 
     this.dragRegister.registerDragItem(this.state.dragItem);
-    setTimeout(() => {
-      this.dragRegister.updateAllDragItemsRect([destinationDropList]);
-    }, 100);
+    // setTimeout(() => {
+    // this.dragRegister.updateAllDragItemsRect([destinationDropList]);
+    this.dragRegister.updateAllDragItemsRect();
+    //}, 1000);
   }
 
   private applyTransforms(input: IUpdatePlaceholder): void {

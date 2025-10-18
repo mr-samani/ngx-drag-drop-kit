@@ -155,12 +155,12 @@ export class NgxDragRegisterService {
             index = i + 1;
             isAfter = true;
           }
-          break;
         }
+        break;
       }
     }
 
-    const dragItem = this._getDragItemFromIndex(dropList, index, drag.dropList == dropList);
+    const dragItem = items[index]; // this._getDragItemFromIndex(items, index, drag.dropList == dropList);
     console.log(dropList.el?.id, dragItem?.el.id, 'index', index);
     return { index, isAfter, dragItem };
   }
@@ -183,8 +183,8 @@ export class NgxDragRegisterService {
     return undefined;
   }
 
-  _getDragItemFromIndex(dropList: IDropList, index: number, isSameList: boolean): DragItemRef | undefined {
-    const dragItem = isSameList ? dropList.dragItems.filter((x) => !x.isPlaceholder)[index] : dropList.dragItems[index];
+  _getDragItemFromIndex(dragItems: DragItemRef[], index: number, isSameList: boolean): DragItemRef | undefined {
+    const dragItem = isSameList ? dragItems.filter((x) => !x.isPlaceholder)[index] : dragItems[index];
     return dragItem;
   }
 }
