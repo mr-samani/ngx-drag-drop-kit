@@ -190,7 +190,7 @@ export class NgxDragRegisterService {
 
     // اگر موس پایین‌تر/راست‌تر از مرکز آیتم است، placeholder بعد از آن قرار گیرد
     const dragItem = items[Math.min(closestIndex, items.length - 1)];
-    console.log(dropList.el?.id, dragItem?.el.id, 'closestIndex', closestIndex, isAfter);
+    // console.log(dropList.el?.id, dragItem?.el.id, 'closestIndex', closestIndex, isAfter);
 
     return { index: closestIndex, isAfter, dragItem };
   }

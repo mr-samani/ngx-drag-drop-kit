@@ -139,7 +139,7 @@ export class NgxDragPlaceholderService {
   }
 
   private applyTransforms(input: IUpdatePlaceholder): void {
-    const { destinationDropList, sourceDropList, newIndex, dragOverItem } = input;
+    const { destinationDropList, sourceDropList, newIndex, dragOverItem, initialScrollOffset } = input;
 
     if (!this.state.element || !destinationDropList || newIndex === -1) return;
 
@@ -154,8 +154,8 @@ export class NgxDragPlaceholderService {
       newIndex === placeholderIndex ? 'None' : newIndex > placeholderIndex ? 'Forward' : 'Backward';
     if (dragOverItem && this.state.rect) {
       const newPosition = dragOverItem.domRect;
-      let deltaX = newPosition.left - this.state.rect.left;
-      let deltaY = newPosition.top - this.state.rect.top;
+      let deltaX = newPosition.left - this.state.rect.left + (window.scrollX - initialScrollOffset.x);
+      let deltaY = newPosition.top - this.state.rect.top + (window.scrollY - initialScrollOffset.y);
       if (moveDirection === 'Forward') {
         deltaX += newPosition.width - this.state.rect.width;
         deltaY += newPosition.height - this.state.rect.height;

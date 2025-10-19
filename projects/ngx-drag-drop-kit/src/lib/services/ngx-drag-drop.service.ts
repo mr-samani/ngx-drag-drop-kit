@@ -13,6 +13,7 @@ import { IPosition } from '../../interfaces/IPosition';
 import { IDropList } from '../../interfaces/IDropList';
 import { findScrollableToParents } from '../../utils/findScrollableElement';
 import { DragItemRef } from '../directives/DragItemRef';
+import { merge } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
@@ -36,6 +37,8 @@ export class NgxDragDropService {
   private _previousDragIndex = 0;
   private _newIndex = 0;
 
+  private initialScrollOffset: IPosition = { x: 0, y: 0 };
+
   constructor(
     rendererFactory: RendererFactory2,
     @Inject(DOCUMENT) private _document: Document,
@@ -46,13 +49,14 @@ export class NgxDragDropService {
   }
 
   startDrag(drag: DragItemRef) {
-    if (!drag.dropList) {
+    if (!drag.dropList || this.isDragging) {
       return;
     }
     this.activeDropList = drag.dropList;
 
     this.isDragging = true;
     this.activeDropList.dragging = true;
+    this.initialScrollOffset = { x: window.scrollX, y: window.scrollY };
     this.dragRegister.updateAllDragItemsRect();
     const currDomRect = drag.domRect;
     this._activeDragInstances.push(drag);
@@ -85,13 +89,12 @@ export class NgxDragDropService {
     this._document.body.appendChild(this.dragElementInBody);
     if (!drag.dropList.disableSort) {
       this._renderer.setStyle(drag.el, 'display', 'none', RendererStyleFlags2.Important);
+      this.placeholderService.createPlaceholder(this.activeDropList, this._activeDragInstances[0]);
     } else {
       this._renderer.setStyle(drag.el, 'transform', 'none', RendererStyleFlags2.Important);
     }
-
     this.isRtl = getComputedStyle(this.activeDropList.el).direction === 'rtl';
     this.setupScrollListeners();
-    this.placeholderService.createPlaceholder(this.activeDropList, this._activeDragInstances[0]);
   }
 
   dragMove(drag: DragItemRef, ev: MouseEvent | TouchEvent, transform: string) {
@@ -136,6 +139,7 @@ export class NgxDragDropService {
       destinationDropList: this.activeDropList,
       newIndex: this._newIndex,
       isAfter: dragOverData.isAfter,
+      initialScrollOffset: this.initialScrollOffset,
     });
   }
   stopDrag(drag: DragItemRef) {
@@ -170,28 +174,46 @@ export class NgxDragDropService {
     this.scrollSubscription?.unsubscribe();
     this.scrollSubscription = null;
     this.scrollableParents = [];
+    this.rectUpdateSubject = new Subject<void>();
     this._previousDragIndex = 0;
     this._newIndex = 0;
   }
 
   // Setup scroll listeners with throttling
-  private setupScrollListeners() {
+  private setupScrollListeners(): void {
+    // ۱️⃣ همه والدهای قابل اسکرول را پیدا کن
     this.scrollableParents = findScrollableToParents(
       this._document,
       this.dragRegister.dropListItems.map((item) => item.el)
     );
-    console.log('scrollableParents:', this.scrollableParents);
+    console.log(
+      'scrollableParents:',
+      this.scrollableParents.map((el) => el.tagName)
+    );
+
+    // ۲️⃣ اگر قبلاً لیسنر فعال است، تکرار نکن
     if (this.scrollSubscription) return;
 
-    this.scrollSubscription = fromEvent(this.scrollableParents, 'scroll')
+    // ۳️⃣ ساخت آرایه واقعی از منابع event
+    const scrollTargets: (HTMLElement | Window)[] = this.scrollableParents.map((el) => {
+      const doc = this._document;
+      const isRoot = el === doc.documentElement || el === doc.body || el === doc.scrollingElement;
+      return isRoot ? window : el;
+    });
+
+    // ۴️⃣ ساخت merged observable از تمام آن‌ها
+    const scroll$ = scrollTargets.map((target) => fromEvent(target, 'scroll'));
+
+    this.scrollSubscription = merge(...scroll$)
       .pipe(throttleTime(16, undefined, { leading: true, trailing: true }))
       .subscribe(() => {
         this.rectUpdateSubject.next();
       });
 
-    this.rectUpdateSubject
-      .pipe(throttleTime(16, undefined, { leading: true, trailing: true }))
-      .subscribe(() => this.dragRegister.updateAllDragItemsRect());
+    // ۵️⃣ پردازش واقعی برای آپدیت مختصات آیتم‌ها
+    this.rectUpdateSubject.pipe(throttleTime(16, undefined, { leading: true, trailing: true })).subscribe(() => {
+      this.dragRegister.updateAllDragItemsRect();
+    });
   }
 
   /**
