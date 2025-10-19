@@ -162,7 +162,7 @@ export class NgxDragPlaceholderService {
     const shiftValue = placeholderSize * directionFactor;
 
     // ---- apply transforms ----
-    const otherItems = isSameList ? items.filter((x) => !x.isPlaceholder) : items;
+    const otherItems = items.filter((x) => !x.isPlaceholder);
     for (let i = start; i <= end && i < otherItems.length; i++) {
       const item = otherItems[i];
       if (item.isPlaceholder || item.isDragging) continue;
