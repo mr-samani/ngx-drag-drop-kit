@@ -77,10 +77,6 @@
   margin: -4px;
 }
 
-.ngx-drop-list.dragging .ngx-draggable:not(.ngx-drag-placeholder) {
-  transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
-}
-
 .ngx-drag-placeholder {
   background: rgba(146, 221, 255, 0.6588235294);
   outline: dotted 2px #999;
