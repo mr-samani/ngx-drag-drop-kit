@@ -14,6 +14,7 @@ import { IDropList } from '../../interfaces/IDropList';
 import { findScrollableToParents } from '../../utils/findScrollableElement';
 import { DragItemRef } from '../directives/DragItemRef';
 import { merge } from 'rxjs';
+import { IScrollOffset } from '../../interfaces/IScrollOffset';
 
 @Injectable({
   providedIn: 'root',
@@ -37,7 +38,7 @@ export class NgxDragDropService {
   private _previousDragIndex = 0;
   private _newIndex = 0;
 
-  private initialScrollOffset: IPosition = { x: 0, y: 0 };
+  private initialScrollOffset: IScrollOffset = { x: 0, y: 0, containerX: 0, containerY: 0 };
 
   constructor(
     rendererFactory: RendererFactory2,
@@ -56,7 +57,7 @@ export class NgxDragDropService {
 
     this.isDragging = true;
     this.activeDropList.dragging = true;
-    this.initialScrollOffset = { x: window.scrollX, y: window.scrollY };
+
     this.dragRegister.updateAllDragItemsRect();
     const currDomRect = drag.domRect;
     this._activeDragInstances.push(drag);
@@ -95,6 +96,12 @@ export class NgxDragDropService {
     }
     this.isRtl = getComputedStyle(this.activeDropList.el).direction === 'rtl';
     this.setupScrollListeners();
+    this.initialScrollOffset = {
+      x: window.scrollX,
+      y: window.scrollY,
+      containerX: this.activeDropList.el.scrollLeft || 0,
+      containerY: this.activeDropList.el.scrollTop || 0,
+    };
   }
 
   dragMove(drag: DragItemRef, ev: MouseEvent | TouchEvent, transform: string) {
@@ -177,6 +184,7 @@ export class NgxDragDropService {
     this.rectUpdateSubject = new Subject<void>();
     this._previousDragIndex = 0;
     this._newIndex = 0;
+    this.initialScrollOffset = { x: 0, y: 0, containerX: 0, containerY: 0 };
   }
 
   // Setup scroll listeners with throttling
@@ -186,10 +194,10 @@ export class NgxDragDropService {
       this._document,
       this.dragRegister.dropListItems.map((item) => item.el)
     );
-    console.log(
-      'scrollableParents:',
-      this.scrollableParents.map((el) => el.tagName)
-    );
+    // console.log(
+    //   'scrollableParents:',
+    //   this.scrollableParents.map((el) => el.tagName)
+    // );
 
     // ۲️⃣ اگر قبلاً لیسنر فعال است، تکرار نکن
     if (this.scrollSubscription) return;

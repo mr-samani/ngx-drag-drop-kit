@@ -1,6 +1,6 @@
-import { IPosition } from 'ngx-drag-drop-kit';
 import { DragItemRef } from '../lib/directives/DragItemRef';
 import { IDropList } from './IDropList';
+import { IScrollOffset } from './IScrollOffset';
 
 export interface IUpdatePlaceholder {
   dragItem: DragItemRef;
@@ -13,5 +13,5 @@ export interface IUpdatePlaceholder {
   newIndex: number;
 
   isAfter: boolean;
-  initialScrollOffset: IPosition;
+  initialScrollOffset: IScrollOffset;
 }

@@ -154,8 +154,23 @@ export class NgxDragPlaceholderService {
       newIndex === placeholderIndex ? 'None' : newIndex > placeholderIndex ? 'Forward' : 'Backward';
     if (dragOverItem && this.state.rect) {
       const newPosition = dragOverItem.domRect;
-      let deltaX = newPosition.left - this.state.rect.left + (window.scrollX - initialScrollOffset.x);
-      let deltaY = newPosition.top - this.state.rect.top + (window.scrollY - initialScrollOffset.y);
+
+      // محاسبه scroll فعلی container (اگر وجود داشته باشد)
+      const containerScrollLeft = destinationDropList.el.scrollLeft || 0;
+      const containerScrollTop = destinationDropList.el.scrollTop || 0;
+
+      // محاسبه تفاوت scroll window
+      const windowScrollDeltaX = window.scrollX - initialScrollOffset.x;
+      const windowScrollDeltaY = window.scrollY - initialScrollOffset.y;
+
+      // محاسبه تفاوت scroll container
+      const containerScrollDeltaX = containerScrollLeft - (initialScrollOffset.containerX || 0);
+      const containerScrollDeltaY = containerScrollTop - (initialScrollOffset.containerY || 0);
+
+      // محاسبه موقعیت نهایی با در نظر گرفتن هر دو scroll
+      let deltaX = newPosition.left - this.state.rect.left + windowScrollDeltaX - containerScrollDeltaX;
+      let deltaY = newPosition.top - this.state.rect.top + windowScrollDeltaY - containerScrollDeltaY;
+
       if (moveDirection === 'Forward') {
         deltaX += newPosition.width - this.state.rect.width;
         deltaY += newPosition.height - this.state.rect.height;
