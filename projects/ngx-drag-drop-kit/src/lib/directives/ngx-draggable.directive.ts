@@ -176,9 +176,9 @@ export class NgxDraggableDirective extends DragItemRef implements OnDestroy, Aft
     this._dragService.getPointerElement(p);
 
     if (this.isTouched && !this.dragging) {
+      this.dragging = true;
       this._dragService.startDrag(this);
       this.dragStart.emit(this.previousXY);
-      this.dragging = true;
     }
     if (!this.dragging) {
       return;

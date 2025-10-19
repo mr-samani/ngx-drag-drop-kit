@@ -7,7 +7,7 @@ horizontal list (signle line)
   [connectedTo]="[horizontalList]"
   #horizontalList>
   @for (item of simpleItems; track item) {
-  <div class="box-item" ngxDraggable>
+  <div class="box-item" ngxDraggable [id]="item">
     {{ item }}
   </div>
   }
@@ -22,7 +22,7 @@ horizontal list felxible with auto wrap css
   [connectedTo]="[horizontalFlexWrap]"
   #horizontalFlexWrap>
   @for (item of items; track item) {
-  <div class="box-item" ngxDraggable>
+  <div class="box-item" ngxDraggable [id]="item">
     {{ item }}
   </div>
   }

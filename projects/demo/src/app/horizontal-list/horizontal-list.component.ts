@@ -26,8 +26,8 @@ export class HorizontalListComponent {
 
   constructor() {
     this.items = [];
-    for (let i = 1; i < 80; i++) {
-      this.items.push('Episode ' + i);
+    for (let i = 0; i < 80; i++) {
+      this.items.push('item_' + i);
     }
   }
 

@@ -115,7 +115,9 @@ export class NgxDragDropService {
       viewportPointer,
       isVertical
     );
-    this._newIndex = dragOverData.index;
+    if (dragOverData.index > -1) {
+      this._newIndex = dragOverData.index;
+    }
     const dragOverItem = dragOverData.dragItem;
 
     if (this.activeDropList !== dropList) {
@@ -133,10 +135,14 @@ export class NgxDragDropService {
       sourceDropList: this._activeDragInstances[0].dropList,
       destinationDropList: this.activeDropList,
       newIndex: this._newIndex,
+      isAfter: dragOverData.isAfter,
     });
   }
   stopDrag(drag: DragItemRef) {
     this.isDragging = false;
+    //const currentIndex = this.activeDropList?.isFlexWrap ? this.placeholderService.state.index : this._newIndex;
+    const currentIndex = this._newIndex;
+
     if (drag.dropList) drag.dropList.dragging = false;
     this.dragRegister.dargItems.forEach((d) => {
       // this._renderer.setStyle(d.el, 'transition-property', 'none');
@@ -155,7 +161,7 @@ export class NgxDragDropService {
 
       if (this._dropEvent && this.activeDropList) {
         this._dropEvent.container = this.activeDropList;
-        this._dropEvent.currentIndex = this._newIndex > 0 ? this._newIndex : 0;
+        this._dropEvent.currentIndex = currentIndex > 0 ? currentIndex : 0;
         this.activeDropList.onDrop(this._dropEvent);
       }
       this._activeDragInstances.splice(index, 1);

@@ -10,4 +10,6 @@ export interface IUpdatePlaceholder {
    * placeholder index
    */
   newIndex: number;
+
+  isAfter: boolean;
 }

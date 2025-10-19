@@ -52,8 +52,13 @@ export class NgxDragRegisterService {
     this.dragItemMap.delete(dragItem.el);
   }
 
-  getDragItemIndex(dragItem: DragItemRef): number {
+  getDragItemIndex(dragItem: DragItemRef, filterDraggingItem = false): number {
     if (!dragItem.dropList) return -1;
+
+    if (filterDraggingItem) {
+      return dragItem.dropList.dragItems.filter((x) => !x.isDragging).indexOf(dragItem);
+    }
+
     return dragItem.dropList.dragItems.indexOf(dragItem);
   }
 
@@ -69,9 +74,23 @@ export class NgxDragRegisterService {
         if (item.el.offsetParent === null) continue;
         item.updateDomRect();
       }
-      // todo: IN RTL and horizontal sort must be reverse
+
       lst.dragItems = lst.dragItems.sort((a, b) => {
-        return lst.direction === 'horizontal' ? a.domRect.left - b.domRect.left : a.domRect.top - b.domRect.top;
+        const ay = a.domRect.top;
+        const by = b.domRect.top;
+
+        // اگر یکی بالاتر از دیگریه، بر اساس top مرتب کن
+        if (Math.abs(ay - by) > 1) return ay - by;
+
+        // در یک ردیف هستند → بر اساس left مرتب کن (با توجه به RTL)
+        const ax = a.domRect.left;
+        const bx = b.domRect.left;
+
+        if (lst.isRtl) {
+          return bx - ax; // راست به چپ
+        } else {
+          return ax - bx; // چپ به راست
+        }
       });
     }
     // console.log(
@@ -131,38 +150,49 @@ export class NgxDragRegisterService {
     pointer: IPosition,
     isVertical: boolean
   ): { index: number; isAfter: boolean; dragItem: DragItemRef | undefined } {
-    const axis = isVertical ? 'y' : 'x';
-    // filter current drag item because replaced with placeholder
     const items = dropList.dragItems.filter((i) => i !== drag);
-    let index = -1;
+    if (items.length === 0) {
+      return { index: 0, isAfter: false, dragItem: undefined };
+    }
+
+    let closestIndex = -1;
+    let closestDistance = Number.MAX_SAFE_INTEGER;
     let isAfter = false;
+
+    // موقعیت موس
+    const px = pointer.x;
+    const py = pointer.y;
 
     for (let i = 0; i < items.length; i++) {
       const rect = items[i].domRect;
-      const start = Math.floor(isVertical ? rect.top : rect.left);
-      const end = Math.floor(isVertical ? rect.bottom : rect.right);
 
-      // آیا موس داخل این آیتم است؟
-      if (pointer[axis] >= start && pointer[axis] <= end) {
-        // محاسبه center این آیتم
-        const center = start + (end - start) / 2;
-        index = i;
-        if (pointer[axis] < center) {
-          if (pointer[axis] < center || items[i].el == drag.el) {
-            index = i;
-            isAfter = false;
-          } else {
-            index = i + 1;
-            isAfter = true;
-          }
-        }
-        break;
+      // مرکز آیتم
+      const cx = rect.left + rect.width / 2;
+      const cy = rect.top + rect.height / 2;
+
+      // فاصله بین موس و مرکز آیتم (بر اساس مختصات دو بعدی)
+      const dx = px - cx;
+      const dy = py - cy;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+
+      if (distance < closestDistance) {
+        closestDistance = distance;
+        closestIndex = i;
+
+        isAfter = isVertical ? py > cy : px > cx;
       }
     }
 
-    const dragItem = items[index]; // this._getDragItemFromIndex(items, index, drag.dropList == dropList);
-    // console.log(dropList.el?.id, dragItem?.el.id, 'index', index);
-    return { index, isAfter, dragItem };
+    // تعیین index نهایی
+    if (closestIndex < 0) {
+      return { index: 0, isAfter: false, dragItem: undefined };
+    }
+
+    // اگر موس پایین‌تر/راست‌تر از مرکز آیتم است، placeholder بعد از آن قرار گیرد
+    const dragItem = items[Math.min(closestIndex, items.length - 1)];
+    console.log(dropList.el?.id, dragItem?.el.id, 'closestIndex', closestIndex, isAfter);
+
+    return { index: closestIndex, isAfter, dragItem };
   }
 
   _getDragItemFromPointerPosition(

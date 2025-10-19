@@ -61,7 +61,8 @@ export class NgxDragPlaceholderService {
           (prev, curr) =>
             prev.newIndex === curr.newIndex &&
             prev.dragItem === curr.dragItem &&
-            prev.destinationDropList === curr.destinationDropList
+            prev.destinationDropList === curr.destinationDropList &&
+            prev.isAfter === curr.isAfter
         )
         //  throttleTime(200)
       )
@@ -89,15 +90,31 @@ export class NgxDragPlaceholderService {
     this.applyTransforms(input);
   }
 
-  public createPlaceholder(destinationDropList: IDropList, dragItem: DragItemRef, dragOverItem?: DragItemRef): void {
+  private showFlexWrap(input: IUpdatePlaceholder): void {
+    const { dragItem, destinationDropList, dragOverItem, newIndex } = input;
+    if (dragOverItem?.isPlaceholder) return;
+    this.hide(destinationDropList);
+    let isAfter = input.isAfter;
+    if (this.state.index < newIndex) {
+      isAfter = !input.isAfter;
+    }
+    this.createPlaceholder(destinationDropList, dragItem, dragOverItem, isAfter);
+  }
+  public createPlaceholder(
+    destinationDropList: IDropList,
+    dragItem: DragItemRef,
+    dragOverItem?: DragItemRef,
+    isAfter = true
+  ): void {
     this.hide(destinationDropList);
     if (!destinationDropList) return;
-    const isAfter = true;
-
+    if (destinationDropList.direction == 'vertical') {
+      isAfter = true;
+    }
     this.state.element = destinationDropList.addPlaceholder(dragItem.domRect);
     const isSameList = dragItem.dropList === destinationDropList;
 
-    if (dragOverItem) {
+    if (dragOverItem && !dragOverItem.isPlaceholder) {
       dragOverItem.el.insertAdjacentElement(isAfter ? 'afterend' : 'beforebegin', this.state.element);
     } else {
       if (isSameList) {
@@ -108,19 +125,17 @@ export class NgxDragPlaceholderService {
     }
 
     this.state.rect = this.state.element.getBoundingClientRect();
-    this.state.index = this.getVisibleDragItems(destinationDropList.el)
-      .filter((x) => x != dragItem.el)
-      .indexOf(this.state.element);
+    // this.state.index = this.getVisibleDragItems(destinationDropList.el)
+    //   .filter((x) => x != dragItem.el)
+    //   .indexOf(this.state.element);
     this.state.isShown = true;
     this.state.dragItem = new DragItemRef(this.state.element);
     this.state.dragItem._domRect = this.state.rect;
     this.state.dragItem.isPlaceholder = true;
 
     this.dragRegister.registerDragItem(this.state.dragItem);
-    // setTimeout(() => {
-    // this.dragRegister.updateAllDragItemsRect([destinationDropList]);
     this.dragRegister.updateAllDragItemsRect();
-    //}, 1000);
+    this.state.index = this.dragRegister.getDragItemIndex(this.state.dragItem, true);
   }
 
   private applyTransforms(input: IUpdatePlaceholder): void {
@@ -203,31 +218,6 @@ export class NgxDragPlaceholderService {
   /** Returns CSS transform string based on orientation and shift distance */
   private getTransform(isVertical: boolean, shift: number): string {
     return isVertical ? `translate3d(0, ${shift}px, 0)` : `translate3d(${shift}px, 0, 0)`;
-  }
-
-  private showFlexWrap(input: IUpdatePlaceholder): void {
-    const { dragItem, destinationDropList } = input;
-
-    this.hide(destinationDropList);
-
-    // this.state.element = this.document.createElement('div');
-    // this.state.element.className = 'ngx-drag-placeholder';
-
-    // this.renderer.setStyle(this.state.element, 'display', 'inline-block');
-    // this.renderer.setStyle(this.state.element, 'pointerEvents', 'none');
-    // this.renderer.setStyle(this.state.element, 'width', `${dragItem.domRect.width}px`);
-    // this.renderer.setStyle(this.state.element, 'height', `${dragItem.domRect.height}px`);
-
-    // if (dragOverItem && dragOverItem.dropList === destinationDropList) {
-    //   //  dragOverItem.el.insertAdjacentElement(isAfter ? 'afterend' : 'beforebegin', this.state.element);
-    //   const overIdx = this.dragRegister.getDragItemIndex(dragOverItem);
-    //   // this.state.index = isAfter ? overIdx + 1 : overIdx;
-    // } else {
-    //   destinationDropList?.el.insertAdjacentElement('beforeend', this.state.element);
-    //   this.state.index = destinationDropList?.dragItems.length ?? 0;
-    // }
-    this.state.isShown = true;
-    // this.state.rect = this.state.element.getBoundingClientRect();
   }
 
   private getVisibleDragItems(container: HTMLElement): HTMLElement[] {
