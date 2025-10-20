@@ -45,28 +45,28 @@ export class NgxDraggableDirective extends DragItemRef implements OnDestroy, Aft
     this.isDragging = val == true;
     if (this.isDragging) {
       this.previousTransitionProprety = this.el.style.transitionProperty;
-      this._renderer.setStyle(this.el, 'transition-property', 'none', RendererStyleFlags2.Important);
-      this._renderer.setStyle(this.el, 'user-select', 'none');
-      this._renderer.setStyle(this.el, 'pointer-events', 'none');
-      this._renderer.setStyle(this.el, 'cursor', 'grabbing');
-      this._renderer.setStyle(this.el, 'z-index', '999999');
-      this._renderer.setStyle(this.el, 'touch-action', 'none');
-      this._renderer.setStyle(this.el, '-webkit-user-drag', 'none');
-      this._renderer.setStyle(this.el, '-webkit-tap-highlight-color', 'transparent');
-      this._renderer.setStyle(this.el, 'will-change', 'transform');
+      this.renderer.setStyle(this.el, 'transition-property', 'none', RendererStyleFlags2.Important);
+      this.renderer.setStyle(this.el, 'user-select', 'none');
+      this.renderer.setStyle(this.el, 'pointer-events', 'none');
+      this.renderer.setStyle(this.el, 'cursor', 'grabbing');
+      this.renderer.setStyle(this.el, 'z-index', '999999');
+      this.renderer.setStyle(this.el, 'touch-action', 'none');
+      this.renderer.setStyle(this.el, '-webkit-user-drag', 'none');
+      this.renderer.setStyle(this.el, '-webkit-tap-highlight-color', 'transparent');
+      this.renderer.setStyle(this.el, 'will-change', 'transform');
       this.el.classList.add('dragging');
     } else {
       if (this.previousTransitionProprety)
-        this._renderer.setStyle(this.el, 'transition-property', this.previousTransitionProprety);
-      else this._renderer.removeStyle(this.el, 'transition-property');
-      this._renderer.removeStyle(this.el, 'user-select');
-      this._renderer.removeStyle(this.el, 'pointer-events');
-      this._renderer.removeStyle(this.el, 'cursor');
-      this._renderer.removeStyle(this.el, 'z-index');
-      this._renderer.removeStyle(this.el, 'touch-action');
-      this._renderer.removeStyle(this.el, '-webkit-user-drag');
-      this._renderer.removeStyle(this.el, '-webkit-tap-highlight-color');
-      this._renderer.removeStyle(this.el, 'will-change');
+        this.renderer.setStyle(this.el, 'transition-property', this.previousTransitionProprety);
+      else this.renderer.removeStyle(this.el, 'transition-property');
+      this.renderer.removeStyle(this.el, 'user-select');
+      this.renderer.removeStyle(this.el, 'pointer-events');
+      this.renderer.removeStyle(this.el, 'cursor');
+      this.renderer.removeStyle(this.el, 'z-index');
+      this.renderer.removeStyle(this.el, 'touch-action');
+      this.renderer.removeStyle(this.el, '-webkit-user-drag');
+      this.renderer.removeStyle(this.el, '-webkit-tap-highlight-color');
+      this.renderer.removeStyle(this.el, 'will-change');
 
       this.el.classList.remove('dragging');
     }
@@ -80,14 +80,13 @@ export class NgxDraggableDirective extends DragItemRef implements OnDestroy, Aft
   private previousXY: IPosition = { x: 0, y: 0 };
   private subscriptions: Subscription[] = [];
 
-  constructor(
-    elRef: ElementRef,
-    private dragRegister: NgxDragRegisterService,
-    private _dragService: NgxDragDropService,
-    private _autoScroll: AutoScrollService,
-    @Inject(DOCUMENT) private doc: Document,
-    private _renderer: Renderer2
-  ) {
+  private readonly renderer = inject(Renderer2);
+  private readonly doc = inject(DOCUMENT);
+  private readonly dragRegister = inject(NgxDragRegisterService);
+  private readonly dragService = inject(NgxDragDropService);
+  private readonly autoScroll = inject(AutoScrollService);
+
+  constructor(elRef: ElementRef) {
     super(elRef.nativeElement);
     this.el = elRef.nativeElement;
     this.initDragHandler();
@@ -124,7 +123,7 @@ export class NgxDraggableDirective extends DragItemRef implements OnDestroy, Aft
   }
   ngOnDestroy() {
     this.subscriptions.forEach((sub) => sub.unsubscribe());
-    this._autoScroll.stop();
+    this.autoScroll.stop();
     this.dragRegister.removeDragItem(this);
   }
 
@@ -149,19 +148,18 @@ export class NgxDraggableDirective extends DragItemRef implements OnDestroy, Aft
 
   onEndDrag(ev: MouseEvent | TouchEvent) {
     if (this.dragging) {
-      this._dragService.stopDrag(this);
+      this.dragService.stopDrag(this);
       this.dragEnd.emit({ x: this.x, y: this.y });
     }
     this.dragging = false;
     this.isTouched = false;
-    this._autoScroll.stop();
+    this.autoScroll.stop();
   }
 
   onMouseDown(ev: MouseEvent | TouchEvent) {
     this.previousXY = getPointerPosition(ev);
     this.isTouched = true;
-    ev.preventDefault();
-    ev.stopPropagation();
+    // ev.preventDefault();
     this.init();
     this.subscriptions = this.subscriptions.filter((x) => !x.closed);
     this.subscriptions.push(
@@ -172,11 +170,11 @@ export class NgxDraggableDirective extends DragItemRef implements OnDestroy, Aft
 
   onMouseMove(ev: MouseEvent | TouchEvent) {
     let p = getPointerPositionOnViewPort(ev);
-    this._dragService.getPointerElement(p);
+    this.dragService.getPointerElement(p);
 
     if (this.isTouched && !this.dragging) {
       this.dragging = true;
-      this._dragService.startDrag(this);
+      this.dragService.startDrag(this);
       this.dragStart.emit(this.previousXY);
     }
     if (!this.dragging) {
@@ -187,8 +185,8 @@ export class NgxDraggableDirective extends DragItemRef implements OnDestroy, Aft
     const offsetX = position.x - this.previousXY.x;
     const offsetY = position.y - this.previousXY.y;
     const transform = this.updatePosition(offsetX, offsetY, position);
-    this._autoScroll.handleAutoScroll(ev);
-    this._dragService.dragMove(this, ev, transform);
+    this.autoScroll.handleAutoScroll(ev);
+    this.dragService.dragMove(this, ev, transform);
     this.dragMove.emit({ x: this.x, y: this.y });
     // console.timeEnd('drgmv');
   }
@@ -205,7 +203,7 @@ export class NgxDraggableDirective extends DragItemRef implements OnDestroy, Aft
     let transform = `translate3d(${this.x}px, ${this.y}px, 0)`;
 
     if (!this.dropList || !this.dropList.disableSort) {
-      this._renderer.setStyle(this.el, 'transform', transform);
+      this.renderer.setStyle(this.el, 'transform', transform);
     }
     return transform;
   }

@@ -1,7 +1,9 @@
 <div ngxDropList class="example-list" (drop)="drop($event, items)" id="baseList" #baseList [connectedTo]="[baseList]">
   <div class="placeholder" *ngxPlaceholder></div>
   @for (item of items; track item;let i = $index) {
-  <div class="box" [id]="item" ngxDraggable>{{ item }}</div>
+  <div class="box" [id]="item" ngxDraggable>
+    <input type="text">
+    {{ item }}</div>
   }
 </div>
 <pre>{{ items | json }}</pre>

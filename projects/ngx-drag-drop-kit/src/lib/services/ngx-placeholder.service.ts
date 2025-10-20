@@ -195,7 +195,7 @@ export class NgxDragPlaceholderService {
     const otherItems = items.filter((x) => !x.isPlaceholder);
     for (let i = start; i <= end && i < otherItems.length; i++) {
       const item = otherItems[i];
-      if (item.isPlaceholder || item.isDragging) continue;
+      if (!item || item.isPlaceholder || item.isDragging) continue;
 
       const shouldMove = this.shouldMoveItem(i, placeholderIndex, newIndex, moveDirection, isSameList);
 
