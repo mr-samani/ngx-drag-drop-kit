@@ -51,7 +51,7 @@ export class NgxDropListDirective<T = any> implements IDropList, OnInit, AfterVi
     this._dragging = val == true;
     if (this._dragging) {
       this.renderer.setStyle(this.el, 'scroll-snap-type', 'none', RendererStyleFlags2.Important);
-      this.renderer.setStyle(this.el, 'user-select', this.dragging ? 'none' : '');
+      this.renderer.setStyle(this.el, 'user-select', 'none');
       this.renderer.addClass(this.el, 'dragging');
     } else {
       this.renderer.removeStyle(this.el, 'scroll-snap-type');

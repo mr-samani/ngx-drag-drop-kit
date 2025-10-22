@@ -108,6 +108,7 @@ export class NgxDragDropService {
     if (!this.dragElementInBody || !this.isDragging || !this._activeDragInstances[0].dropList) {
       return;
     }
+    ev.preventDefault();
     this._renderer.setStyle(this.dragElementInBody, 'transform', transform);
     const viewportPointer = getPointerPositionOnViewPort(ev);
     const dropList = this.dragRegister._getDropListFromPointerPosition(viewportPointer);

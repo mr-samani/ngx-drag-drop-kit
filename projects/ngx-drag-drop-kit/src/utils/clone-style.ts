@@ -24,6 +24,9 @@ export function copyEssentialStyles(source: HTMLElement, target: HTMLElement) {
     'max-height',
     'min-width',
     'min-height',
+    'outline',
+    'outline-offset',
+    'outline-color',
   ];
 
   keysToCopy.forEach((key) => {
