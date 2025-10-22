@@ -82,6 +82,7 @@
 }
 
 .ngx-drag-placeholder {
+  position: absolute;
   background: #92ddffa8;
   outline: dotted 2px #999;
   outline-offset: -4px;
@@ -89,4 +90,11 @@
   pointer-events: none;
   max-width: 100%;
   z-index: 9999;
+}
+
+.ngx-dragging-shadow {
+  opacity: 0.7;
+  pointer-events: none;
+  user-select: none;
+  filter: grayscale(1);
 }

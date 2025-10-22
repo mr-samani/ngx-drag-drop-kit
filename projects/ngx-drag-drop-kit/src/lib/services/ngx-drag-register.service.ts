@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { IDropList } from '../../interfaces/IDropList';
 import { IPosition } from '../../interfaces/IPosition';
 import { DragItemRef } from '../directives/DragItemRef';
+import { detectLayoutDirection } from '../../utils/detect-layout-direction';
 
 @Injectable({ providedIn: 'root' })
 export class NgxDragRegisterService {
@@ -150,7 +151,7 @@ export class NgxDragRegisterService {
     pointer: IPosition,
     isVertical: boolean
   ): { index: number; isAfter: boolean; dragItem: DragItemRef | undefined } {
-    const items = dropList.dragItems.filter((i) => i !== drag);
+    const items = dropList.dragItems; //.filter((i) => i !== drag);
     if (items.length === 0) {
       return { index: 0, isAfter: false, dragItem: undefined };
     }
@@ -190,7 +191,10 @@ export class NgxDragRegisterService {
 
     // اگر موس پایین‌تر/راست‌تر از مرکز آیتم است، placeholder بعد از آن قرار گیرد
     const dragItem = items[Math.min(closestIndex, items.length - 1)];
-    // console.log(dropList.el?.id, dragItem?.el.id, 'closestIndex', closestIndex, isAfter);
+
+    let layout = detectLayoutDirection(dragItem.el);
+
+    console.log(dropList.el?.id, dragItem?.el.id, 'closestIndex', closestIndex, isAfter, layout);
 
     return { index: closestIndex, isAfter, dragItem };
   }

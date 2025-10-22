@@ -1,7 +1,10 @@
 <div ngxDropList class="example-list" (drop)="drop($event, items)" id="baseList" #baseList [connectedTo]="[baseList]">
   <div class="placeholder" *ngxPlaceholder></div>
   @for (item of items; track item;let i = $index) { @if(item.tag==='input'){
-  <input type="text" ngxDraggable />
+  <input type="text" ngxDraggable [placeholder]="item.title" />
+
+  }@else if(item.tag==='button'){
+  <button ngxDraggable>{{ item.title }}</button>
 
   }@else {
   <div class="box" [id]="item" ngxDraggable>

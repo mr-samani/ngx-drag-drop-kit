@@ -16,10 +16,10 @@ export class DynamicHtmlComponent implements OnInit {
   }[] = [];
   constructor() {
     this.items = [];
-    for (let i = 1; i <= 3; i++) {
+    for (let i = 1; i <= 5; i++) {
       this.items.push({
         title: 'report element ' + i,
-        tag: ['div', 'input'][Math.floor(Math.random() * 2)],
+        tag: ['div', 'input', 'button'][Math.floor(Math.random() * 3)],
       });
     }
   }

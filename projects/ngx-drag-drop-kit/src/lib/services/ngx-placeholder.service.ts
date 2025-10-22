@@ -1,6 +1,6 @@
 import { DOCUMENT } from '@angular/common';
 import { Injectable, Renderer2, RendererFactory2, Inject } from '@angular/core';
-import { Subject, distinctUntilChanged, throttleTime } from 'rxjs';
+import { Subject, distinctUntilChanged } from 'rxjs';
 import { IDropList } from '../../interfaces/IDropList';
 import { NgxDragRegisterService } from './ngx-drag-register.service';
 import { IUpdatePlaceholder } from '../../interfaces/IUpdatePlaceholder';
@@ -9,10 +9,9 @@ type MoveDirection = 'None' | 'Forward' | 'Backward';
 
 interface PlaceholderState {
   /**
-   * index of placeholder in drop list
-   * - index of drag items
+   * placeholder index in droplist
    */
-  index: any;
+  index: number;
   /**
    * placeholder html element
    */
@@ -35,8 +34,8 @@ export class NgxDragPlaceholderService {
     element: null,
     isShown: false,
     rect: null,
-    index: -1,
     dragItem: null,
+    index: -1,
   };
 
   public updatePlaceholder$ = new Subject<IUpdatePlaceholder>();
@@ -116,30 +115,28 @@ export class NgxDragPlaceholderService {
 
     if (dragOverItem && !dragOverItem.isPlaceholder) {
       dragOverItem.el.insertAdjacentElement(isAfter ? 'afterend' : 'beforebegin', this.state.element);
+      this.state.index = this.dragRegister.getDragItemIndex(dragOverItem);
     } else {
       if (isSameList) {
         dragItem.el.insertAdjacentElement(isAfter ? 'afterend' : 'beforebegin', this.state.element);
+        this.state.index = this.dragRegister.getDragItemIndex(dragItem);
       } else {
         destinationDropList.el.insertAdjacentElement('beforeend', this.state.element);
+        this.state.index = destinationDropList.dragItems.length - 1;
       }
     }
 
     this.state.rect = this.state.element.getBoundingClientRect();
-    // this.state.index = this.getVisibleDragItems(destinationDropList.el)
-    //   .filter((x) => x != dragItem.el)
-    //   .indexOf(this.state.element);
     this.state.isShown = true;
     this.state.dragItem = new DragItemRef(this.state.element);
     this.state.dragItem._domRect = this.state.rect;
     this.state.dragItem.isPlaceholder = true;
-
-    this.dragRegister.registerDragItem(this.state.dragItem);
-    this.dragRegister.updateAllDragItemsRect();
-    this.state.index = this.dragRegister.getDragItemIndex(this.state.dragItem, true);
+    // this.dragRegister.registerDragItem(this.state.dragItem);
+    // this.state.index = this.dragRegister.getDragItemIndex(this.state.dragItem);
   }
 
   private applyTransforms(input: IUpdatePlaceholder): void {
-    const { destinationDropList, sourceDropList, newIndex, dragOverItem, initialScrollOffset } = input;
+    const { destinationDropList, sourceDropList, newIndex, dragItem, dragOverItem, initialScrollOffset } = input;
 
     if (!this.state.element || !destinationDropList || newIndex === -1) return;
 
@@ -147,36 +144,18 @@ export class NgxDragPlaceholderService {
     const isSameList = sourceDropList.el === destinationDropList.el;
     const items = destinationDropList.dragItems;
 
-    const placeholderIndex = this.state.index;
     const placeholderSize = isVertical ? this.state.rect?.height || 0 : this.state.rect?.width || 0;
-
+    const placeholderIndex = this.state.index;
+    /**
+     * Determines the direction of movement.
+     * 'None' if is same list and placeholderIndex equal with newIndex
+     * 'Forward' if move item to forward(newIndex > placeholderIndex) then other items must be move up/left(- negative)
+     * 'Backward' if move item to backward(newIndex < placeholderIndex) then other items must be move down/right(+ positive)
+     */
+    // TODO: check move direction
     const moveDirection: MoveDirection =
-      newIndex === placeholderIndex ? 'None' : newIndex > placeholderIndex ? 'Forward' : 'Backward';
-    if (dragOverItem && this.state.rect) {
-      const newPosition = dragOverItem.domRect;
-
-      // محاسبه scroll فعلی container (اگر وجود داشته باشد)
-      const containerScrollLeft = destinationDropList.el.scrollLeft || 0;
-      const containerScrollTop = destinationDropList.el.scrollTop || 0;
-
-      // محاسبه تفاوت scroll window
-      const windowScrollDeltaX = window.scrollX - initialScrollOffset.x;
-      const windowScrollDeltaY = window.scrollY - initialScrollOffset.y;
-
-      // محاسبه تفاوت scroll container
-      const containerScrollDeltaX = containerScrollLeft - (initialScrollOffset.containerX || 0);
-      const containerScrollDeltaY = containerScrollTop - (initialScrollOffset.containerY || 0);
-
-      // محاسبه موقعیت نهایی با در نظر گرفتن هر دو scroll
-      let deltaX = newPosition.left - this.state.rect.left + windowScrollDeltaX - containerScrollDeltaX;
-      let deltaY = newPosition.top - this.state.rect.top + windowScrollDeltaY - containerScrollDeltaY;
-
-      if (moveDirection === 'Forward') {
-        deltaX += newPosition.width - this.state.rect.width;
-        deltaY += newPosition.height - this.state.rect.height;
-      }
-      this.renderer.setStyle(this.state.element, 'transform', `translate3d(${deltaX}px, ${deltaY}px, 0)`);
-    }
+      isSameList && newIndex === placeholderIndex ? 'None' : newIndex > placeholderIndex ? 'Forward' : 'Backward';
+    this.movePlaceholder(moveDirection, dragItem, dragOverItem, destinationDropList, initialScrollOffset);
 
     // ---- reset transforms for all items first ----
     for (const item of items) {
@@ -185,8 +164,7 @@ export class NgxDragPlaceholderService {
       this.renderer.setStyle(item.el, 'transition', 'transform 250ms cubic-bezier(0,0,0.2,1)');
     }
     // ---- compute affected range ----
-    const [start, end] = moveDirection === 'Forward' ? [placeholderIndex, newIndex] : [newIndex, placeholderIndex];
-
+    let [start, end] = moveDirection === 'Forward' ? [placeholderIndex, newIndex] : [newIndex, placeholderIndex];
     // ---- determine transform direction ----
     const directionFactor = moveDirection === 'Forward' ? -1 : +1;
     const shiftValue = placeholderSize * directionFactor;
@@ -214,7 +192,7 @@ export class NgxDragPlaceholderService {
     direction: MoveDirection,
     isSameList: boolean
   ): boolean {
-    if (direction === 'None') return false;
+    //if (direction === 'None') return false;
 
     // Same-list movement
     if (isSameList) {
@@ -248,7 +226,44 @@ export class NgxDragPlaceholderService {
       .forEach((el) => this.renderer.removeStyle(el, 'transform'));
   }
 
+  movePlaceholder(
+    moveDirection: MoveDirection,
+    dragItem: DragItemRef | undefined,
+    dragOverItem: DragItemRef | undefined,
+    destinationDropList: IDropList | undefined,
+    initialScrollOffset: { x: number; y: number; containerX?: number; containerY?: number }
+  ) {
+    if (!dragOverItem || !destinationDropList || !this.state.rect || !dragItem) return;
+
+    const newPosition = dragOverItem.domRect;
+
+    // محاسبه scroll فعلی container (اگر وجود داشته باشد)
+    const containerScrollLeft = destinationDropList.el.scrollLeft || 0;
+    const containerScrollTop = destinationDropList.el.scrollTop || 0;
+
+    // محاسبه تفاوت scroll window
+    const windowScrollDeltaX = window.scrollX - initialScrollOffset.x;
+    const windowScrollDeltaY = window.scrollY - initialScrollOffset.y;
+
+    // محاسبه تفاوت scroll container
+    const containerScrollDeltaX = containerScrollLeft - (initialScrollOffset.containerX || 0);
+    const containerScrollDeltaY = containerScrollTop - (initialScrollOffset.containerY || 0);
+
+    // محاسبه موقعیت نهایی با در نظر گرفتن هر دو scroll
+    let deltaX = newPosition.left - this.state.rect.left + windowScrollDeltaX - containerScrollDeltaX;
+    let deltaY = newPosition.top - this.state.rect.top + windowScrollDeltaY - containerScrollDeltaY;
+
+    if (moveDirection === 'Forward') {
+      deltaX += newPosition.width - this.state.rect.width;
+      deltaY += newPosition.height - this.state.rect.height;
+    } else if (moveDirection === 'None') {
+      deltaX = dragItem.domRect.x - this.state.rect.x;
+      deltaY = dragItem.domRect.y - this.state.rect.y;
+    }
+    this.renderer.setStyle(this.state.element, 'transform', `translate3d(${deltaX}px, ${deltaY}px, 0)`);
+  }
+
   private resetState(): void {
-    this.state = { element: null, isShown: false, rect: null, index: -1, dragItem: null };
+    this.state = { element: null, isShown: false, rect: null, dragItem: null, index: -1 };
   }
 }

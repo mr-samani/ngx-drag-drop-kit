@@ -1,4 +1,4 @@
-import { Inject, Injectable, Renderer2, RendererFactory2, RendererStyleFlags2 } from '@angular/core';
+import { Inject, Injectable, isDevMode, Renderer2, RendererFactory2, RendererStyleFlags2 } from '@angular/core';
 import { IDropEvent } from '../../interfaces/IDropEvent';
 import { DOCUMENT } from '@angular/common';
 import { getPointerPositionOnViewPort } from '../../utils/get-position';
@@ -15,6 +15,7 @@ import { findScrollableToParents } from '../../utils/findScrollableElement';
 import { DragItemRef } from '../directives/DragItemRef';
 import { merge } from 'rxjs';
 import { IScrollOffset } from '../../interfaces/IScrollOffset';
+import { createGridOverlay, IGridOverlayOutput } from '../../utils/grid-view';
 
 @Injectable({
   providedIn: 'root',
@@ -40,6 +41,8 @@ export class NgxDragDropService {
 
   private initialScrollOffset: IScrollOffset = { x: 0, y: 0, containerX: 0, containerY: 0 };
 
+  showGridOverlay = isDevMode();
+  gridOverlay?: IGridOverlayOutput;
   constructor(
     rendererFactory: RendererFactory2,
     @Inject(DOCUMENT) private _document: Document,
@@ -89,7 +92,7 @@ export class NgxDragDropService {
     this.dragElementInBody.style.transitionProperty = 'none';
     this._document.body.appendChild(this.dragElementInBody);
     if (!drag.dropList.disableSort) {
-      this._renderer.setStyle(drag.el, 'display', 'none', RendererStyleFlags2.Important);
+      this._renderer.addClass(drag.el, 'ngx-dragging-shadow');
       this.placeholderService.createPlaceholder(this.activeDropList, this._activeDragInstances[0]);
     } else {
       this._renderer.setStyle(drag.el, 'transform', 'none', RendererStyleFlags2.Important);
@@ -102,13 +105,27 @@ export class NgxDragDropService {
       containerX: this.activeDropList.el.scrollLeft || 0,
       containerY: this.activeDropList.el.scrollTop || 0,
     };
+
+    if (this.showGridOverlay) {
+      const l = this.dragRegister.dropListItems.flatMap((item) => {
+        // const rects = [item.domRect];
+        const rects = [];
+        if (item.dragItems?.length) {
+          rects.push(...item.dragItems.map((d) => d.domRect));
+        }
+        return rects;
+      });
+      this.gridOverlay = createGridOverlay(l, {
+        highlight: 'red',
+        strokeWidth: 1,
+      });
+    }
   }
 
   dragMove(drag: DragItemRef, ev: MouseEvent | TouchEvent, transform: string) {
     if (!this.dragElementInBody || !this.isDragging || !this._activeDragInstances[0].dropList) {
       return;
     }
-    ev.preventDefault();
     this._renderer.setStyle(this.dragElementInBody, 'transform', transform);
     const viewportPointer = getPointerPositionOnViewPort(ev);
     const dropList = this.dragRegister._getDropListFromPointerPosition(viewportPointer);
@@ -168,7 +185,7 @@ export class NgxDragDropService {
     if (index > -1) {
       this._activeDragInstances?.forEach((el) => {
         this._renderer.removeStyle(el.el, 'transform');
-        this._renderer.removeStyle(el.el, 'display');
+        this._renderer.removeClass(el.el, 'ngx-dragging-shadow');
       });
 
       if (this._dropEvent && this.activeDropList) {
@@ -186,6 +203,7 @@ export class NgxDragDropService {
     this._previousDragIndex = 0;
     this._newIndex = 0;
     this.initialScrollOffset = { x: 0, y: 0, containerX: 0, containerY: 0 };
+    this.gridOverlay?.remove();
   }
 
   // Setup scroll listeners with throttling
