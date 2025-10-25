@@ -93,6 +93,9 @@ export class NgxDragDropService {
     this._document.body.appendChild(this.dragElementInBody);
     if (!drag.dropList.disableSort) {
       this._renderer.addClass(drag.el, 'ngx-dragging-shadow');
+      this._renderer.setStyle(drag.el, 'position', 'absolute', RendererStyleFlags2.Important);
+      this._renderer.setStyle(drag.el, 'width', currDomRect.width + 'px', RendererStyleFlags2.Important);
+      this._renderer.setStyle(drag.el, 'height', currDomRect.height + 'px', RendererStyleFlags2.Important);
       this.placeholderService.createPlaceholder(this.activeDropList, this._activeDragInstances[0]);
     } else {
       this._renderer.setStyle(drag.el, 'transform', 'none', RendererStyleFlags2.Important);
@@ -105,7 +108,10 @@ export class NgxDragDropService {
       containerX: this.activeDropList.el.scrollLeft || 0,
       containerY: this.activeDropList.el.scrollTop || 0,
     };
+    this.showDevGridOverlay();
+  }
 
+  showDevGridOverlay() {
     if (this.showGridOverlay) {
       const l = this.dragRegister.dropListItems.flatMap((item) => {
         // const rects = [item.domRect];
@@ -116,8 +122,8 @@ export class NgxDragDropService {
         return rects;
       });
       this.gridOverlay = createGridOverlay(l, {
-        highlight: 'red',
-        strokeWidth: 1,
+        highlight: '#fe00002e',
+        strokeWidth: .5,
       });
     }
   }
@@ -156,6 +162,7 @@ export class NgxDragDropService {
       );
       this.activeDropList = dropList;
       this.placeholderService.createPlaceholder(dropList, this._activeDragInstances[0], overDragItem);
+      this.showDevGridOverlay();
     }
     this.placeholderService.updatePlaceholder$.next({
       dragItem: this._activeDragInstances[0],
@@ -186,6 +193,9 @@ export class NgxDragDropService {
       this._activeDragInstances?.forEach((el) => {
         this._renderer.removeStyle(el.el, 'transform');
         this._renderer.removeClass(el.el, 'ngx-dragging-shadow');
+        this._renderer.removeStyle(el.el, 'position');
+        this._renderer.removeStyle(el.el, 'width');
+        this._renderer.removeStyle(el.el, 'height');
       });
 
       if (this._dropEvent && this.activeDropList) {
