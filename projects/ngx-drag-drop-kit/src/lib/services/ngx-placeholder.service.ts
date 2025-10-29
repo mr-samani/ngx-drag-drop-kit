@@ -184,7 +184,7 @@ export class NgxDragPlaceholderService {
         this.renderer.setStyle(
           this.state.element,
           'top',
-          `${newPosition.top - this.state.rect.top + newPosition.height}px`
+          `${newPosition.top - this.state.rect.top + (cord.isTop ? 0 : newPosition.height)}px`
         );
       } else if (cord?.isLeft || cord?.isRight) {
         this.renderer.setStyle(this.state.element, 'height', `${newPosition.height}px`);
@@ -192,7 +192,7 @@ export class NgxDragPlaceholderService {
         this.renderer.setStyle(
           this.state.element,
           'left',
-          `${newPosition.left - parentRect.left + newPosition.width}px`
+          `${newPosition.left - parentRect.left + (cord.isLeft ? 0 : newPosition.width)}px`
         );
         this.renderer.setStyle(this.state.element, 'top', `${newPosition.top - this.state.rect.top}px`);
       }

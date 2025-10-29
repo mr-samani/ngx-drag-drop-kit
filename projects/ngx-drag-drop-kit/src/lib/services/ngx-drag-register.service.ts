@@ -213,7 +213,7 @@ export class NgxDragRegisterService {
       // تعیین index نهایی
       return { index: 0, cord, dragItem: undefined };
     }
-    dragItem = items[Math.min(closestIndex, items.length - 1)];
+    //dragItem = items[Math.min(closestIndex, items.length - 1)];
     console.log(
       dropList.el?.id,
       dragItem?.el.id,
