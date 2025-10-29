@@ -3,7 +3,19 @@ import { IDropList } from '../../interfaces/IDropList';
 import { IPosition } from '../../interfaces/IPosition';
 import { DragItemRef } from '../directives/DragItemRef';
 
-export declare type CordPosition = 'TopLeft' | 'TopRight' | 'BottomLeft' | 'BottomRight';
+export class CordPosition {
+  isTop: boolean;
+  isLeft: boolean;
+  isRight: boolean;
+  isBottom: boolean;
+
+  constructor() {
+    this.isTop = false;
+    this.isLeft = false;
+    this.isRight = false;
+    this.isBottom = false;
+  }
+}
 
 @Injectable({ providedIn: 'root' })
 export class NgxDragRegisterService {
@@ -156,8 +168,7 @@ export class NgxDragRegisterService {
     }
 
     let closestIndex = -1;
-    let isTop = false;
-    let isLeft = false;
+    let cord = new CordPosition();
 
     // موقعیت موس
     const px = pointer.x;
@@ -169,21 +180,50 @@ export class NgxDragRegisterService {
       if (px > lastRect.left && px < lastRect.right && py > lastRect.top && py < lastRect.bottom) {
         // موس داخل آیتم است
         closestIndex = i;
-        isTop = py < lastRect.top + lastRect.height / 2;
-        isLeft = px < lastRect.left + lastRect.width / 2;
+        cord = {
+          isTop: py < lastRect.top + lastRect.height / 2,
+          isLeft: px < lastRect.left + lastRect.width / 2,
+          isRight: px > lastRect.right - lastRect.width / 2,
+          isBottom: py > lastRect.bottom - lastRect.height / 2,
+        };
         break;
       }
     }
-    const cord = isTop ? (isLeft ? 'TopLeft' : 'TopRight') : isLeft ? 'BottomLeft' : 'BottomRight';
+    let dragItem = items[Math.min(closestIndex, items.length - 1)];
 
-    // تعیین index نهایی
-    if (closestIndex < 0) {
-      return { index: 0, cord, dragItem: undefined };
+    if (dragItem?.isFullRow) {
+      cord.isLeft = false;
+      cord.isRight = false;
+    } else {
+      cord.isTop = false;
+      cord.isBottom = false;
     }
 
-    // اگر موس پایین‌تر/راست‌تر از مرکز آیتم است، placeholder بعد از آن قرار گیرد
-    const dragItem = items[Math.min(closestIndex, items.length - 1)];
-    console.log(dropList.el?.id, dragItem?.el.id, 'closestIndex', closestIndex, cord);
+    let cordination = cord.isTop ? 'top' : cord.isBottom ? 'bottom' : cord.isLeft ? 'left' : 'right';
+    if (cordination == 'top') {
+      closestIndex--;
+    }
+    if (dropList.isRtl && cordination == 'right') {
+      closestIndex--;
+    }
+    if (!dropList.isRtl && cordination == 'left') {
+      closestIndex--;
+    }
+    if (closestIndex < 0) {
+      // تعیین index نهایی
+      return { index: 0, cord, dragItem: undefined };
+    }
+    dragItem = items[Math.min(closestIndex, items.length - 1)];
+    console.log(
+      dropList.el?.id,
+      dragItem?.el.id,
+      'closestIndex',
+      closestIndex,
+      'fullrow',
+      dragItem?.isFullRow,
+      'cordination',
+      cordination
+    );
 
     return { index: closestIndex, cord, dragItem };
   }

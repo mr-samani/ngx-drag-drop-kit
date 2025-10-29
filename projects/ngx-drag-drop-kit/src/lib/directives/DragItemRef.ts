@@ -8,6 +8,8 @@ export class DragItemRef {
   isPlaceholder: boolean = false;
   isDragging: boolean = false;
 
+  isFullRow: boolean = false;
+
   constructor(el: HTMLElement) {
     this.el = el;
   }

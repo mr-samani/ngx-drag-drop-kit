@@ -113,11 +113,12 @@ export class NgxDragDropService {
       });
     }
   }
-  dragMove(drag: DragItemRef, ev: MouseEvent | TouchEvent, transform: string) {
+  dragMove(drag: DragItemRef, ev: MouseEvent | TouchEvent, offsetX: number, offsetY: number) {
     if (!this.dragElementInBody || !this.isDragging || !this._activeDragInstances[0].dropList) {
       return;
     }
     ev.preventDefault();
+    const transform = `translate3d(${drag.domRect.x + offsetX}px, ${drag.domRect.y + offsetY}px, 0)`;
     this.renderer.setStyle(this.dragElementInBody, 'transform', transform);
     const viewportPointer = getPointerPositionOnViewPort(ev);
     const dropList = this.dragRegister._getDropListFromPointerPosition(viewportPointer);
@@ -129,10 +130,7 @@ export class NgxDragDropService {
       return;
     }
     const isVertical = dropList.direction === 'vertical';
-    const dragOverData = this.dragRegister._getItemIndexFromPointerPosition(
-      dropList,
-      viewportPointer,
-    );
+    const dragOverData = this.dragRegister._getItemIndexFromPointerPosition(dropList, viewportPointer);
     if (dragOverData.index > -1) {
       this._newIndex = dragOverData.index;
     }
@@ -148,15 +146,15 @@ export class NgxDragDropService {
       this.placeholderService.createPlaceholder(dropList, this._activeDragInstances[0], overDragItem);
       this.showDevGridOverlay();
     }
-    // this.placeholderService.updatePlaceholder$.next({
-    //   dragItem: this._activeDragInstances[0],
-    //   dragOverItem: dragOverItem,
-    //   sourceDropList: this._activeDragInstances[0].dropList,
-    //   destinationDropList: this.activeDropList,
-    //   newIndex: this._newIndex,
-    //   isAfter: dragOverData.isAfter,
-    //   initialScrollOffset: this.initialScrollOffset,
-    // });
+    this.placeholderService.updatePlaceholder$.next({
+      dragItem: this._activeDragInstances[0],
+      dragOverItem: dragOverItem,
+      sourceDropList: this._activeDragInstances[0].dropList,
+      destinationDropList: this.activeDropList,
+      newIndex: this._newIndex,
+      cord: dragOverData.cord,
+      initialScrollOffset: this.initialScrollOffset,
+    });
   }
   stopDrag(drag: DragItemRef) {
     this.isDragging = false;

@@ -62,7 +62,7 @@ export class NgxDragPlaceholderService {
             prev.newIndex === curr.newIndex &&
             prev.dragItem === curr.dragItem &&
             prev.destinationDropList === curr.destinationDropList &&
-            prev.isAfter === curr.isAfter
+            prev.cord === curr.cord
         )
         //  throttleTime(200)
       )
@@ -94,11 +94,11 @@ export class NgxDragPlaceholderService {
     const { dragItem, destinationDropList, dragOverItem, newIndex } = input;
     if (dragOverItem?.isPlaceholder) return;
     this.hide(destinationDropList);
-    let isAfter = input.isAfter;
-    if (this.state.index < newIndex) {
-      isAfter = !input.isAfter;
-    }
-    this.createPlaceholder(destinationDropList, dragItem, dragOverItem, isAfter);
+    // let isAfter = input.isAfter;
+    // if (this.state.index < newIndex) {
+    //   isAfter = !input.isAfter;
+    // }
+    this.createPlaceholder(destinationDropList, dragItem, dragOverItem);
   }
   public createPlaceholder(
     destinationDropList: IDropList,
@@ -139,7 +139,7 @@ export class NgxDragPlaceholderService {
   }
 
   private applyTransforms(input: IUpdatePlaceholder): void {
-    const { destinationDropList, sourceDropList, newIndex, dragOverItem, initialScrollOffset } = input;
+    const { destinationDropList, sourceDropList, newIndex, dragOverItem, initialScrollOffset, cord } = input;
 
     if (!this.state.element || !destinationDropList || newIndex === -1) return;
 
@@ -175,7 +175,28 @@ export class NgxDragPlaceholderService {
         deltaX += newPosition.width - this.state.rect.width;
         deltaY += newPosition.height - this.state.rect.height;
       }
-      this.renderer.setStyle(this.state.element, 'transform', `translate3d(${deltaX}px, ${deltaY}px, 0)`);
+
+      let parentRect = destinationDropList.domRect;
+      if (cord?.isTop || cord?.isBottom) {
+        this.renderer.setStyle(this.state.element, 'width', `${newPosition.width}px`);
+        this.renderer.setStyle(this.state.element, 'height', `unset`);
+        this.renderer.setStyle(this.state.element, 'left', `${newPosition.left - parentRect.left}px`);
+        this.renderer.setStyle(
+          this.state.element,
+          'top',
+          `${newPosition.top - this.state.rect.top + newPosition.height}px`
+        );
+      } else if (cord?.isLeft || cord?.isRight) {
+        this.renderer.setStyle(this.state.element, 'height', `${newPosition.height}px`);
+        this.renderer.setStyle(this.state.element, 'width', `unset`);
+        this.renderer.setStyle(
+          this.state.element,
+          'left',
+          `${newPosition.left - parentRect.left + newPosition.width}px`
+        );
+        this.renderer.setStyle(this.state.element, 'top', `${newPosition.top - this.state.rect.top}px`);
+      }
+      // this.renderer.setStyle(this.state.element, 'transform', `translate3d(${deltaX}px, ${deltaY}px, 0)`);
     }
 
     // ---- reset transforms for all items first ----
@@ -193,17 +214,17 @@ export class NgxDragPlaceholderService {
 
     // ---- apply transforms ----
     const otherItems = items.filter((x) => !x.isPlaceholder);
-    for (let i = start; i <= end && i < otherItems.length; i++) {
-      const item = otherItems[i];
-      if (!item || item.isPlaceholder || item.isDragging) continue;
+    // for (let i = start; i <= end && i < otherItems.length; i++) {
+    //   const item = otherItems[i];
+    //   if (!item || item.isPlaceholder || item.isDragging) continue;
 
-      const shouldMove = this.shouldMoveItem(i, placeholderIndex, newIndex, moveDirection, isSameList);
+    //   const shouldMove = this.shouldMoveItem(i, placeholderIndex, newIndex, moveDirection, isSameList);
 
-      if (!shouldMove) continue;
+    //   if (!shouldMove) continue;
 
-      const transform = this.getTransform(isVertical, shiftValue);
-      this.renderer.setStyle(item.el, 'transform', transform);
-    }
+    //   const transform = this.getTransform(isVertical, shiftValue);
+    //   this.renderer.setStyle(item.el, 'transform', transform);
+    // }
   }
 
   /** Determines if an item should move based on its position and movement context */

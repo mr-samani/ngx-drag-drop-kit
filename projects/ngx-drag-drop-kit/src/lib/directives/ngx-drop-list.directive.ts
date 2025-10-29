@@ -128,16 +128,10 @@ export class NgxDropListDirective<T = any> implements IDropList, OnInit, AfterVi
     } else {
       el = this.renderer.createElement('div');
       this.renderer.addClass(el, 'ngx-drag-placeholder');
-      if (width) {
-        // this.renderer.setStyle(el, 'width', `${width}px`);
-        this.renderer.setStyle(el, 'min-width', `${width}px`);
-      }
-      if (height) {
-        // this.renderer.setStyle(el, 'height', `${height}px`);
-        this.renderer.setStyle(el, 'min-height', `${height}px`);
-      }
+      this.renderer.setStyle(el, 'min-height', `${height}px`);
     }
 
+    this.renderer.setStyle(el, 'width', `${width}px`);
     this.renderer.setStyle(el, 'z-index', '9999', RendererStyleFlags2.Important);
     this.renderer.setStyle(el, 'position', 'absolute', RendererStyleFlags2.Important);
     this.renderer.setStyle(el, 'pointer-events', 'none', RendererStyleFlags2.Important);

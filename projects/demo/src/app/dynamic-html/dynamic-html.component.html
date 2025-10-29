@@ -1,14 +1,15 @@
-<div ngxDropList class="example-list" (drop)="drop($event, items)" id="baseList" #baseList [connectedTo]="[baseList]">
-  <!-- <span class="placeholder" *ngxPlaceholder></span> -->
-  <input type="text" ngxDraggable value="this is a text" />
+<div ngxDropList class="example-list" (drop)="drop($event, items)" id="el_baseList" #baseList [connectedTo]="[baseList]">
+  <span class="placeholder" *ngxPlaceholder></span>
+  <input type="text" ngxDraggable value="this is a text" id="el_0"/>
 
-  <div class="box" ngxDraggable>textxxxxxxxxxxxx</div>
-  <input type="text" ngxDraggable value="this is a text" />
+  <div class="box" ngxDraggable id="el_1">textxxxxxxxxxxxx</div>
+  <input type="text" ngxDraggable value="this is a text" id="el_2"/>
+  <div class="box" ngxDraggable style="width: 50%" id="el_3">width 50 %</div>
 
-  <input type="button" ngxDraggable value="df dfdf df" />
+  <input type="button" ngxDraggable value="df dfdf df" id="el_4"/>
 
-  <input type="email" ngxDraggable value="this is a text" />
+  <input type="email" ngxDraggable value="this is a text" id="el_5"/>
 
-  <button ngxDraggable>buttton</button>
+  <button ngxDraggable id="el_6">buttton</button>
 </div>
 <pre>{{ items | json }}</pre>

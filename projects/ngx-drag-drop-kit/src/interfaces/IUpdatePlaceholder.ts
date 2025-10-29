@@ -1,4 +1,5 @@
 import { DragItemRef } from '../lib/directives/DragItemRef';
+import { CordPosition } from '../lib/services/ngx-drag-register.service';
 import { IDropList } from './IDropList';
 import { IScrollOffset } from './IScrollOffset';
 
@@ -12,6 +13,6 @@ export interface IUpdatePlaceholder {
    */
   newIndex: number;
 
-  isAfter: boolean;
+  cord?: CordPosition;
   initialScrollOffset: IScrollOffset;
 }

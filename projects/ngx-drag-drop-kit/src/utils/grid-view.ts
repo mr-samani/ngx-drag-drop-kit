@@ -60,8 +60,8 @@ export function createGridOverlay(rects: DOMRect[] = [], options: IGridOverlayOp
   container.id = id;
   Object.assign(container.style, {
     position: 'absolute',
-    left: '0px',
-    top: '0px',
+    left: window.scrollX + 'px',
+    top: window.scrollY + 'px',
     width: width + 'px',
     height: height + 'px',
     pointerEvents: 'none', // let clicks pass through

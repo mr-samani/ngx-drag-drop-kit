@@ -24,6 +24,7 @@ import { NgxDragRegisterService } from '../services/ngx-drag-register.service';
 import { DOCUMENT } from '@angular/common';
 import { AutoScrollService } from '../services/auto-scroll.service';
 import { DragItemRef } from './DragItemRef';
+import { isFullRowElement } from '../../utils/element-is-full-row';
 export const NGX_DROP_LIST = new InjectionToken<NgxDropListDirective>('NgxDropList');
 
 @Directive({
@@ -94,6 +95,7 @@ export class NgxDraggableDirective extends DragItemRef implements OnDestroy, Aft
 
   ngAfterViewInit(): void {
     this.findFirstParentDragRootElement();
+    this.isFullRow = isFullRowElement(this.el);
     this.init();
     this.updateDomRect();
   }
@@ -184,9 +186,12 @@ export class NgxDraggableDirective extends DragItemRef implements OnDestroy, Aft
     // console.time('drgmv');
     const offsetX = position.x - this.previousXY.x;
     const offsetY = position.y - this.previousXY.y;
-    const transform = this.updatePosition(offsetX, offsetY, position);
     this.autoScroll.handleAutoScroll(ev);
-    this.dragService.dragMove(this, ev, transform);
+    if (this.dropList) {
+      this.dragService.dragMove(this, ev, offsetX, offsetY);
+    } else {
+      const transform = this.updatePosition(offsetX, offsetY, position);
+    }
     this.dragMove.emit({ x: this.x, y: this.y });
     // console.timeEnd('drgmv');
   }
@@ -201,9 +206,7 @@ export class NgxDraggableDirective extends DragItemRef implements OnDestroy, Aft
       this.previousXY.y = position.y;
     }
     let transform = `translate3d(${this.x}px, ${this.y}px, 0)`;
-    if (!this.dropList) {
-      this.renderer.setStyle(this.el, 'transform', transform);
-    }
+    this.renderer.setStyle(this.el, 'transform', transform);
     return transform;
   }
 }
