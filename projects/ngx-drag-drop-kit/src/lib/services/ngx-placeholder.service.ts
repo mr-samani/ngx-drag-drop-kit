@@ -111,7 +111,7 @@ export class NgxDragPlaceholderService {
     if (destinationDropList.direction == 'vertical') {
       isAfter = true;
     }
-    this.state.element = destinationDropList.addPlaceholder(dragItem.domRect);
+    this.state.element = destinationDropList.addPlaceholder(dragItem);
     const isSameList = dragItem.dropList === destinationDropList;
 
     if (dragOverItem && !dragOverItem.isPlaceholder) {
@@ -133,8 +133,8 @@ export class NgxDragPlaceholderService {
     this.state.dragItem._domRect = this.state.rect;
     this.state.dragItem.isPlaceholder = true;
 
-    this.dragRegister.registerDragItem(this.state.dragItem);
-    this.dragRegister.updateAllDragItemsRect();
+    // this.dragRegister.registerDragItem(this.state.dragItem);
+    //this.dragRegister.updateAllDragItemsRect();
     this.state.index = this.dragRegister.getDragItemIndex(this.state.dragItem, true);
   }
 
@@ -250,5 +250,11 @@ export class NgxDragPlaceholderService {
 
   private resetState(): void {
     this.state = { element: null, isShown: false, rect: null, index: -1, dragItem: null };
+  }
+  getPlaceholderPosition() {
+    if (!this.state.rect) {
+      throw new Error('Placeholder position is not set.');
+    }
+    return this.state.element?.getBoundingClientRect();
   }
 }

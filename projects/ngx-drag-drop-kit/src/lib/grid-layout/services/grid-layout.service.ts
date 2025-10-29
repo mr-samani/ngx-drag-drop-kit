@@ -36,10 +36,10 @@ export class GridLayoutService {
   private placeHolderRef?: ComponentRef<GridItemComponent>;
 
   private updatePlaceholderPosition$ = new Subject<FakeItem>();
-  private _renderer: Renderer2;
+  private renderer: Renderer2;
 
   constructor(rendererFactory: RendererFactory2) {
-    this._renderer = rendererFactory.createRenderer(null, null);
+    this.renderer = rendererFactory.createRenderer(null, null);
     this.updatePlaceholderPosition$
       .pipe(
         distinctUntilChanged((prev, curr) => {
@@ -133,7 +133,7 @@ export class GridLayoutService {
     }
     item.config = this.placeHolder.config;
     this.updateGridItem(item);
-    this._renderer.setStyle(item.el, 'transform', '');
+    this.renderer.setStyle(item.el, 'transform', '');
     this.placeHolder = undefined;
     // todo: if pushOnDrag config is on -> no need to checkCollisson in end drag
     this.cehckCollesions({ ...item.config, id: item.id });

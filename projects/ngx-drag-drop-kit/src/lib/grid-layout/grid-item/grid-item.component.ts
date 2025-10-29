@@ -46,7 +46,7 @@ export class GridItemComponent implements OnInit, AfterViewInit, OnDestroy {
     private _changeDetection: ChangeDetectorRef,
     private draggable: NgxDraggableDirective,
     private resizable: NgxResizableDirective,
-    private _renderer: Renderer2
+    private renderer: Renderer2
   ) {
     this.el = elRef.nativeElement;
   }
@@ -73,10 +73,10 @@ export class GridItemComponent implements OnInit, AfterViewInit, OnDestroy {
   ngOnDestroy(): void {}
 
   updateView() {
-    this._renderer.setStyle(this.el, 'width', this.width + 'px');
-    this._renderer.setStyle(this.el, 'height', this.height + 'px');
-    this._renderer.setStyle(this.el, 'top', this.top + 'px');
-    this._renderer.setStyle(this.el, 'left', this.left + 'px');
+    this.renderer.setStyle(this.el, 'width', this.width + 'px');
+    this.renderer.setStyle(this.el, 'height', this.height + 'px');
+    this.renderer.setStyle(this.el, 'top', this.top + 'px');
+    this.renderer.setStyle(this.el, 'left', this.left + 'px');
     this._changeDetection.detectChanges();
   }
 

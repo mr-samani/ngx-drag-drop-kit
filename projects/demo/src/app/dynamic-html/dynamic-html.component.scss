@@ -2,8 +2,14 @@
   .box {
     min-height: 50px;
     border: 1px dashed #ccc;
+    background-color: cadetblue;
   }
   .placeholder {
     border: 2px blueviolet solid;
+  }
+  button,
+  input {
+    min-height: 40px;
+    background-color: rgb(119, 119, 251);
   }
 }

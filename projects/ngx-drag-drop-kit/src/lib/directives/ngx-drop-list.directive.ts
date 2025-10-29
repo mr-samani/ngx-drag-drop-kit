@@ -115,8 +115,8 @@ export class NgxDropListDirective<T = any> implements IDropList, OnInit, AfterVi
     this.subscriptions = [];
   }
 
-  addPlaceholder(dragRect: DOMRect): HTMLElement {
-    const { width, height } = dragRect;
+  addPlaceholder(drag: DragItemRef): HTMLElement {
+    const { width, height } = drag.domRect;
     let el: HTMLElement;
     // حالت custom template کاربر
     if (this.customPlaceholder) {
@@ -138,10 +138,9 @@ export class NgxDropListDirective<T = any> implements IDropList, OnInit, AfterVi
       }
     }
 
-    this.renderer.setStyle(el, 'z-index', '9999');
-    this.renderer.setStyle(el, 'position', 'relative');
-    this.renderer.setStyle(el, 'pointer-events', 'none');
-    this.renderer.addClass(el, 'ngx-draggable');
+    this.renderer.setStyle(el, 'z-index', '9999', RendererStyleFlags2.Important);
+    this.renderer.setStyle(el, 'position', 'absolute', RendererStyleFlags2.Important);
+    this.renderer.setStyle(el, 'pointer-events', 'none', RendererStyleFlags2.Important);
     return el;
   }
 

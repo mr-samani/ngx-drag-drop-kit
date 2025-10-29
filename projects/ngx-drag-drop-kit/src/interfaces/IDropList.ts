@@ -15,7 +15,7 @@ export interface IDropList<T = any> {
   removeDragItem(item: DragItemRef): void;
   checkAllowedConnections(sourceDropList?: IDropList): boolean;
 
-  addPlaceholder(dragRect: DOMRect): HTMLElement;
+  addPlaceholder(drag: DragItemRef): HTMLElement;
   disposePlaceholder(): void;
   onDrop(_dropEvent: IDropEvent<any>): unknown;
   dragging?: boolean;

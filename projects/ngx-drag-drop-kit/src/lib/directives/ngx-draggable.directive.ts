@@ -159,7 +159,7 @@ export class NgxDraggableDirective extends DragItemRef implements OnDestroy, Aft
   onMouseDown(ev: MouseEvent | TouchEvent) {
     this.previousXY = getPointerPosition(ev);
     this.isTouched = true;
-    // ev.preventDefault();
+    ev.preventDefault();
     this.init();
     this.subscriptions = this.subscriptions.filter((x) => !x.closed);
     this.subscriptions.push(
@@ -201,8 +201,7 @@ export class NgxDraggableDirective extends DragItemRef implements OnDestroy, Aft
       this.previousXY.y = position.y;
     }
     let transform = `translate3d(${this.x}px, ${this.y}px, 0)`;
-
-    if (!this.dropList || !this.dropList.disableSort) {
+    if (!this.dropList) {
       this.renderer.setStyle(this.el, 'transform', transform);
     }
     return transform;
