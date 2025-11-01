@@ -210,8 +210,7 @@ export class NgxDragRegisterService {
       closestIndex--;
     }
     if (closestIndex < 0) {
-      // تعیین index نهایی
-      return { index: 0, cord, dragItem: undefined };
+      closestIndex = 0;
     }
     //dragItem = items[Math.min(closestIndex, items.length - 1)];
     console.log(

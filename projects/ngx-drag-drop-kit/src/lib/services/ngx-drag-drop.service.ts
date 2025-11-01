@@ -96,6 +96,15 @@ export class NgxDragDropService {
       containerY: this.activeDropList.el.scrollTop || 0,
     };
     this.showDevGridOverlay();
+    this.placeholderService.updatePlaceholder$.next({
+      dragItem: this._activeDragInstances[0],
+      dragOverItem: this._activeDragInstances[0],
+      sourceDropList: this._activeDragInstances[0].dropList!,
+      destinationDropList: this.activeDropList,
+      newIndex: this._newIndex,
+      cord: { isTop: true, isLeft: true, isBottom: false, isRight: false },
+      initialScrollOffset: this.initialScrollOffset,
+    });
   }
   showDevGridOverlay() {
     if (isDevMode()) {

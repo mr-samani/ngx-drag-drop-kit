@@ -139,7 +139,7 @@ export class NgxDragPlaceholderService {
   }
 
   private applyTransforms(input: IUpdatePlaceholder): void {
-    const { destinationDropList, sourceDropList, newIndex, dragOverItem, initialScrollOffset, cord } = input;
+    const { destinationDropList, sourceDropList, newIndex, dragOverItem, initialScrollOffset, cord, dragItem } = input;
 
     if (!this.state.element || !destinationDropList || newIndex === -1) return;
 
@@ -171,32 +171,20 @@ export class NgxDragPlaceholderService {
       let deltaX = newPosition.left - this.state.rect.left + windowScrollDeltaX - containerScrollDeltaX;
       let deltaY = newPosition.top - this.state.rect.top + windowScrollDeltaY - containerScrollDeltaY;
 
-      if (moveDirection === 'Forward') {
-        deltaX += newPosition.width - this.state.rect.width;
-        deltaY += newPosition.height - this.state.rect.height;
-      }
-
-      let parentRect = destinationDropList.domRect;
       if (cord?.isTop || cord?.isBottom) {
         this.renderer.setStyle(this.state.element, 'width', `${newPosition.width}px`);
         this.renderer.setStyle(this.state.element, 'height', `unset`);
-        this.renderer.setStyle(this.state.element, 'left', `${newPosition.left - parentRect.left}px`);
-        this.renderer.setStyle(
-          this.state.element,
-          'top',
-          `${newPosition.top - this.state.rect.top + (cord.isTop ? 0 : newPosition.height)}px`
-        );
+        if (cord.isBottom) {
+          deltaY += newPosition.height;
+        }
       } else if (cord?.isLeft || cord?.isRight) {
         this.renderer.setStyle(this.state.element, 'height', `${newPosition.height}px`);
         this.renderer.setStyle(this.state.element, 'width', `unset`);
-        this.renderer.setStyle(
-          this.state.element,
-          'left',
-          `${newPosition.left - parentRect.left + (cord.isLeft ? 0 : newPosition.width)}px`
-        );
-        this.renderer.setStyle(this.state.element, 'top', `${newPosition.top - this.state.rect.top}px`);
+        if (cord.isRight) {
+          deltaX += newPosition.width;
+        }
       }
-      // this.renderer.setStyle(this.state.element, 'transform', `translate3d(${deltaX}px, ${deltaY}px, 0)`);
+      this.renderer.setStyle(this.state.element, 'transform', `translate3d(${deltaX}px, ${deltaY}px, 0)`);
     }
 
     // ---- reset transforms for all items first ----
