@@ -10,6 +10,12 @@
   button,
   input {
     min-height: 40px;
-    background-color: rgb(119, 119, 251);
   }
+}
+.ngxpointer {
+  position: absolute;
+  background-color: #ff0000;
+  top: 11px;
+  left: 10px;
+  z-index: 99999999;
 }
