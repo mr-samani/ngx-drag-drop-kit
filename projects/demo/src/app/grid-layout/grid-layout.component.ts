@@ -6,11 +6,10 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
 @Component({
-	selector: 'app-grid-layout',
-	standalone: true,
-	imports: [CommonModule, FormsModule, NgxGridLayoutModule],
-	templateUrl: './grid-layout.component.html',
-	styleUrl: './grid-layout.component.scss',
+    selector: 'app-grid-layout',
+    imports: [CommonModule, FormsModule, NgxGridLayoutModule],
+    templateUrl: './grid-layout.component.html',
+    styleUrl: './grid-layout.component.scss'
 })
 export class GridLayoutComponent {
 	options: IGridLayoutOptions = {

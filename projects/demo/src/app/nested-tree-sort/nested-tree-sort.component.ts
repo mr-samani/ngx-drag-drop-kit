@@ -9,11 +9,10 @@ export interface TreeModel {
 }
 
 @Component({
-	selector: 'app-nested-tree-sort',
-	standalone: true,
-	imports: [CommonModule, NgxDragDropKitModule],
-	templateUrl: './nested-tree-sort.component.html',
-	styleUrl: './nested-tree-sort.component.scss',
+    selector: 'app-nested-tree-sort',
+    imports: [CommonModule, NgxDragDropKitModule],
+    templateUrl: './nested-tree-sort.component.html',
+    styleUrl: './nested-tree-sort.component.scss'
 })
 export class NestedTreeSortComponent {
 	items: TreeModel[] = [

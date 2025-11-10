@@ -4,11 +4,10 @@ import { moveItemInArray, transferArrayItem } from '../../../../ngx-drag-drop-ki
 import { NgxDragDropKitModule } from '../../../../ngx-drag-drop-kit/src/public-api';
 
 @Component({
-	selector: 'app-drag-drop',
-	standalone: true,
-	imports: [NgxDragDropKitModule],
-	templateUrl: './drag-drop.component.html',
-	styleUrl: './drag-drop.component.scss',
+    selector: 'app-drag-drop',
+    imports: [NgxDragDropKitModule],
+    templateUrl: './drag-drop.component.html',
+    styleUrl: './drag-drop.component.scss'
 })
 export class DragDropComponent {
 	inProgressList: string[] = [];

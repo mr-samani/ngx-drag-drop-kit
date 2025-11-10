@@ -11,11 +11,10 @@ interface DragEvent {
 }
 
 @Component({
-	selector: 'app-test',
-	standalone: true,
-	imports: [CommonModule, NgxDragDropKitModule],
-	templateUrl: './test.component.html',
-	styleUrl: './test.component.scss',
+    selector: 'app-test',
+    imports: [CommonModule, NgxDragDropKitModule],
+    templateUrl: './test.component.html',
+    styleUrl: './test.component.scss'
 })
 export class TestComponent {
 	list: any[] = [];

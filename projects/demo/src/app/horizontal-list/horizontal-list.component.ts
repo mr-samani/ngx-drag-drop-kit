@@ -4,11 +4,10 @@ import { IDropEvent } from '../../../../ngx-drag-drop-kit/src/interfaces/IDropEv
 import { NgxDragDropKitModule } from '../../../../ngx-drag-drop-kit/src/public-api';
 
 @Component({
-	selector: 'app-horizontal-list',
-	standalone: true,
-	imports: [NgxDragDropKitModule],
-	templateUrl: './horizontal-list.component.html',
-	styleUrl: './horizontal-list.component.scss',
+    selector: 'app-horizontal-list',
+    imports: [NgxDragDropKitModule],
+    templateUrl: './horizontal-list.component.html',
+    styleUrl: './horizontal-list.component.scss'
 })
 export class HorizontalListComponent {
 	items: string[] = [];

@@ -16,18 +16,19 @@ import { NgxDraggableDirective } from '../../directives/ngx-draggable.directive'
 import { NgxResizableDirective } from '../../directives/ngx-resizable.directive';
 
 @Component({
-	selector: 'grid-item',
-	templateUrl: './grid-item.component.html',
-	styleUrl: './grid-item.component.scss',
-	host: {
-		'[style.position]': '"absolute !important"',
-		'[style.display]': '"block"',
-		'[style.overflow]': '"hidden"',
-		'[style.boxSizing]': '"border-box"',
-		'[style.transition]': '"left 500ms , top 500ms"',
-	},
-	hostDirectives: [NgxDraggableDirective, NgxResizableDirective],
-	changeDetection: ChangeDetectionStrategy.OnPush,
+    selector: 'grid-item',
+    templateUrl: './grid-item.component.html',
+    styleUrl: './grid-item.component.scss',
+    host: {
+        '[style.position]': '"absolute !important"',
+        '[style.display]': '"block"',
+        '[style.overflow]': '"hidden"',
+        '[style.boxSizing]': '"border-box"',
+        '[style.transition]': '"left 500ms , top 500ms"',
+    },
+    hostDirectives: [NgxDraggableDirective, NgxResizableDirective],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class GridItemComponent implements OnInit, AfterViewInit, OnDestroy {
 	@Input() config: GridItemConfig = new GridItemConfig();

@@ -3,11 +3,10 @@ import { Component } from '@angular/core';
 import { IResizableOutput, NgxDragDropKitModule } from '../../../../ngx-drag-drop-kit/src/public-api';
 
 @Component({
-	selector: 'app-resizable-layout',
-	standalone: true,
-	imports: [CommonModule, NgxDragDropKitModule],
-	templateUrl: './resizable-layout.component.html',
-	styleUrl: './resizable-layout.component.scss',
+    selector: 'app-resizable-layout',
+    imports: [CommonModule, NgxDragDropKitModule],
+    templateUrl: './resizable-layout.component.html',
+    styleUrl: './resizable-layout.component.scss'
 })
 export class ResizableLayoutComponent {
 	width: number;

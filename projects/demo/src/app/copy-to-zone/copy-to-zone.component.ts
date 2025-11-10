@@ -6,11 +6,10 @@ import { NgxDragDropKitModule } from '../../../../ngx-drag-drop-kit/src/public-a
 import { IDropEvent } from '../../../../ngx-drag-drop-kit/src/interfaces/IDropEvent';
 
 @Component({
-	selector: 'app-copy-to-zone',
-	standalone: true,
-	imports: [CommonModule, NgxDragDropKitModule],
-	templateUrl: './copy-to-zone.component.html',
-	styleUrl: './copy-to-zone.component.scss',
+    selector: 'app-copy-to-zone',
+    imports: [CommonModule, NgxDragDropKitModule],
+    templateUrl: './copy-to-zone.component.html',
+    styleUrl: './copy-to-zone.component.scss'
 })
 export class CopyToZoneComponent {
 	sourceList: string[] = [];

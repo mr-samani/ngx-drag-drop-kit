@@ -4,11 +4,10 @@ import { IDropEvent } from '../../../../ngx-drag-drop-kit/src/interfaces/IDropEv
 import { NgxDragDropKitModule } from '../../../../ngx-drag-drop-kit/src/public-api';
 
 @Component({
-	selector: 'app-sort-list',
-	standalone: true,
-	imports: [NgxDragDropKitModule],
-	templateUrl: './sort-list.component.html',
-	styleUrl: './sort-list.component.scss',
+    selector: 'app-sort-list',
+    imports: [NgxDragDropKitModule],
+    templateUrl: './sort-list.component.html',
+    styleUrl: './sort-list.component.scss'
 })
 export class SortListComponent {
 	items: string[] = Array.from({ length: 30 }).map((m, i) => 'Item ' + i);

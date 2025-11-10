@@ -6,19 +6,18 @@ import { NgxDraggableDirective, NgxResizableDirective } from '../../../ngx-drag-
 import { NgxDropListDirective } from '../../../ngx-drag-drop-kit/src/lib/directives/ngx-drop-list.directive';
 
 @Component({
-	selector: 'app-root',
-	standalone: true,
-	imports: [
-		RouterOutlet,
-		RouterModule,
-		CommonModule,
-		FormsModule,
-		NgxDraggableDirective,
-		NgxResizableDirective,
-		NgxDropListDirective,
-	],
-	templateUrl: './app.component.html',
-	styleUrl: './app.component.scss',
+    selector: 'app-root',
+    imports: [
+        RouterOutlet,
+        RouterModule,
+        CommonModule,
+        FormsModule,
+        NgxDraggableDirective,
+        NgxResizableDirective,
+        NgxDropListDirective,
+    ],
+    templateUrl: './app.component.html',
+    styleUrl: './app.component.scss'
 })
 export class AppComponent {
 	isRtl = false;

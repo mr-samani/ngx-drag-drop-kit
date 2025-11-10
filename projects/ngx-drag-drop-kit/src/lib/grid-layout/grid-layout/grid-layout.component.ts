@@ -23,17 +23,18 @@ import { getFirstCollision } from '../utils/grid.utils';
 import { LayoutOutput } from '../options/layout-output';
 
 @Component({
-	selector: 'grid-layout',
-	templateUrl: './grid-layout.component.html',
-	styleUrls: ['./grid-layout.component.scss'],
-	host: {
-		'[style.position]': '"relative !important"',
-		'[style.boxSizing]': '"border-box"',
-		'[style.height.px]': '_gridService.getGridHeight',
-		'[style.user-select]': '"none"',
-	},
-	changeDetection: ChangeDetectionStrategy.OnPush,
-	encapsulation: ViewEncapsulation.None,
+    selector: 'grid-layout',
+    templateUrl: './grid-layout.component.html',
+    styleUrls: ['./grid-layout.component.scss'],
+    host: {
+        '[style.position]': '"relative !important"',
+        '[style.boxSizing]': '"border-box"',
+        '[style.height.px]': '_gridService.getGridHeight',
+        '[style.user-select]': '"none"',
+    },
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    encapsulation: ViewEncapsulation.None,
+    standalone: false
 })
 export class GridLayoutComponent implements OnInit, AfterViewInit {
 	@Input() get options() {
