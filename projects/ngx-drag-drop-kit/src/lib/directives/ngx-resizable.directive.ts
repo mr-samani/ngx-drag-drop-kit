@@ -149,6 +149,9 @@ export class NgxResizableDirective implements AfterViewInit, OnDestroy {
   }
 
   private onCornerClick(event: MouseEvent | TouchEvent, resizer: Function) {
+    const isLeftClick = event instanceof MouseEvent ? event.button === 0 : true;
+    if (!isLeftClick) return;
+
     this.resizing = true;
     let computed = getComputedStyle(this.el);
 
