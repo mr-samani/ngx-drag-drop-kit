@@ -1,63 +1,63 @@
 .kanban-view {
-  display: flex;
-  gap: 10px;
-  h6 {
-    padding: 10px;
-    margin: 0;
-    border-bottom: 1px rgb(133, 133, 199) solid;
-    position: sticky;
-    top: 0;
-    z-index: 1;
-    background: #fff;
-    height: 45px;
-  }
+	display: flex;
+	gap: 10px;
+	h6 {
+		padding: 10px;
+		margin: 0;
+		border-bottom: 1px rgb(133, 133, 199) solid;
+		position: sticky;
+		top: 0;
+		z-index: 1;
+		background: #fff;
+		height: 45px;
+	}
 }
 .example-list {
-  width: 500px;
-  max-width: 100%;
-  border: solid 1px #ccc;
-  min-height: 60px;
-  display: block;
-  background: white;
-  border-radius: 4px;
-  max-height: 1000px;
-  min-height: 50vh;
-  .inner {
-    background-color: #cccccc30;
-    height: calc(100% - 45px);
-    overflow: auto;
-  }
+	width: 500px;
+	max-width: 100%;
+	border: solid 1px #ccc;
+	min-height: 60px;
+	display: block;
+	background: white;
+	border-radius: 4px;
+	max-height: 1000px;
+	min-height: 50vh;
+	.inner {
+		background-color: #cccccc30;
+		height: calc(100% - 45px);
+		overflow: auto;
+	}
 }
 
 .example-box {
-  padding: 20px 10px;
-  border-bottom: solid 1px #ccc;
-  color: rgba(0, 0, 0, 0.87);
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: space-between;
-  box-sizing: border-box;
-  cursor: move;
-  font-size: 14px;
-  &.todo {
-    background-color: white;
-  }
-  &.completed {
-    background-color: rgb(118, 255, 159);
-  }
-  &.in-progress {
-    background-color: rgb(124, 180, 253);
-  }
-  &.failed {
-    background-color: rgb(255, 153, 153);
-  }
+	padding: 20px 10px;
+	border-bottom: solid 1px #ccc;
+	color: rgba(0, 0, 0, 0.87);
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	justify-content: space-between;
+	box-sizing: border-box;
+	cursor: move;
+	font-size: 14px;
+	&.todo {
+		background-color: white;
+	}
+	&.completed {
+		background-color: rgb(118, 255, 159);
+	}
+	&.in-progress {
+		background-color: rgb(124, 180, 253);
+	}
+	&.failed {
+		background-color: rgb(255, 153, 153);
+	}
 }
 
 .ngxpointer {
-  position: absolute;
-  background-color: #ff0000;
-  top: 11px;
-  left: 10px;
-  z-index: 99999999;
+	position: absolute;
+	background-color: #ff0000;
+	top: 11px;
+	left: 10px;
+	z-index: 99999999;
 }

@@ -13,21 +13,21 @@
  * @param toIndex Index to which the item should be moved.
  */
 export function moveItemInArray<T = any>(array: T[], fromIndex: number, toIndex: number): void {
-  const from = clamp(fromIndex, array.length - 1);
-  const to = clamp(toIndex, array.length - 1);
+	const from = clamp(fromIndex, array.length - 1);
+	const to = clamp(toIndex, array.length - 1);
 
-  if (from === to) {
-    return;
-  }
+	if (from === to) {
+		return;
+	}
 
-  const target = array[from];
-  const delta = to < from ? -1 : 1;
+	const target = array[from];
+	const delta = to < from ? -1 : 1;
 
-  for (let i = from; i !== to; i += delta) {
-    array[i] = array[i + delta];
-  }
+	for (let i = from; i !== to; i += delta) {
+		array[i] = array[i + delta];
+	}
 
-  array[to] = target;
+	array[to] = target;
 }
 
 /**
@@ -38,17 +38,17 @@ export function moveItemInArray<T = any>(array: T[], fromIndex: number, toIndex:
  * @param targetIndex Index at which to insert the item.
  */
 export function transferArrayItem<T = any>(
-  currentArray: T[],
-  targetArray: T[],
-  currentIndex: number,
-  targetIndex: number,
+	currentArray: T[],
+	targetArray: T[],
+	currentIndex: number,
+	targetIndex: number
 ): void {
-  const from = clamp(currentIndex, currentArray.length - 1);
-  const to = clamp(targetIndex, targetArray.length);
+	const from = clamp(currentIndex, currentArray.length - 1);
+	const to = clamp(targetIndex, targetArray.length);
 
-  if (currentArray.length) {
-    targetArray.splice(to, 0, currentArray.splice(from, 1)[0]);
-  }
+	if (currentArray.length) {
+		targetArray.splice(to, 0, currentArray.splice(from, 1)[0]);
+	}
 }
 
 /**
@@ -61,19 +61,19 @@ export function transferArrayItem<T = any>(
  *
  */
 export function copyArrayItem<T = any>(
-  currentArray: T[],
-  targetArray: T[],
-  currentIndex: number,
-  targetIndex: number,
+	currentArray: T[],
+	targetArray: T[],
+	currentIndex: number,
+	targetIndex: number
 ): void {
-  const to = clamp(targetIndex, targetArray.length);
+	const to = clamp(targetIndex, targetArray.length);
 
-  if (currentArray.length) {
-    targetArray.splice(to, 0, currentArray[currentIndex]);
-  }
+	if (currentArray.length) {
+		targetArray.splice(to, 0, currentArray[currentIndex]);
+	}
 }
 
 /** Clamps a number between zero and a maximum. */
 function clamp(value: number, max: number): number {
-  return Math.max(0, Math.min(max, value));
+	return Math.max(0, Math.min(max, value));
 }

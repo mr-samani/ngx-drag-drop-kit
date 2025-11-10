@@ -1,21 +1,21 @@
 .example-list {
-  .box {
-    min-height: 50px;
-    border: 1px dashed #ccc;
-    background-color: cadetblue;
-  }
-  .placeholder {
-    border: 2px rgb(26, 255, 0) solid;
-  }
-  button,
-  input {
-    min-height: 40px;
-  }
+	.box {
+		min-height: 50px;
+		border: 1px dashed #ccc;
+		background-color: cadetblue;
+	}
+	.placeholder {
+		border: 2px rgb(26, 255, 0) solid;
+	}
+	button,
+	input {
+		min-height: 40px;
+	}
 }
 .ngxpointer {
-  position: absolute;
-  background-color: #ff0000;
-  top: 11px;
-  left: 10px;
-  z-index: 99999999;
+	position: absolute;
+	background-color: #ff0000;
+	top: 11px;
+	left: 10px;
+	z-index: 99999999;
 }
