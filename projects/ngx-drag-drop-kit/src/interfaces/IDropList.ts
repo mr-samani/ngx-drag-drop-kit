@@ -5,7 +5,6 @@ export interface IDropList<T = any> {
   el: HTMLElement;
   domRect: DOMRect;
   dragItems: DragItemRef[];
-  direction: 'horizontal' | 'vertical';
   isRtl: boolean;
   isFlexWrap: boolean;
   disableSort: boolean;

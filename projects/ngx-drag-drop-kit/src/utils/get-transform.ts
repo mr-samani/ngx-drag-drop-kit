@@ -14,3 +14,4 @@ export function getPositionFromElement(el: HTMLElement, useTransform: boolean = 
     return { x: window.scrollX + rec.left, y: window.scrollY + rec.top };
   }
 }
+

@@ -4,6 +4,7 @@ import {
   ChangeDetectorRef,
   Component,
   ElementRef,
+  inject,
   Input,
   OnDestroy,
   OnInit,
@@ -40,11 +41,12 @@ export class GridItemComponent implements OnInit, AfterViewInit, OnDestroy {
 
   isDragging = false;
   isResizing = false;
+  private draggable = inject(NgxDraggableDirective);
+
   constructor(
     elRef: ElementRef<HTMLElement>,
     private _gridService: GridLayoutService,
     private _changeDetection: ChangeDetectorRef,
-    private draggable: NgxDraggableDirective,
     private resizable: NgxResizableDirective,
     private renderer: Renderer2
   ) {

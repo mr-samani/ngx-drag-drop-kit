@@ -76,44 +76,47 @@ export class NgxDragRegisterService {
     return dragItem.dropList.dragItems.indexOf(dragItem);
   }
 
-  updateAllDragItemsRect(dropList: IDropList[] = this.dropListArray): void {
-    for (const lst of dropList) {
-      // Skip hidden elements
-      if (lst.el.offsetParent === null) continue;
+  updateAllDragItemsRect(dropList: IDropList[] = this.dropListArray): Promise<void> {
+    return new Promise((resolve) => {
+      for (const lst of dropList) {
+        // Skip hidden elements
+        if (lst.el.offsetParent === null) continue;
 
-      lst.updateDomRect();
+        lst.updateDomRect();
 
-      for (const item of lst.dragItems) {
-        // Skip hidden items
-        if (item.el.offsetParent === null) continue;
-        item.updateDomRect();
-      }
-
-      lst.dragItems = lst.dragItems.sort((a, b) => {
-        const ay = a.domRect.top;
-        const by = b.domRect.top;
-
-        // اگر یکی بالاتر از دیگریه، بر اساس top مرتب کن
-        if (Math.abs(ay - by) > 1) return ay - by;
-
-        // در یک ردیف هستند → بر اساس left مرتب کن (با توجه به RTL)
-        const ax = a.domRect.left;
-        const bx = b.domRect.left;
-
-        if (lst.isRtl) {
-          return bx - ax; // راست به چپ
-        } else {
-          return ax - bx; // چپ به راست
+        for (const item of lst.dragItems) {
+          // Skip hidden items
+          if (item.el.offsetParent === null) continue;
+          item.updateDomRect();
         }
-      });
-    }
-    // console.log(
-    //   dropList.map((m) => {
-    //     return m.dragItems.map((mm) => {
-    //       return { id: mm.el.id, rect: mm._domRect.y };
-    //     });
-    //   })
-    // );
+
+        lst.dragItems = lst.dragItems.sort((a, b) => {
+          const ay = a.domRect.top;
+          const by = b.domRect.top;
+
+          // اگر یکی بالاتر از دیگریه، بر اساس top مرتب کن
+          if (Math.abs(ay - by) > 1) return ay - by;
+
+          // در یک ردیف هستند → بر اساس left مرتب کن (با توجه به RTL)
+          const ax = a.domRect.left;
+          const bx = b.domRect.left;
+
+          if (lst.isRtl) {
+            return bx - ax; // راست به چپ
+          } else {
+            return ax - bx; // چپ به راست
+          }
+        });
+      }
+      // console.log(
+      //   dropList.map((m) => {
+      //     return m.dragItems.map((mm) => {
+      //       return { id: mm.el.id, rect: mm._domRect.y };
+      //     });
+      //   })
+      // );
+      resolve();
+    });
   }
 
   private findParentDropList(element: HTMLElement): IDropList | null {
@@ -159,72 +162,109 @@ export class NgxDragRegisterService {
    * @returns item index
    */
   _getItemIndexFromPointerPosition(
+    dragItem: DragItemRef,
     dropList: IDropList,
-    pointer: IPosition
-  ): { index: number; cord: CordPosition | undefined; dragItem: DragItemRef | undefined } {
-    const items = dropList.dragItems;
+    pointer: IPosition,
+    currentPlaceholderIndex: number
+  ): { index: number; dragItem?: DragItemRef; before: boolean } {
+    const items = dropList.dragItems.filter((x) => !x.isPlaceholder);
+
     if (items.length === 0) {
-      return { index: 0, cord: undefined, dragItem: undefined };
+      return { index: 0, dragItem: undefined, before: false };
     }
 
-    let closestIndex = -1;
-    let cord = new CordPosition();
-
-    // موقعیت موس
     const px = pointer.x;
     const py = pointer.y;
 
-    for (let i = 0; i < items.length; i++) {
-      const lastRect = items[i].domRect;
+    // ─────────────────────────────────────────────────────
+    // STEP 1: پیدا کردن نزدیک‌ترین آیتم
+    // ─────────────────────────────────────────────────────
+    let closestItem: DragItemRef | undefined;
+    let closestIndex = -1;
 
-      if (px > lastRect.left && px < lastRect.right && py > lastRect.top && py < lastRect.bottom) {
-        // موس داخل آیتم است
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
+      const rect = item.domRect;
+
+      if (px >= rect.left && px <= rect.right && py >= rect.top && py <= rect.bottom) {
+        closestItem = item;
         closestIndex = i;
-        cord = {
-          isTop: py < lastRect.top + lastRect.height / 2,
-          isLeft: px < lastRect.left + lastRect.width / 2,
-          isRight: px > lastRect.right - lastRect.width / 2,
-          isBottom: py > lastRect.bottom - lastRect.height / 2,
-        };
-        break;
       }
     }
-    let dragItem = items[Math.min(closestIndex, items.length - 1)];
 
-    if (dragItem?.isFullRow) {
-      cord.isLeft = false;
-      cord.isRight = false;
+    if (!closestItem) {
+      return { index: currentPlaceholderIndex, dragItem: undefined, before: false };
+    }
+
+    // ─────────────────────────────────────────────────────
+    // STEP 2: تشخیص کدوم edge نزدیکتره
+    // ─────────────────────────────────────────────────────
+    const rect = closestItem.domRect;
+    const isVertical = closestItem.isFullRow;
+
+    let cord = new CordPosition();
+    let insertBefore = false; // آیا باید قبل از این آیتم insert بشه؟
+
+    if (isVertical) {
+      // لیست عمودی - چک کنیم به top نزدیکتریم یا bottom
+      const distanceToTop = Math.abs(py - rect.top);
+      const distanceToBottom = Math.abs(py - rect.bottom);
+
+      insertBefore = distanceToTop < distanceToBottom;
+      cord.isTop = insertBefore;
+      cord.isBottom = !insertBefore;
     } else {
-      cord.isTop = false;
-      cord.isBottom = false;
+      // لیست افقی - چک کنیم به left نزدیکتریم یا right
+      const distanceToLeft = Math.abs(px - rect.left);
+      const distanceToRight = Math.abs(px - rect.right);
+
+      if (dropList.isRtl) {
+        insertBefore = distanceToRight < distanceToLeft;
+        cord.isRight = insertBefore;
+        cord.isLeft = !insertBefore;
+      } else {
+        insertBefore = distanceToLeft < distanceToRight;
+        cord.isLeft = insertBefore;
+        cord.isRight = !insertBefore;
+      }
     }
 
-    let cordination = cord.isTop ? 'top' : cord.isBottom ? 'bottom' : cord.isLeft ? 'left' : 'right';
-    if (cordination == 'top') {
-      closestIndex--;
+    // ─────────────────────────────────────────────────────
+    // STEP 3: محاسبه index نهایی
+    // ─────────────────────────────────────────────────────
+
+    // اگر باید قبل از آیتم باشه، همون index
+    // اگر باید بعد از آیتم باشه، index + 1
+    let newIndex = insertBefore ? closestIndex : closestIndex + 1;
+
+    // ─────────────────────────────────────────────────────
+    // STEP 4: تصحیح برای خود drag item
+    // ─────────────────────────────────────────────────────
+
+    // پیدا کردن index فعلی drag item (بدون placeholder)
+    const dragItemCurrentIndex = items.findIndex((x) => x.el === dragItem.el);
+
+    if (dragItemCurrentIndex !== -1) {
+      // اگر newIndex بعد از موقعیت فعلی dragItem هست،
+      // باید یکی کم کنیم چون dragItem جاش خالی میشه
+      if (newIndex > dragItemCurrentIndex) {
+        newIndex--;
+      }
     }
-    if (dropList.isRtl && cordination == 'right') {
-      closestIndex--;
-    }
-    if (!dropList.isRtl && cordination == 'left') {
-      closestIndex--;
-    }
-    if (closestIndex < 0) {
-      closestIndex = 0;
-    }
-    //dragItem = items[Math.min(closestIndex, items.length - 1)];
-    console.log(
-      dropList.el?.id,
-      dragItem?.el.id,
-      'closestIndex',
+
+    console.debug(
+      closestItem.el.id,
+      'p',
+      dragItemCurrentIndex,
+      'c',
       closestIndex,
-      'fullrow',
-      dragItem?.isFullRow,
-      'cordination',
-      cordination
+      'insertBefore',
+      insertBefore,
+      'finalIndex',
+      newIndex
     );
 
-    return { index: closestIndex, cord, dragItem };
+    return { index: newIndex, before: insertBefore, dragItem: closestItem };
   }
 
   _getDragItemFromPointerPosition(

@@ -5,7 +5,7 @@ export function cloneDragElementInBody(dragElement: HTMLElement, currDomRect: DO
   copyEssentialStyles(dragElement, newEL);
   newEL.innerHTML = dragElement.innerHTML;
   newEL.className = dragElement.className + ' ngx-drag-in-body';
-  newEL.style.position = 'fixed';
+  newEL.style.position = 'absolute';
   newEL.style.top = '0px';
   newEL.style.left = '0px';
   newEL.style.width = currDomRect.width + 'px';

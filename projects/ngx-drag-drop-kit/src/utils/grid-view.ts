@@ -162,8 +162,8 @@ export function createGridOverlay(rects: DOMRect[] = [], options: IGridOverlayOp
     svg.setAttribute('height', String(h));
     svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
   }
-  window.addEventListener('resize', sync);
-  window.addEventListener('scroll', sync);
+  // window.addEventListener('resize', sync);
+  // window.addEventListener('scroll', sync);
 
   // return id and cleanup handle
   return {

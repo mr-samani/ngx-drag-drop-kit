@@ -31,7 +31,7 @@ interface PlaceholderState {
 @Injectable({ providedIn: 'root' })
 export class NgxDragPlaceholderService {
   private renderer: Renderer2;
-  private state: PlaceholderState = {
+  public state: PlaceholderState = {
     element: null,
     isShown: false,
     rect: null,
@@ -62,7 +62,7 @@ export class NgxDragPlaceholderService {
             prev.newIndex === curr.newIndex &&
             prev.dragItem === curr.dragItem &&
             prev.destinationDropList === curr.destinationDropList &&
-            prev.cord === curr.cord
+            prev.before === curr.before
         )
         //  throttleTime(200)
       )
@@ -98,7 +98,7 @@ export class NgxDragPlaceholderService {
     // if (this.state.index < newIndex) {
     //   isAfter = !input.isAfter;
     // }
-    this.createPlaceholder(destinationDropList, dragItem, dragOverItem);
+    this.createPlaceholder(destinationDropList, dragItem, dragOverItem, false);
   }
   public createPlaceholder(
     destinationDropList: IDropList,
@@ -108,9 +108,7 @@ export class NgxDragPlaceholderService {
   ): void {
     this.hide(destinationDropList);
     if (!destinationDropList) return;
-    if (destinationDropList.direction == 'vertical') {
-      isAfter = true;
-    }
+
     this.state.element = destinationDropList.addPlaceholder(dragItem);
     const isSameList = dragItem.dropList === destinationDropList;
 
@@ -135,108 +133,108 @@ export class NgxDragPlaceholderService {
 
     // this.dragRegister.registerDragItem(this.state.dragItem);
     //this.dragRegister.updateAllDragItemsRect();
-    this.state.index = this.dragRegister.getDragItemIndex(this.state.dragItem, true);
+    this.state.index = this.dragRegister.getDragItemIndex(dragItem, false);
   }
 
   private applyTransforms(input: IUpdatePlaceholder): void {
-    const { destinationDropList, sourceDropList, newIndex, dragOverItem, initialScrollOffset, cord, dragItem } = input;
+    const { destinationDropList, newIndex, dragOverItem, initialScrollOffset, before } = input;
 
-    if (!this.state.element || !destinationDropList || newIndex === -1) return;
+    if (!this.state.element || !destinationDropList || !dragOverItem || newIndex === -1) return;
 
-    const isVertical = destinationDropList.direction === 'vertical';
-    const isSameList = sourceDropList.el === destinationDropList.el;
+    const isVertical = dragOverItem.isFullRow === true;
     const items = destinationDropList.dragItems;
 
-    const placeholderIndex = this.state.index;
-    const placeholderSize = isVertical ? this.state.rect?.height || 0 : this.state.rect?.width || 0;
+    // ═══════════════════════════════════════════════════════
+    // PART 1: جابجایی Placeholder
+    // ═══════════════════════════════════════════════════════
 
-    const moveDirection: MoveDirection =
-      newIndex === placeholderIndex ? 'None' : newIndex > placeholderIndex ? 'Forward' : 'Backward';
-    if (dragOverItem && this.state.rect) {
-      const newPosition = dragOverItem.domRect;
+    const newPosition = dragOverItem.domRect;
 
-      // محاسبه scroll فعلی container (اگر وجود داشته باشد)
-      const containerScrollLeft = destinationDropList.el.scrollLeft || 0;
-      const containerScrollTop = destinationDropList.el.scrollTop || 0;
+    // محاسبه scroll offset
+    const windowScrollDeltaX = window.scrollX - initialScrollOffset.x;
+    const windowScrollDeltaY = window.scrollY - initialScrollOffset.y;
+    const containerScrollDeltaX = (destinationDropList.el.scrollLeft || 0) - (initialScrollOffset.containerX || 0);
+    const containerScrollDeltaY = (destinationDropList.el.scrollTop || 0) - (initialScrollOffset.containerY || 0);
 
-      // محاسبه تفاوت scroll window
-      const windowScrollDeltaX = window.scrollX - initialScrollOffset.x;
-      const windowScrollDeltaY = window.scrollY - initialScrollOffset.y;
+    // محاسبه delta
+    let deltaX = newPosition.left - this.state.rect!.left + windowScrollDeltaX; // - containerScrollDeltaX;
+    let deltaY = newPosition.top - this.state.rect!.top + windowScrollDeltaY; //- containerScrollDeltaY;
 
-      // محاسبه تفاوت scroll container
-      const containerScrollDeltaX = containerScrollLeft - (initialScrollOffset.containerX || 0);
-      const containerScrollDeltaY = containerScrollTop - (initialScrollOffset.containerY || 0);
+    // تنظیم سایز و position
+    if (isVertical) {
+      if (!before) deltaY += newPosition.height;
+      this.renderer.setStyle(this.state.element, 'height', 'unset');
+      this.renderer.setStyle(this.state.element, 'width', `${newPosition.width}px`);
+    } else {
+      if (!before) deltaX += newPosition.width;
+      this.renderer.setStyle(this.state.element, 'height', `${newPosition.height}px`);
+      this.renderer.setStyle(this.state.element, 'width', 'unset');
+    }
 
-      // محاسبه موقعیت نهایی با در نظر گرفتن هر دو scroll
-      let deltaX = newPosition.left - this.state.rect.left + windowScrollDeltaX - containerScrollDeltaX;
-      let deltaY = newPosition.top - this.state.rect.top + windowScrollDeltaY - containerScrollDeltaY;
+    this.renderer.setStyle(this.state.element, 'transition', 'transform 250ms cubic-bezier(0,0,0.2,1)');
+    this.renderer.setStyle(this.state.element, 'transform', `translate3d(${deltaX}px, ${deltaY}px, 0)`);
 
-      if (cord?.isTop || cord?.isBottom) {
-        this.renderer.setStyle(this.state.element, 'width', `${newPosition.width}px`);
-        this.renderer.setStyle(this.state.element, 'height', `unset`);
-        if (cord.isBottom) {
-          deltaY += newPosition.height;
-        }
-      } else if (cord?.isLeft || cord?.isRight) {
-        this.renderer.setStyle(this.state.element, 'height', `${newPosition.height}px`);
-        this.renderer.setStyle(this.state.element, 'width', `unset`);
-        if (cord.isRight) {
-          deltaX += newPosition.width;
-        }
+    // ═══════════════════════════════════════════════════════
+    // PART 2: Reset تمام transform ها
+    // ═══════════════════════════════════════════════════════
+
+    items.forEach((item) => {
+      if (!item.isPlaceholder && !item.isDragging) {
+        this.renderer.setStyle(item.el, 'transform', '');
+        this.renderer.setStyle(item.el, 'transition', 'transform 250ms cubic-bezier(0,0,0.2,1)');
       }
-      this.renderer.setStyle(this.state.element, 'transform', `translate3d(${deltaX}px, ${deltaY}px, 0)`);
-    }
+    });
 
-    // ---- reset transforms for all items first ----
-    for (const item of items) {
-      if (item.isPlaceholder || item.isDragging) continue;
-      this.renderer.setStyle(item.el, 'transform', '');
-      this.renderer.setStyle(item.el, 'transition', 'transform 250ms cubic-bezier(0,0,0.2,1)');
-    }
-    // ---- compute affected range ----
-    const [start, end] = moveDirection === 'Forward' ? [placeholderIndex, newIndex] : [newIndex, placeholderIndex];
+    // if (newIndex === placeholderIndex) return;
 
-    // ---- determine transform direction ----
-    const directionFactor = moveDirection === 'Forward' ? -1 : +1;
-    const shiftValue = placeholderSize * directionFactor;
+    // // ═══════════════════════════════════════════════════════
+    // // PART 3: محاسبه آیتم‌هایی که باید Shift بخورن
+    // // ═══════════════════════════════════════════════════════
 
-    // ---- apply transforms ----
-    const otherItems = items.filter((x) => !x.isPlaceholder);
-    // for (let i = start; i <= end && i < otherItems.length; i++) {
-    //   const item = otherItems[i];
-    //   if (!item || item.isPlaceholder || item.isDragging) continue;
+    // const placeholderSize = isVertical ? this.state.rect?.height || 0 : this.state.rect?.width || 0;
 
-    //   const shouldMove = this.shouldMoveItem(i, placeholderIndex, newIndex, moveDirection, isSameList);
+    // // فیلتر کردن آیتم‌های واقعی (بدون placeholder و dragItem)
+    // const realItems = items.filter((x) => !x.isPlaceholder);
 
-    //   if (!shouldMove) continue;
+    // // تشخیص جهت حرکت
+    // const isMovingForward = newIndex > placeholderIndex;
 
-    //   const transform = this.getTransform(isVertical, shiftValue);
-    //   this.renderer.setStyle(item.el, 'transform', transform);
+    // // محاسبه range آیتم‌هایی که باید shift بخورن
+    // const rangeStart = Math.min(placeholderIndex, newIndex);
+    // const rangeEnd = Math.max(placeholderIndex, newIndex);
+
+    // ═══════════════════════════════════════════════════════
+    // PART 4: اعمال Transform به آیتم‌های Affected
+    // ═══════════════════════════════════════════════════════
+
+    // for (let i = 0; i < realItems.length; i++) {
+    //   const item = realItems[i];
+
+    //   // آیا این آیتم در range affected هست؟
+    //   let shouldShift = false;
+
+    //   if (isMovingForward) {
+    //     // placeholder داره به جلو میره (راست/پایین)
+    //     // آیتم‌های بین placeholderIndex تا newIndex باید به عقب برن
+    //     shouldShift = i > placeholderIndex && i <= newIndex;
+
+    //     if (shouldShift) {
+    //       // به عقب shift بده (منفی)
+    //       const transform = this.getTransform(isVertical, -placeholderSize);
+    //       this.renderer.setStyle(item.el, 'transform', transform);
+    //     }
+    //   } else {
+    //     // placeholder داره به عقب میره (چپ/بالا)
+    //     // آیتم‌های بین newIndex تا placeholderIndex باید به جلو بیان
+    //     shouldShift = i >= newIndex && i < placeholderIndex;
+
+    //     if (shouldShift) {
+    //       // به جلو shift بده (مثبت)
+    //       const transform = this.getTransform(isVertical, placeholderSize);
+    //       this.renderer.setStyle(item.el, 'transform', transform);
+    //     }
+    //   }
     // }
-  }
-
-  /** Determines if an item should move based on its position and movement context */
-  private shouldMoveItem(
-    index: number,
-    placeholderIndex: number,
-    newIndex: number,
-    direction: MoveDirection,
-    isSameList: boolean
-  ): boolean {
-    if (direction === 'None') return false;
-
-    // Same-list movement
-    if (isSameList) {
-      if (direction === 'Backward') return index >= newIndex && index < placeholderIndex;
-      if (direction === 'Forward') return index >= placeholderIndex && index <= newIndex;
-    }
-    // Cross-list movement
-    else {
-      if (direction === 'Backward') return index >= newIndex && index < placeholderIndex;
-      if (direction === 'Forward') return index >= placeholderIndex && index < newIndex;
-    }
-
-    return false;
   }
 
   /** Returns CSS transform string based on orientation and shift distance */

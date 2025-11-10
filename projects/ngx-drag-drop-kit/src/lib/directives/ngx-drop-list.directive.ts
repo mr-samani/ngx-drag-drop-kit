@@ -31,7 +31,6 @@ import { DragItemRef } from './DragItemRef';
 export class NgxDropListDirective<T = any> implements IDropList, OnInit, AfterViewInit, OnDestroy {
   @Input() data?: T;
   @Input() disableSort: boolean = false;
-  @Input() direction: 'horizontal' | 'vertical' = 'vertical';
   @ContentChild(NgxPlaceholderDirective, { static: false }) customPlaceholder?: NgxPlaceholderDirective;
   private placeholderViewRef?: EmbeddedViewRef<any>;
   connectedTo: HTMLElement[] = [];
@@ -128,13 +127,18 @@ export class NgxDropListDirective<T = any> implements IDropList, OnInit, AfterVi
     } else {
       el = this.renderer.createElement('div');
       this.renderer.addClass(el, 'ngx-drag-placeholder');
-      this.renderer.setStyle(el, 'min-height', `${height}px`);
+      // this.renderer.setStyle(el, 'min-height', `${height}px`);
     }
 
+    this.renderer.addClass(el, 'ngx-draggable');
     this.renderer.setStyle(el, 'width', `${width}px`);
     this.renderer.setStyle(el, 'z-index', '9999', RendererStyleFlags2.Important);
-    this.renderer.setStyle(el, 'position', 'absolute', RendererStyleFlags2.Important);
     this.renderer.setStyle(el, 'pointer-events', 'none', RendererStyleFlags2.Important);
+    if (this.isFlexWrap) {
+      this.renderer.setStyle(el, 'position', 'relative', RendererStyleFlags2.Important);
+    } else {
+      this.renderer.setStyle(el, 'position', 'absolute', RendererStyleFlags2.Important);
+    }
     return el;
   }
 

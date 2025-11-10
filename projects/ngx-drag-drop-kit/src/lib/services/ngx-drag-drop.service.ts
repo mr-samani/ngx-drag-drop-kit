@@ -17,6 +17,7 @@ import { merge } from 'rxjs';
 import { IScrollOffset } from '../../interfaces/IScrollOffset';
 import { IGridOverlayOutput, createGridOverlay } from '../../utils/grid-view';
 import { cloneDragElementInBody } from '../../utils/clone-drag-element-in-body';
+import { getXYfromTransform } from '../../utils/get-transform';
 
 @Injectable({
   providedIn: 'root',
@@ -102,24 +103,26 @@ export class NgxDragDropService {
       sourceDropList: this._activeDragInstances[0].dropList!,
       destinationDropList: this.activeDropList,
       newIndex: this._newIndex,
-      cord: { isTop: true, isLeft: true, isBottom: false, isRight: false },
+      before: false,
       initialScrollOffset: this.initialScrollOffset,
     });
   }
   showDevGridOverlay() {
     if (isDevMode()) {
-      const l = this.dragRegister.dropListItems.flatMap((item) => {
-        // const rects = [item.domRect];
-        const rects = [];
-        if (item.dragItems?.length) {
-          rects.push(...item.dragItems.map((d) => d.domRect));
-        }
-        return rects;
-      });
-      this.gridOverlay = createGridOverlay(l, {
-        highlight: '#fe00002e',
-        strokeWidth: 0.5,
-      });
+      setTimeout(() => {
+        const l = this.dragRegister.dropListItems.flatMap((item) => {
+          // const rects = [item.domRect];
+          const rects = [];
+          if (item.dragItems?.length) {
+            rects.push(...item.dragItems.map((d) => d.domRect));
+          }
+          return rects;
+        });
+        this.gridOverlay = createGridOverlay(l, {
+          highlight: '#fe00002e',
+          strokeWidth: 0.5,
+        });
+      }, 100);
     }
   }
   dragMove(drag: DragItemRef, ev: MouseEvent | TouchEvent, offsetX: number, offsetY: number) {
@@ -127,7 +130,9 @@ export class NgxDragDropService {
       return;
     }
     ev.preventDefault();
-    const transform = `translate3d(${drag.domRect.x + offsetX}px, ${drag.domRect.y + offsetY}px, 0)`;
+    const x = drag.domRect.x + offsetX + window.scrollX;
+    const y = drag.domRect.y + offsetY + window.scrollY;
+    const transform = `translate3d(${x}px, ${y}px, 0)`;
     this.renderer.setStyle(this.dragElementInBody, 'transform', transform);
     const viewportPointer = getPointerPositionOnViewPort(ev);
     const dropList = this.dragRegister._getDropListFromPointerPosition(viewportPointer);
@@ -138,21 +143,22 @@ export class NgxDragDropService {
     if (dropList.checkAllowedConnections(this._activeDragInstances[0]?.dropList) == false) {
       return;
     }
-    const isVertical = dropList.direction === 'vertical';
-    const dragOverData = this.dragRegister._getItemIndexFromPointerPosition(dropList, viewportPointer);
+    const dragOverData = this.dragRegister._getItemIndexFromPointerPosition(
+      drag,
+      dropList,
+      viewportPointer,
+      this._newIndex
+    );
     if (dragOverData.index > -1) {
       this._newIndex = dragOverData.index;
     }
     const dragOverItem = dragOverData.dragItem;
 
     if (this.activeDropList !== dropList) {
-      const overDragItem = this.dragRegister._getDragItemFromPointerPosition(
-        dropList.dragItems,
-        viewportPointer,
-        isVertical
-      );
+      let overDragItem = dragOverData.dragItem;
       this.activeDropList = dropList;
       this.placeholderService.createPlaceholder(dropList, this._activeDragInstances[0], overDragItem);
+      this._newIndex = this.placeholderService.state.index;
       this.showDevGridOverlay();
     }
     this.placeholderService.updatePlaceholder$.next({
@@ -161,21 +167,24 @@ export class NgxDragDropService {
       sourceDropList: this._activeDragInstances[0].dropList,
       destinationDropList: this.activeDropList,
       newIndex: this._newIndex,
-      cord: dragOverData.cord,
+      before: dragOverData.before,
       initialScrollOffset: this.initialScrollOffset,
     });
   }
   stopDrag(drag: DragItemRef) {
+    if (this.isDragging == false) return;
     this.isDragging = false;
     //const currentIndex = this.activeDropList?.isFlexWrap ? this.placeholderService.state.index : this._newIndex;
     const currentIndex = this._newIndex;
 
     if (drag.dropList) drag.dropList.dragging = false;
     let endPosition = this.placeholderService.getPlaceholderPosition();
-    this.renderer.setStyle(this.dragElementInBody, 'transition', 'transform 250ms cubic-bezier(0,0,0.2,1)');
-    this.renderer.removeStyle(this.dragElementInBody, 'transform');
-    this.renderer.setStyle(this.dragElementInBody, 'left', `${endPosition?.x}px`);
-    this.renderer.setStyle(this.dragElementInBody, 'top', `${endPosition?.y}px`);
+    this.renderer.setStyle(this.dragElementInBody, 'transition', 'transform 150ms cubic-bezier(0,0,0.2,1)');
+    this.renderer.setStyle(
+      this.dragElementInBody,
+      'transform',
+      `translate3d(${endPosition?.x ?? 0}px, ${endPosition?.y ?? 0}px, 0)`
+    );
     setTimeout(() => {
       this.dragRegister.dargItems.forEach((d) => {
         // this.renderer.setStyle(d.el, 'transition-property', 'none');
@@ -229,25 +238,23 @@ export class NgxDragDropService {
     if (this.scrollSubscription) return;
 
     // ۳️⃣ ساخت آرایه واقعی از منابع event
-    const scrollTargets: (HTMLElement | Window)[] = this.scrollableParents.map((el) => {
-      const doc = this._document;
-      const isRoot = el === doc.documentElement || el === doc.body || el === doc.scrollingElement;
-      return isRoot ? window : el;
-    });
+    const scrollTargets: (HTMLElement | Window)[] = this.scrollableParents
+      .map((el) => {
+        const doc = this._document;
+        const isRoot = el === doc.documentElement || el === doc.body || el === doc.scrollingElement;
+        return isRoot ? doc.defaultView! : el; // ✅ window درست
+      })
+      .filter(Boolean)
+      .reduce((acc: any, cur: any) => (acc.includes(cur) ? acc : [...acc, cur]), []);
 
     // ۴️⃣ ساخت merged observable از تمام آن‌ها
     const scroll$ = scrollTargets.map((target) => fromEvent(target, 'scroll'));
-
     this.scrollSubscription = merge(...scroll$)
       .pipe(throttleTime(16, undefined, { leading: true, trailing: true }))
-      .subscribe(() => {
-        this.rectUpdateSubject.next();
+      .subscribe(async () => {
+        await this.dragRegister.updateAllDragItemsRect();
+        this.showDevGridOverlay();
       });
-
-    // ۵️⃣ پردازش واقعی برای آپدیت مختصات آیتم‌ها
-    this.rectUpdateSubject.pipe(throttleTime(16, undefined, { leading: true, trailing: true })).subscribe(() => {
-      this.dragRegister.updateAllDragItemsRect();
-    });
   }
 
   /**

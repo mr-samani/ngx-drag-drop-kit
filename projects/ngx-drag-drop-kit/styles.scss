@@ -82,11 +82,7 @@
 }
 
 .ngx-drag-placeholder {
-  position: absolute !important;
-  background: #92ddffa8;
-  outline: dotted 2px #999;
-  outline-offset: -4px;
-  min-height: 30px;
+  border: 2px rgb(26, 255, 0) solid;
   pointer-events: none;
   max-width: 100%;
   z-index: 9999;

@@ -22,7 +22,6 @@
       ngxDropList
       [data]="targetList"
       (drop)="drop($event)"
-      [direction]="'horizontal'"
       [connectedTo]="[deleteZone]">
       <div
         class="example-box"
@@ -43,8 +42,7 @@
       #deleteZone
       ngxDropList
       [data]="targetList"
-      (drop)="dropToDelete($event)"
-      [direction]="'horizontal'">
+      (drop)="dropToDelete($event)">
       drag here for delete
     </div>
   </div>

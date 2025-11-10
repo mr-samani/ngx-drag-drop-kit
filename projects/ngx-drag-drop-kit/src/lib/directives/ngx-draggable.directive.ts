@@ -203,7 +203,7 @@ export class NgxDraggableDirective extends DragItemRef implements OnDestroy, Aft
     const offsetX = position.x - this.previousXY.x;
     const offsetY = position.y - this.previousXY.y;
 
-    this.autoScroll.handleAutoScroll(ev);
+   // this.autoScroll.handleAutoScroll(ev);
 
     if (this.dropList) {
       this.dragService.dragMove(this, ev, offsetX, offsetY);
