@@ -7,7 +7,7 @@ export * from './ngx-drag-drop-kit.module';
 export * from './lib/directives/ngx-draggable.directive';
 export * from './lib/directives/ngx-resizable.directive';
 export * from './lib/directives/ngx-drop-list.directive';
-export * from './lib/directives/ngx-place-holder.directive';
+// export * from './lib/directives/ngx-place-holder.directive';
 
 export * from './drag-utils';
 

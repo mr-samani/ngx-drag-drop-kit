@@ -43,6 +43,7 @@
 }
 .custom-placeholder {
   border: 2px #008a3c solid;
+  min-height: 40px;
   &:after,
   &::before {
     position: absolute;

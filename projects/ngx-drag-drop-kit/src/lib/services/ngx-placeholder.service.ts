@@ -79,10 +79,10 @@ export class NgxDragPlaceholderService {
 
   private update(input: IUpdatePlaceholder): void {
     const { destinationDropList } = input;
-    if (destinationDropList?.isFlexWrap) {
-      this.showFlexWrap(input);
-      return;
-    }
+    // if (destinationDropList?.isFlexWrap) {
+    //   this.showFlexWrap(input);
+    //   return;
+    // }
 
     if (!this.state.element) {
       return;
@@ -92,7 +92,7 @@ export class NgxDragPlaceholderService {
 
   private showFlexWrap(input: IUpdatePlaceholder): void {
     const { dragItem, destinationDropList, dragOverItem, newIndex } = input;
-    if (dragOverItem?.isPlaceholder) return;
+    if (!dragOverItem || dragOverItem?.isPlaceholder) return;
     this.hide(destinationDropList);
     // let isAfter = input.isAfter;
     // if (this.state.index < newIndex) {
@@ -185,13 +185,14 @@ export class NgxDragPlaceholderService {
       }
     });
 
-    // if (newIndex === placeholderIndex) return;
+    const placeholderIndex = this.state.index;
+    const placeholderSize = isVertical ? this.state.rect?.height || 0 : this.state.rect?.width || 0;
+
+    if (newIndex === placeholderIndex) return;
 
     // // ═══════════════════════════════════════════════════════
     // // PART 3: محاسبه آیتم‌هایی که باید Shift بخورن
     // // ═══════════════════════════════════════════════════════
-
-    // const placeholderSize = isVertical ? this.state.rect?.height || 0 : this.state.rect?.width || 0;
 
     // // فیلتر کردن آیتم‌های واقعی (بدون placeholder و dragItem)
     // const realItems = items.filter((x) => !x.isPlaceholder);
@@ -203,9 +204,9 @@ export class NgxDragPlaceholderService {
     // const rangeStart = Math.min(placeholderIndex, newIndex);
     // const rangeEnd = Math.max(placeholderIndex, newIndex);
 
-    // ═══════════════════════════════════════════════════════
-    // PART 4: اعمال Transform به آیتم‌های Affected
-    // ═══════════════════════════════════════════════════════
+    // // ═══════════════════════════════════════════════════════
+    // // PART 4: اعمال Transform به آیتم‌های Affected
+    // // ═══════════════════════════════════════════════════════
 
     // for (let i = 0; i < realItems.length; i++) {
     //   const item = realItems[i];

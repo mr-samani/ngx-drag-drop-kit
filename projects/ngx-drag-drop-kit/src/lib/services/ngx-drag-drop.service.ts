@@ -108,7 +108,7 @@ export class NgxDragDropService {
     });
   }
   showDevGridOverlay() {
-    if (isDevMode()) {
+    if (isDevMode() && false) {
       setTimeout(() => {
         const l = this.dragRegister.dropListItems.flatMap((item) => {
           // const rects = [item.domRect];
@@ -183,7 +183,7 @@ export class NgxDragDropService {
     this.renderer.setStyle(
       this.dragElementInBody,
       'transform',
-      `translate3d(${endPosition?.x ?? 0}px, ${endPosition?.y ?? 0}px, 0)`
+      `translate3d(${(endPosition?.x ?? 0) + window.scrollX}px, ${(endPosition?.y ?? 0) + window.scrollY}px, 0)`
     );
     setTimeout(() => {
       this.dragRegister.dargItems.forEach((d) => {
