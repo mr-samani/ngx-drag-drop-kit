@@ -4,7 +4,7 @@
 
 <ng-template #tree let-items let-level="level" let-class="class">
   <div ngxDropList class="example-list" [ngClass]="class" (drop)="drop($event)" [data]="items" id="level_{{ level }}">
-    <div class="custom-placeholder2" *ngxPlaceholder></div>
+    <!-- <div class="custom-placeholder2" *ngxPlaceholder></div> -->
     @for (item of items; track item) {
     <div class="example-box" ngxDraggable [id]="item.name">
       <div>{{ item.name }}</div>
@@ -17,3 +17,4 @@
   </div>
 </ng-template>
 <div class="ngxpointer"></div>
+<pre>{{items|json}}</pre>
