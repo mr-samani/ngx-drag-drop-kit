@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+
 import { Component, OnInit } from '@angular/core';
 import { IDropEvent, moveItemInArray, NgxDragDropKitModule } from '../../../../ngx-drag-drop-kit/src/public-api';
 
@@ -6,7 +6,7 @@ import { IDropEvent, moveItemInArray, NgxDragDropKitModule } from '../../../../n
     selector: 'app-dynamic-html',
     templateUrl: './dynamic-html.component.html',
     styleUrls: ['./dynamic-html.component.scss'],
-    imports: [NgxDragDropKitModule, CommonModule]
+    imports: [NgxDragDropKitModule]
 })
 export class DynamicHtmlComponent implements OnInit {
 	items: {

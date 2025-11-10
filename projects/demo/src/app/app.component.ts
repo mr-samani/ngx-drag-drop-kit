@@ -1,6 +1,6 @@
-import { Component, Inject } from '@angular/core';
+import { Component, Inject, DOCUMENT } from '@angular/core';
 import { RouterModule, RouterOutlet } from '@angular/router';
-import { CommonModule, DOCUMENT } from '@angular/common';
+
 import { FormsModule } from '@angular/forms';
 import { NgxDraggableDirective, NgxResizableDirective } from '../../../ngx-drag-drop-kit/src/public-api';
 import { NgxDropListDirective } from '../../../ngx-drag-drop-kit/src/lib/directives/ngx-drop-list.directive';
@@ -8,14 +8,13 @@ import { NgxDropListDirective } from '../../../ngx-drag-drop-kit/src/lib/directi
 @Component({
     selector: 'app-root',
     imports: [
-        RouterOutlet,
-        RouterModule,
-        CommonModule,
-        FormsModule,
-        NgxDraggableDirective,
-        NgxResizableDirective,
-        NgxDropListDirective,
-    ],
+    RouterOutlet,
+    RouterModule,
+    FormsModule,
+    NgxDraggableDirective,
+    NgxResizableDirective,
+    NgxDropListDirective
+],
     templateUrl: './app.component.html',
     styleUrl: './app.component.scss'
 })

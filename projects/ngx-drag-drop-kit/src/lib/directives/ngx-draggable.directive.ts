@@ -1,16 +1,17 @@
 import {
-	AfterViewInit,
-	Directive,
-	ElementRef,
-	EventEmitter,
-	Inject,
-	inject,
-	InjectionToken,
-	Input,
-	OnDestroy,
-	Output,
-	Renderer2,
-	RendererStyleFlags2,
+  AfterViewInit,
+  Directive,
+  ElementRef,
+  EventEmitter,
+  Inject,
+  inject,
+  InjectionToken,
+  Input,
+  OnDestroy,
+  Output,
+  Renderer2,
+  RendererStyleFlags2,
+  DOCUMENT
 } from '@angular/core';
 import { Subscription, fromEvent } from 'rxjs';
 import { getPointerPosition, getPointerPositionOnViewPort } from '../../utils/get-position';
@@ -21,7 +22,7 @@ import { getXYfromTransform } from '../../utils/get-transform';
 import { IPosition } from '../../interfaces/IPosition';
 import { ElementHelper } from '../../utils/element.helper';
 import { NgxDragRegisterService } from '../services/ngx-drag-register.service';
-import { DOCUMENT } from '@angular/common';
+
 import { AutoScrollService } from '../services/auto-scroll.service';
 import { DragItemRef } from './DragItemRef';
 import { isFullRowElement } from '../../utils/element-is-full-row';

@@ -1,6 +1,6 @@
-import { Inject, Injectable, isDevMode, Renderer2, RendererFactory2, RendererStyleFlags2 } from '@angular/core';
+import { Inject, Injectable, isDevMode, Renderer2, RendererFactory2, RendererStyleFlags2, DOCUMENT } from '@angular/core';
 import { IDropEvent } from '../../interfaces/IDropEvent';
-import { DOCUMENT } from '@angular/common';
+
 import { getPointerPositionOnViewPort } from '../../utils/get-position';
 import { NgxDragPlaceholderService } from './ngx-placeholder.service';
 import { copyEssentialStyles } from '../../utils/clone-style';

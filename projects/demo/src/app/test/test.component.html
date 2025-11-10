@@ -1,57 +1,59 @@
 <div class="demo-container">
-	<h2>NgxDraggable Directive</h2>
+  <h2>NgxDraggable Directive</h2>
 
-	<div class="demo-section">
-		<h3>With Transform (Default)</h3>
-		<div class="demo-area">
-			<div
-				class="draggable-item transform-enabled"
-				ngxDraggable
-				(dragStart)="onDragStart($event)"
-				(dragMove)="onDragMove($event)"
-				(dragEnd)="onDragEnd($event)">
-				Transform Enabled
-			</div>
-		</div>
-	</div>
+  <div class="demo-section">
+    <h3>With Transform (Default)</h3>
+    <div class="demo-area">
+      <div
+        class="draggable-item transform-enabled"
+        ngxDraggable
+        (dragStart)="onDragStart($event)"
+        (dragMove)="onDragMove($event)"
+        (dragEnd)="onDragEnd($event)">
+        Transform Enabled
+      </div>
+    </div>
+  </div>
 
-	<div class="demo-section">
-		<h3>With Boundary Constraint</h3>
-		<div class="demo-area boundary-container" #boundaryContainer>
-			<div
-				class="draggable-item boundary-constrained"
-				ngxDraggable
-				[boundary]="boundaryContainer"
-				(dragStart)="onDragStart($event)"
-				(dragMove)="onDragMove($event)"
-				(dragEnd)="onDragEnd($event)">
-				Boundary Constrained
-			</div>
-		</div>
-	</div>
+  <div class="demo-section">
+    <h3>With Boundary Constraint</h3>
+    <div class="demo-area boundary-container" #boundaryContainer>
+      <div
+        class="draggable-item boundary-constrained"
+        ngxDraggable
+        [boundary]="boundaryContainer"
+        (dragStart)="onDragStart($event)"
+        (dragMove)="onDragMove($event)"
+        (dragEnd)="onDragEnd($event)">
+        Boundary Constrained
+      </div>
+    </div>
+  </div>
 
-	<div class="demo-section">
-		<h3>With Boundary</h3>
-		<div class="demo-area boundary-container" #boundaryContainer2>
-			<div
-				class="draggable-item boundary-transform-disabled"
-				ngxDraggable
-				[boundary]="boundaryContainer2"
-				(dragStart)="onDragStart($event)"
-				(dragMove)="onDragMove($event)"
-				(dragEnd)="onDragEnd($event)">
-				Boundary + Left/Top
-			</div>
-		</div>
-	</div>
+  <div class="demo-section">
+    <h3>With Boundary</h3>
+    <div class="demo-area boundary-container" #boundaryContainer2>
+      <div
+        class="draggable-item boundary-transform-disabled"
+        ngxDraggable
+        [boundary]="boundaryContainer2"
+        (dragStart)="onDragStart($event)"
+        (dragMove)="onDragMove($event)"
+        (dragEnd)="onDragEnd($event)">
+        Boundary + Left/Top
+      </div>
+    </div>
+  </div>
 
-	<div class="info-panel">
-		<h3>Drag Events Log</h3>
-		<div class="event-log">
-			<div *ngFor="let event of dragEvents" class="event-item">
-				<span class="event-type">{{ event.type }}</span>
-				<span class="event-position">X: {{ event.x }}, Y: {{ event.y }}</span>
-			</div>
-		</div>
-	</div>
+  <div class="info-panel">
+    <h3>Drag Events Log</h3>
+    <div class="event-log">
+      @for (event of dragEvents; track event) {
+        <div class="event-item">
+          <span class="event-type">{{ event.type }}</span>
+          <span class="event-position">X: {{ event.x }}, Y: {{ event.y }}</span>
+        </div>
+      }
+    </div>
+  </div>
 </div>

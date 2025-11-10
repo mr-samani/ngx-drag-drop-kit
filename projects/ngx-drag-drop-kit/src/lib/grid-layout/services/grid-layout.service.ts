@@ -1,8 +1,8 @@
-import { ComponentRef, Inject, Injectable, Renderer2, RendererFactory2, ViewContainerRef } from '@angular/core';
+import { ComponentRef, Inject, Injectable, Renderer2, RendererFactory2, ViewContainerRef, DOCUMENT } from '@angular/core';
 import { GridLayoutOptions } from '../options/options';
 import { GridItemComponent } from '../grid-item/grid-item.component';
 import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
-import { DOCUMENT } from '@angular/common';
+
 import {
 	collides,
 	getAllCollisions,

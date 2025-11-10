@@ -1,14 +1,15 @@
-import { DOCUMENT } from '@angular/common';
+
 import {
-	AfterViewInit,
-	Directive,
-	ElementRef,
-	EventEmitter,
-	inject,
-	Input,
-	OnDestroy,
-	Output,
-	Renderer2,
+  AfterViewInit,
+  Directive,
+  ElementRef,
+  EventEmitter,
+  inject,
+  Input,
+  OnDestroy,
+  Output,
+  Renderer2,
+  DOCUMENT
 } from '@angular/core';
 import { Corner } from '../../utils/corner-type';
 import { checkBoundX, checkBoundY } from '../../utils/check-boundary';

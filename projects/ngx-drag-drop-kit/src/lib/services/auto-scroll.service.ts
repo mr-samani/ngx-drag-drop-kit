@@ -1,5 +1,5 @@
-import { DOCUMENT } from '@angular/common';
-import { Inject, Injectable, NgZone } from '@angular/core';
+
+import { Inject, Injectable, NgZone, DOCUMENT } from '@angular/core';
 import { Subject, animationFrames, takeUntil } from 'rxjs';
 import { getPointerPosition, getPointerPositionOnViewPort } from '../../utils/get-position';
 import { findScrollableElementFromPointer } from '../../utils/findScrollableElement';

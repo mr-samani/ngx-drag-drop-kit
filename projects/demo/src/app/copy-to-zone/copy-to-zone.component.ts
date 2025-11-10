@@ -1,13 +1,13 @@
 import { Component } from '@angular/core';
 import { copyArrayItem, moveItemInArray } from '../../../../ngx-drag-drop-kit/src/drag-utils';
-import { CommonModule } from '@angular/common';
+
 import { Corner } from '../../../../ngx-drag-drop-kit/src/utils/corner-type';
 import { NgxDragDropKitModule } from '../../../../ngx-drag-drop-kit/src/public-api';
 import { IDropEvent } from '../../../../ngx-drag-drop-kit/src/interfaces/IDropEvent';
 
 @Component({
     selector: 'app-copy-to-zone',
-    imports: [CommonModule, NgxDragDropKitModule],
+    imports: [NgxDragDropKitModule],
     templateUrl: './copy-to-zone.component.html',
     styleUrl: './copy-to-zone.component.scss'
 })

@@ -1,10 +1,10 @@
-import { CommonModule } from '@angular/common';
+
 import { Component } from '@angular/core';
 import { IResizableOutput, NgxDragDropKitModule } from '../../../../ngx-drag-drop-kit/src/public-api';
 
 @Component({
     selector: 'app-resizable-layout',
-    imports: [CommonModule, NgxDragDropKitModule],
+    imports: [NgxDragDropKitModule],
     templateUrl: './resizable-layout.component.html',
     styleUrl: './resizable-layout.component.scss'
 })

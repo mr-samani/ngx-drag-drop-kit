@@ -1,5 +1,5 @@
-import { DOCUMENT } from '@angular/common';
-import { Injectable, Renderer2, RendererFactory2, Inject } from '@angular/core';
+
+import { Injectable, Renderer2, RendererFactory2, Inject, DOCUMENT } from '@angular/core';
 import { Subject, distinctUntilChanged, throttleTime } from 'rxjs';
 import { IDropList } from '../../interfaces/IDropList';
 import { NgxDragRegisterService } from './ngx-drag-register.service';

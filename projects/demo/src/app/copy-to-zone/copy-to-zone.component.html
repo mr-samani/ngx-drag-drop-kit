@@ -1,38 +1,40 @@
 <div class="form-container">
-	<div
-		ngxDropList
-		class="example-list"
-		[data]="sourceList"
-		[disableSort]="true"
-		[connectedTo]="[copyZone]"
-		id="baseList">
-		@for (item of sourceList; track item) {
-			<div class="example-box" ngxDraggable>
-				{{ item }}
-			</div>
-		}
-	</div>
+  <div
+    ngxDropList
+    class="example-list"
+    [data]="sourceList"
+    [disableSort]="true"
+    [connectedTo]="[copyZone]"
+    id="baseList">
+    @for (item of sourceList; track item) {
+      <div class="example-box" ngxDraggable>
+        {{ item }}
+      </div>
+    }
+  </div>
 
-	<div class="target-container">
-		Copy zone
-		<div
-			class="inner"
-			id="copyZone"
-			#copyZone
-			ngxDropList
-			[data]="targetList"
-			(drop)="drop($event)"
-			[connectedTo]="[deleteZone]">
-			<div class="example-box" *ngFor="let item of targetList" ngxDraggable ngxResizable (click)="onClick(item)">
-				{{ item }}
-			</div>
-		</div>
-	</div>
+  <div class="target-container">
+    Copy zone
+    <div
+      class="inner"
+      id="copyZone"
+      #copyZone
+      ngxDropList
+      [data]="targetList"
+      (drop)="drop($event)"
+      [connectedTo]="[deleteZone]">
+      @for (item of targetList; track item) {
+        <div class="example-box" ngxDraggable ngxResizable (click)="onClick(item)">
+          {{ item }}
+        </div>
+      }
+    </div>
+  </div>
 
-	<div class="target-container">
-		Delete zone
-		<div class="inner" id="deleteZone" #deleteZone ngxDropList [data]="targetList" (drop)="dropToDelete($event)">
-			drag here for delete
-		</div>
-	</div>
+  <div class="target-container">
+    Delete zone
+    <div class="inner" id="deleteZone" #deleteZone ngxDropList [data]="targetList" (drop)="dropToDelete($event)">
+      drag here for delete
+    </div>
+  </div>
 </div>
