@@ -79,6 +79,8 @@ export class NgxDraggableDirective extends DragItemRef implements OnDestroy, Aft
   protected x: number = 0;
   protected y: number = 0;
   private previousXY: IPosition = { x: 0, y: 0 };
+  private isFixedPosition = false;
+  private startSubscriptions: Subscription[] = [];
   private subscriptions: Subscription[] = [];
 
   private readonly renderer = inject(Renderer2);
@@ -125,6 +127,7 @@ export class NgxDraggableDirective extends DragItemRef implements OnDestroy, Aft
   }
   ngOnDestroy() {
     this.subscriptions.forEach((sub) => sub.unsubscribe());
+    this.startSubscriptions.forEach((sub) => sub.unsubscribe());
     this.autoScroll.stop();
     this.dragRegister.removeDragItem(this);
   }
@@ -139,13 +142,10 @@ export class NgxDraggableDirective extends DragItemRef implements OnDestroy, Aft
   }
 
   initDragHandler() {
-    this.subscriptions.push(
-      fromEvent<MouseEvent>(this.el, 'mousedown').subscribe((ev) => this.onMouseDown(ev)),
-      fromEvent<TouchEvent>(this.el, 'touchstart').subscribe((ev) => this.onMouseDown(ev)),
-
-      fromEvent<PointerEvent>(window, 'pointerup', { capture: true }).subscribe((ev) => this.onEndDrag(ev)),
-      fromEvent<PointerEvent>(window, 'pointercancel', { capture: true }).subscribe((ev) => this.onEndDrag(ev))
-    );
+    this.startSubscriptions = [
+      (fromEvent<MouseEvent>(this.el, 'mousedown').subscribe((ev) => this.onMouseDown(ev)),
+      fromEvent<TouchEvent>(this.el, 'touchstart').subscribe((ev) => this.onMouseDown(ev))),
+    ];
   }
 
   onEndDrag(ev: MouseEvent | TouchEvent) {
@@ -156,18 +156,29 @@ export class NgxDraggableDirective extends DragItemRef implements OnDestroy, Aft
     this.dragging = false;
     this.isTouched = false;
     this.autoScroll.stop();
+    this.subscriptions.forEach((sub) => sub.unsubscribe());
   }
 
   onMouseDown(ev: MouseEvent | TouchEvent) {
-    this.previousXY = getPointerPosition(ev);
-    this.isTouched = true;
+    const isLeftClick = ev instanceof MouseEvent ? ev.button === 0 : true;
+    if (!isLeftClick) return;
     ev.preventDefault();
+
+    const styles = getComputedStyle(this.el);
+    this.isFixedPosition = styles.position === 'fixed';
+
+    // اگر fixed است از viewport position استفاده کن
+    this.previousXY = this.isFixedPosition ? getPointerPositionOnViewPort(ev) : getPointerPosition(ev);
+
+    this.isTouched = true;
     this.init();
-    this.subscriptions = this.subscriptions.filter((x) => !x.closed);
-    this.subscriptions.push(
+    this.subscriptions.forEach((sub) => sub.unsubscribe());
+    this.subscriptions = [
       fromEvent<MouseEvent>(this.doc, 'mousemove').subscribe((ev) => this.onMouseMove(ev)),
-      fromEvent<TouchEvent>(this.doc, 'touchmove').subscribe((ev) => this.onMouseMove(ev))
-    );
+      fromEvent<TouchEvent>(this.doc, 'touchmove').subscribe((ev) => this.onMouseMove(ev)),
+      fromEvent<PointerEvent>(window, 'pointerup', { capture: true }).subscribe((ev) => this.onEndDrag(ev)),
+      fromEvent<PointerEvent>(window, 'pointercancel', { capture: true }).subscribe((ev) => this.onEndDrag(ev)),
+    ];
   }
 
   onMouseMove(ev: MouseEvent | TouchEvent) {
@@ -182,18 +193,24 @@ export class NgxDraggableDirective extends DragItemRef implements OnDestroy, Aft
     if (!this.dragging) {
       return;
     }
+
     let position = getPointerPosition(ev);
-    // console.time('drgmv');
+
+    if (this.isFixedPosition) {
+      position = getPointerPositionOnViewPort(ev);
+    }
+
     const offsetX = position.x - this.previousXY.x;
     const offsetY = position.y - this.previousXY.y;
+
     this.autoScroll.handleAutoScroll(ev);
+
     if (this.dropList) {
       this.dragService.dragMove(this, ev, offsetX, offsetY);
     } else {
-      const transform = this.updatePosition(offsetX, offsetY, position);
+      this.updatePosition(offsetX, offsetY, position);
     }
     this.dragMove.emit({ x: this.x, y: this.y });
-    // console.timeEnd('drgmv');
   }
 
   updatePosition(offsetX: number, offsetY: number, position: IPosition) {
