@@ -259,9 +259,9 @@ export class NgxDragPlaceholderService {
   private resetState(): void {
     this.state = { element: null, isShown: false, rect: null, index: -1, dragItem: null };
   }
-  getPlaceholderPosition() {
+  getPlaceholderPosition(): DOMRect | undefined {
     if (!this.state.rect) {
-      throw new Error('Placeholder position is not set.');
+      return undefined;
     }
     return this.state.element?.getBoundingClientRect();
   }

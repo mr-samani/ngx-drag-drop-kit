@@ -126,12 +126,15 @@ export class NgxDragDropService {
     }
   }
   dragMove(drag: DragItemRef, ev: MouseEvent | TouchEvent, offsetX: number, offsetY: number) {
-    if (!this.dragElementInBody || !this.isDragging || !this._activeDragInstances[0].dropList) {
+    if (!this.dragElementInBody || !this.isDragging || !this._activeDragInstances[0].dropList || !this.activeDropList) {
       return;
     }
     ev.preventDefault();
-    const x = drag.domRect.x + offsetX + window.scrollX;
-    const y = drag.domRect.y + offsetY + window.scrollY;
+    let containerX = drag.dropList?.el?.scrollLeft || 0;
+    let containerY = drag.dropList?.el?.scrollTop || 0;
+
+    const x = drag.domRect.x + offsetX + window.scrollX + containerX - this.initialScrollOffset.containerX;
+    const y = drag.domRect.y + offsetY + window.scrollY + containerY - this.initialScrollOffset.containerY;
     const transform = `translate3d(${x}px, ${y}px, 0)`;
     this.renderer.setStyle(this.dragElementInBody, 'transform', transform);
     const viewportPointer = getPointerPositionOnViewPort(ev);
@@ -154,10 +157,13 @@ export class NgxDragDropService {
     }
     const dragOverItem = dragOverData.dragItem;
 
+    if (dropList.disableSort) return;
+
     if (this.activeDropList !== dropList) {
       let overDragItem = dragOverData.dragItem;
       this.activeDropList = dropList;
       this.placeholderService.createPlaceholder(dropList, this._activeDragInstances[0], overDragItem);
+
       this._newIndex = this.placeholderService.state.index;
       this.showDevGridOverlay();
     }
@@ -178,13 +184,18 @@ export class NgxDragDropService {
     const currentIndex = this._newIndex;
 
     if (drag.dropList) drag.dropList.dragging = false;
+    let delay = 0;
     let endPosition = this.placeholderService.getPlaceholderPosition();
-    this.renderer.setStyle(this.dragElementInBody, 'transition', 'transform 150ms cubic-bezier(0,0,0.2,1)');
-    this.renderer.setStyle(
-      this.dragElementInBody,
-      'transform',
-      `translate3d(${(endPosition?.x ?? 0) + window.scrollX}px, ${(endPosition?.y ?? 0) + window.scrollY}px, 0)`
-    );
+    if (endPosition) {
+      delay = 150;
+      this.renderer.setStyle(this.dragElementInBody, 'transition', 'transform 150ms cubic-bezier(0,0,0.2,1)');
+      this.renderer.setStyle(
+        this.dragElementInBody,
+        'transform',
+        `translate3d(${endPosition.x + window.scrollX}px, ${endPosition.y + window.scrollY}px, 0)`
+      );
+    }
+
     setTimeout(() => {
       this.dragRegister.dargItems.forEach((d) => {
         // this.renderer.setStyle(d.el, 'transition-property', 'none');
@@ -219,7 +230,7 @@ export class NgxDragDropService {
       this._newIndex = 0;
       this.initialScrollOffset = { x: 0, y: 0, containerX: 0, containerY: 0 };
       this.gridOverlay?.remove();
-    }, 250);
+    }, delay);
   }
 
   // Setup scroll listeners with throttling
