@@ -15,7 +15,6 @@ export class GridLayoutComponent {
 	options: IGridLayoutOptions = {
 		cols: 12,
 		gap: 10,
-		//pushOnDrag: false,
 		gridBackgroundConfig: {
 			borderWidth: 1,
 		},

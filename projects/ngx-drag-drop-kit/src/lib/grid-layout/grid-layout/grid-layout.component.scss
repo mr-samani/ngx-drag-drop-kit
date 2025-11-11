@@ -41,7 +41,7 @@ grid-layout {
 	z-index: 0;
 	transition-property: transform;
 	transition: all 150ms ease !important;
-
+	pointer-events: none;
 	&-default {
 		opacity: 0.5;
 		background-color: #6e02fc;

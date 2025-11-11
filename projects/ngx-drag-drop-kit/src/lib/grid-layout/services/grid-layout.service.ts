@@ -1,4 +1,12 @@
-import { ComponentRef, Inject, Injectable, Renderer2, RendererFactory2, ViewContainerRef, DOCUMENT } from '@angular/core';
+import {
+	ComponentRef,
+	Inject,
+	Injectable,
+	Renderer2,
+	RendererFactory2,
+	ViewContainerRef,
+	DOCUMENT,
+} from '@angular/core';
 import { GridLayoutOptions } from '../options/options';
 import { GridItemComponent } from '../grid-item/grid-item.component';
 import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
@@ -127,11 +135,9 @@ export class GridLayoutService {
 
 	onMoveOrResizeEnd(item: GridItemComponent) {
 		this.placeHolderRef?.destroy();
-		if (!this.placeHolder) {
-			// this.updateGridItem(item);
-			return;
+		if (this.placeHolder) {
+			item.config = this.placeHolder.config;
 		}
-		item.config = this.placeHolder.config;
 		this.updateGridItem(item);
 		this.renderer.setStyle(item.el, 'transform', '');
 		this.placeHolder = undefined;
@@ -165,9 +171,9 @@ export class GridLayoutService {
 	 */
 	private updatePlaceholderPosition(fakeItem: FakeItem) {
 		// console.log(input);
-		if (this._options.pushOnDrag) {
-			this.cehckCollesions(fakeItem);
-		}
+		// if (this._options.pushOnDrag) {
+		// 	this.cehckCollesions(fakeItem);
+		// }
 
 		if (!this.placeHolderRef || !this.placeHolder) {
 			this.placeHolderRef = this._placeholderContainerRef.createComponent(GridItemComponent);
