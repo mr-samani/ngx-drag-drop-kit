@@ -11,7 +11,11 @@
         @if (item.children) {
           <ng-container
             [ngTemplateOutlet]="tree"
-          [ngTemplateOutletContext]="{ $implicit: item.children, level: level + 1, class: 'children' }"></ng-container>
+            [ngTemplateOutletContext]="{
+              $implicit: item.children,
+              level: level + 1,
+              class: 'children',
+            }"></ng-container>
         }
       </div>
     }

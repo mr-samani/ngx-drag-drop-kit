@@ -1,20 +1,20 @@
 <nav>
-	<ul>
-		<li><a [routerLink]="['/drag-resize']">Drag Resize</a></li>
-		<li><a [routerLink]="['/drag-drop']">Kanban view</a></li>
-		<li><a [routerLink]="['/sort-list']">Sort list</a></li>
-		<li><a [routerLink]="['/horizontal-list']">Horizontal list</a></li>
-		<li><a [routerLink]="['/copy-to-zone']">Copy to zonet</a></li>
-		<li><a [routerLink]="['/nested-tree-sort']">Nested tree</a></li>
-		<li><a [routerLink]="['/grid-layout']">Grid layout</a></li>
-		<li><a [routerLink]="['/resizable-layout']">Resizable layout</a></li>
-		<li><a [routerLink]="['/dynamic-html']">Dynamic html</a></li>
-	</ul>
-	<label>
-		<input type="checkbox" name="direction" [(ngModel)]="isRtl" (change)="changeDirection(true)" />
-		{{ isRtl ? 'RTL' : 'LTR' }}
-	</label>
+  <ul>
+    <li><a [routerLink]="['/drag-resize']">Drag Resize</a></li>
+    <li><a [routerLink]="['/drag-drop']">Kanban view</a></li>
+    <li><a [routerLink]="['/sort-list']">Sort list</a></li>
+    <li><a [routerLink]="['/horizontal-list']">Horizontal list</a></li>
+    <li><a [routerLink]="['/copy-to-zone']">Copy to zonet</a></li>
+    <li><a [routerLink]="['/nested-tree-sort']">Nested tree</a></li>
+    <li><a [routerLink]="['/grid-layout']">Grid layout</a></li>
+    <li><a [routerLink]="['/resizable-layout']">Resizable layout</a></li>
+    <li><a [routerLink]="['/dynamic-html']">Dynamic html</a></li>
+  </ul>
+  <label>
+    <input type="checkbox" name="direction" [(ngModel)]="isRtl" (change)="changeDirection(true)" />
+    {{ isRtl ? 'RTL' : 'LTR' }}
+  </label>
 </nav>
 <div class="main-content">
-	<router-outlet />
+  <router-outlet />
 </div>

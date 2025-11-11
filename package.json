@@ -26,7 +26,7 @@
     "test": "ng test",
     "test-headless": "ng test --no-watch --no-progress --browsers=ChromeHeadless --project=ngx-drag-drop-kit",
     "test-covrage": "ng test --no-watch --code-coverage  --no-progress --browsers=ChromeHeadless --project=ngx-drag-drop-kit",
-    "forng updatemat": "prettier --write \".//projects//**//*.{ts,html,css,scss}\" "
+    "format": "prettier --write \".//projects//**//*.{ts,html,css,scss}\" "
   },
   "private": true,
   "dependencies": {

@@ -4,19 +4,19 @@
 <div class="drag-item fxd" ngxResizable ngxDraggable>Drag&resize in fixed</div>
 
 <div class="drag-item" ngxResizable ngxDraggable (resizeEnd)="onResizeEnd($event)" (dragEnd)="onDragEnd($event)">
-	Drag&resize in relative
+  Drag&resize in relative
 </div>
 
 <section class="boundary" #sectionWithHandler>
-	<div class="container">
-		<h3>Drag with handler</h3>
-		<div class="drag-item">
-			<span class="handle" [boundary]="sectionWithHandler" [dragRootElement]="'.boundary .drag-item'" ngxDraggable>
-				<i class="fad fa-arrows fa-2x"></i>
-				handle
-			</span>
-		</div>
-	</div>
+  <div class="container">
+    <h3>Drag with handler</h3>
+    <div class="drag-item">
+      <span class="handle" [boundary]="sectionWithHandler" [dragRootElement]="'.boundary .drag-item'" ngxDraggable>
+        <i class="fad fa-arrows fa-2x"></i>
+        handle
+      </span>
+    </div>
+  </div>
 </section>
 
 <div class="space-for-scroll"></div>
@@ -25,15 +25,15 @@
 <div class="space-for-scroll"></div>
 
 <div class="boundary" #bound>
-	<div class="drag-item" ngxDraggable ngxResizable [boundary]="bound">3 with boundary</div>
+  <div class="drag-item" ngxDraggable ngxResizable [boundary]="bound">3 with boundary</div>
 </div>
 <div class="space-for-scroll"></div>
 
 <div class="list-scroll">
-	<div class="drag-item" ngxDraggable>444</div>
+  <div class="drag-item" ngxDraggable>444</div>
 
-	<div class="space-for-scroll"></div>
+  <div class="space-for-scroll"></div>
 </div>
 <div class="boundary flex-center" #bound>
-	<div class="drag-item" ngxDraggable ngxResizable [boundary]="bound">boundary flexible container</div>
+  <div class="drag-item" ngxDraggable ngxResizable [boundary]="bound">boundary flexible container</div>
 </div>

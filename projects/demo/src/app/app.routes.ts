@@ -11,18 +11,18 @@ import { ResizableLayoutComponent } from './resizable-layout/resizable-layout.co
 import { DynamicHtmlComponent } from './dynamic-html/dynamic-html.component';
 
 export const routes: Routes = [
-	{ path: 'test', component: TestComponent },
-	{ path: '', redirectTo: 'dynamic-html', pathMatch: 'full' },
-	//{ path: '', redirectTo: 'drag-drop', pathMatch: 'full' },
-	{ path: 'drag-resize', component: DragResizeComponent },
-	{ path: 'sort-list', component: SortListComponent },
-	{ path: 'drag-drop', component: DragDropComponent },
-	{ path: 'horizontal-list', component: HorizontalListComponent },
-	{ path: 'copy-to-zone', component: CopyToZoneComponent },
-	{ path: 'nested-tree-sort', component: NestedTreeSortComponent },
+  { path: 'test', component: TestComponent },
+  { path: '', redirectTo: 'dynamic-html', pathMatch: 'full' },
+  //{ path: '', redirectTo: 'drag-drop', pathMatch: 'full' },
+  { path: 'drag-resize', component: DragResizeComponent },
+  { path: 'sort-list', component: SortListComponent },
+  { path: 'drag-drop', component: DragDropComponent },
+  { path: 'horizontal-list', component: HorizontalListComponent },
+  { path: 'copy-to-zone', component: CopyToZoneComponent },
+  { path: 'nested-tree-sort', component: NestedTreeSortComponent },
 
-	{ path: 'grid-layout', component: GridLayoutComponent },
-	{ path: 'resizable-layout', component: ResizableLayoutComponent },
+  { path: 'grid-layout', component: GridLayoutComponent },
+  { path: 'resizable-layout', component: ResizableLayoutComponent },
 
-	{ path: 'dynamic-html', component: DynamicHtmlComponent },
+  { path: 'dynamic-html', component: DynamicHtmlComponent },
 ];

@@ -1,4 +1,12 @@
-import { Inject, Injectable, isDevMode, Renderer2, RendererFactory2, RendererStyleFlags2, DOCUMENT } from '@angular/core';
+import {
+  Inject,
+  Injectable,
+  isDevMode,
+  Renderer2,
+  RendererFactory2,
+  RendererStyleFlags2,
+  DOCUMENT,
+} from '@angular/core';
 import { IDropEvent } from '../../interfaces/IDropEvent';
 
 import { getPointerPositionOnViewPort } from '../../utils/get-position';
@@ -20,264 +28,264 @@ import { cloneDragElementInBody } from '../../utils/clone-drag-element-in-body';
 import { getXYfromTransform } from '../../utils/get-transform';
 
 @Injectable({
-	providedIn: 'root',
+  providedIn: 'root',
 })
 export class NgxDragDropService {
-	isDragging = false;
+  isDragging = false;
 
-	private _activeDragInstances: DragItemRef[] = [];
-	private activeDropList?: IDropList;
-	private renderer: Renderer2;
-	private _dropEvent: IDropEvent | null = null;
-	private dragElementInBody?: HTMLElement;
+  private _activeDragInstances: DragItemRef[] = [];
+  private activeDropList?: IDropList;
+  private renderer: Renderer2;
+  private _dropEvent: IDropEvent | null = null;
+  private dragElementInBody?: HTMLElement;
 
-	currentDragPreviousStyles = {
-		display: '',
-		position: '',
-	};
-	scrollableParents: HTMLElement[] = [];
+  currentDragPreviousStyles = {
+    display: '',
+    position: '',
+  };
+  scrollableParents: HTMLElement[] = [];
 
-	private scrollSubscription: Subscription | null = null;
-	private rectUpdateSubject = new Subject<void>();
+  private scrollSubscription: Subscription | null = null;
+  private rectUpdateSubject = new Subject<void>();
 
-	private _previousDragIndex = 0;
-	private _newIndex = 0;
+  private _previousDragIndex = 0;
+  private _newIndex = 0;
 
-	private initialScrollOffset: IScrollOffset = { x: 0, y: 0, containerX: 0, containerY: 0 };
+  private initialScrollOffset: IScrollOffset = { x: 0, y: 0, containerX: 0, containerY: 0 };
 
-	gridOverlay?: IGridOverlayOutput;
-	constructor(
-		rendererFactory: RendererFactory2,
-		@Inject(DOCUMENT) private _document: Document,
-		private placeholderService: NgxDragPlaceholderService,
-		private dragRegister: NgxDragRegisterService
-	) {
-		this.renderer = rendererFactory.createRenderer(null, null);
-	}
+  gridOverlay?: IGridOverlayOutput;
+  constructor(
+    rendererFactory: RendererFactory2,
+    @Inject(DOCUMENT) private _document: Document,
+    private placeholderService: NgxDragPlaceholderService,
+    private dragRegister: NgxDragRegisterService
+  ) {
+    this.renderer = rendererFactory.createRenderer(null, null);
+  }
 
-	startDrag(drag: DragItemRef) {
-		if (!drag.dropList || this.isDragging) {
-			return;
-		}
-		this.activeDropList = drag.dropList;
+  startDrag(drag: DragItemRef) {
+    if (!drag.dropList || this.isDragging) {
+      return;
+    }
+    this.activeDropList = drag.dropList;
 
-		this.isDragging = true;
-		this.activeDropList.dragging = true;
+    this.isDragging = true;
+    this.activeDropList.dragging = true;
 
-		this.dragRegister.updateAllDragItemsRect();
-		const currDomRect = drag.domRect;
-		this._activeDragInstances.push(drag);
-		this._previousDragIndex = this.dragRegister.getDragItemIndex(drag);
-		this._dropEvent = {
-			previousIndex: this._previousDragIndex,
-			currentIndex: 0,
-			container: this.activeDropList,
-			item: drag,
-			previousContainer: this.activeDropList,
-		};
-		//  console.log('_dropEvent in drag start', this._dropEvent);
-		drag.el.classList.add('dragging');
-		this.dragElementInBody = cloneDragElementInBody(drag.el, currDomRect);
-		this._document.body.appendChild(this.dragElementInBody);
-		if (drag.dropList.disableSort == false) {
-			this.currentDragPreviousStyles = {
-				display: drag.el.style.display,
-				position: drag.el.style.position,
-			};
-			this.renderer.addClass(drag.el, 'is-shadow-dragging');
-			this.placeholderService.createPlaceholder(this.activeDropList, this._activeDragInstances[0]);
-		} else {
-			this.renderer.setStyle(drag.el, 'transform', 'none', RendererStyleFlags2.Important);
-		}
-		this.setupScrollListeners();
-		this.initialScrollOffset = {
-			x: window.scrollX,
-			y: window.scrollY,
-			containerX: this.activeDropList.el.scrollLeft || 0,
-			containerY: this.activeDropList.el.scrollTop || 0,
-		};
-		this.showDevGridOverlay();
-		this.placeholderService.updatePlaceholder$.next({
-			dragItem: this._activeDragInstances[0],
-			dragOverItem: this._activeDragInstances[0],
-			sourceDropList: this._activeDragInstances[0].dropList!,
-			destinationDropList: this.activeDropList,
-			newIndex: this._newIndex,
-			before: false,
-			initialScrollOffset: this.initialScrollOffset,
-		});
-	}
-	showDevGridOverlay() {
-		if (isDevMode() && false) {
-			setTimeout(() => {
-				const l = this.dragRegister.dropListItems.flatMap(item => {
-					// const rects = [item.domRect];
-					const rects = [];
-					if (item.dragItems?.length) {
-						rects.push(...item.dragItems.map(d => d.domRect));
-					}
-					return rects;
-				});
-				this.gridOverlay = createGridOverlay(l, {
-					highlight: '#fe00002e',
-					strokeWidth: 0.5,
-				});
-			}, 100);
-		}
-	}
-	dragMove(drag: DragItemRef, ev: MouseEvent | TouchEvent, offsetX: number, offsetY: number) {
-		if (!this.dragElementInBody || !this.isDragging || !this._activeDragInstances[0].dropList || !this.activeDropList) {
-			return;
-		}
-		ev.preventDefault();
-		let containerX = drag.dropList?.el?.scrollLeft || 0;
-		let containerY = drag.dropList?.el?.scrollTop || 0;
+    this.dragRegister.updateAllDragItemsRect();
+    const currDomRect = drag.domRect;
+    this._activeDragInstances.push(drag);
+    this._previousDragIndex = this.dragRegister.getDragItemIndex(drag);
+    this._dropEvent = {
+      previousIndex: this._previousDragIndex,
+      currentIndex: 0,
+      container: this.activeDropList,
+      item: drag,
+      previousContainer: this.activeDropList,
+    };
+    //  console.log('_dropEvent in drag start', this._dropEvent);
+    drag.el.classList.add('dragging');
+    this.dragElementInBody = cloneDragElementInBody(drag.el, currDomRect);
+    this._document.body.appendChild(this.dragElementInBody);
+    if (drag.dropList.disableSort == false) {
+      this.currentDragPreviousStyles = {
+        display: drag.el.style.display,
+        position: drag.el.style.position,
+      };
+      this.renderer.addClass(drag.el, 'is-shadow-dragging');
+      this.placeholderService.createPlaceholder(this.activeDropList, this._activeDragInstances[0]);
+    } else {
+      this.renderer.setStyle(drag.el, 'transform', 'none', RendererStyleFlags2.Important);
+    }
+    this.setupScrollListeners();
+    this.initialScrollOffset = {
+      x: window.scrollX,
+      y: window.scrollY,
+      containerX: this.activeDropList.el.scrollLeft || 0,
+      containerY: this.activeDropList.el.scrollTop || 0,
+    };
+    this.showDevGridOverlay();
+    this.placeholderService.updatePlaceholder$.next({
+      dragItem: this._activeDragInstances[0],
+      dragOverItem: this._activeDragInstances[0],
+      sourceDropList: this._activeDragInstances[0].dropList!,
+      destinationDropList: this.activeDropList,
+      newIndex: this._newIndex,
+      before: false,
+      initialScrollOffset: this.initialScrollOffset,
+    });
+  }
+  showDevGridOverlay() {
+    if (isDevMode() && false) {
+      setTimeout(() => {
+        const l = this.dragRegister.dropListItems.flatMap(item => {
+          // const rects = [item.domRect];
+          const rects = [];
+          if (item.dragItems?.length) {
+            rects.push(...item.dragItems.map(d => d.domRect));
+          }
+          return rects;
+        });
+        this.gridOverlay = createGridOverlay(l, {
+          highlight: '#fe00002e',
+          strokeWidth: 0.5,
+        });
+      }, 100);
+    }
+  }
+  dragMove(drag: DragItemRef, ev: MouseEvent | TouchEvent, offsetX: number, offsetY: number) {
+    if (!this.dragElementInBody || !this.isDragging || !this._activeDragInstances[0].dropList || !this.activeDropList) {
+      return;
+    }
+    ev.preventDefault();
+    let containerX = drag.dropList?.el?.scrollLeft || 0;
+    let containerY = drag.dropList?.el?.scrollTop || 0;
 
-		const x = drag.domRect.x + offsetX + window.scrollX + containerX - this.initialScrollOffset.containerX;
-		const y = drag.domRect.y + offsetY + window.scrollY + containerY - this.initialScrollOffset.containerY;
-		const transform = `translate3d(${x}px, ${y}px, 0)`;
-		this.renderer.setStyle(this.dragElementInBody, 'transform', transform);
-		const viewportPointer = getPointerPositionOnViewPort(ev);
-		const dropList = this.dragRegister._getDropListFromPointerPosition(viewportPointer);
-		// console.log('Active Drop List:', dropList?.el?.id);
-		if (!dropList) {
-			return;
-		}
-		if (dropList.checkAllowedConnections(this._activeDragInstances[0]?.dropList) == false) {
-			return;
-		}
-		const dragOverData = this.dragRegister._getItemIndexFromPointerPosition(
-			drag,
-			dropList,
-			viewportPointer,
-			this._newIndex
-		);
-		if (dragOverData.index > -1) {
-			this._newIndex = dragOverData.index;
-		}
-		const dragOverItem = dragOverData.dragItem;
+    const x = drag.domRect.x + offsetX + window.scrollX + containerX - this.initialScrollOffset.containerX;
+    const y = drag.domRect.y + offsetY + window.scrollY + containerY - this.initialScrollOffset.containerY;
+    const transform = `translate3d(${x}px, ${y}px, 0)`;
+    this.renderer.setStyle(this.dragElementInBody, 'transform', transform);
+    const viewportPointer = getPointerPositionOnViewPort(ev);
+    const dropList = this.dragRegister._getDropListFromPointerPosition(viewportPointer);
+    // console.log('Active Drop List:', dropList?.el?.id);
+    if (!dropList) {
+      return;
+    }
+    if (dropList.checkAllowedConnections(this._activeDragInstances[0]?.dropList) == false) {
+      return;
+    }
+    const dragOverData = this.dragRegister._getItemIndexFromPointerPosition(
+      drag,
+      dropList,
+      viewportPointer,
+      this._newIndex
+    );
+    if (dragOverData.index > -1) {
+      this._newIndex = dragOverData.index;
+    }
+    const dragOverItem = dragOverData.dragItem;
 
-		if (dropList.disableSort) return;
+    if (dropList.disableSort) return;
 
-		if (this.activeDropList !== dropList) {
-			let overDragItem = dragOverData.dragItem;
-			this.activeDropList = dropList;
-			this.placeholderService.createPlaceholder(dropList, this._activeDragInstances[0], overDragItem);
+    if (this.activeDropList !== dropList) {
+      let overDragItem = dragOverData.dragItem;
+      this.activeDropList = dropList;
+      this.placeholderService.createPlaceholder(dropList, this._activeDragInstances[0], overDragItem);
 
-			this._newIndex = this.placeholderService.state.index;
-			this.showDevGridOverlay();
-		}
-		this.placeholderService.updatePlaceholder$.next({
-			dragItem: this._activeDragInstances[0],
-			dragOverItem: dragOverItem,
-			sourceDropList: this._activeDragInstances[0].dropList,
-			destinationDropList: this.activeDropList,
-			newIndex: this._newIndex,
-			before: dragOverData.before,
-			initialScrollOffset: this.initialScrollOffset,
-		});
-	}
-	stopDrag(drag: DragItemRef) {
-		if (this.isDragging == false) return;
-		this.isDragging = false;
-		//const currentIndex = this.activeDropList?.isFlexWrap ? this.placeholderService.state.index : this._newIndex;
-		const currentIndex = this._newIndex;
+      this._newIndex = this.placeholderService.state.index;
+      this.showDevGridOverlay();
+    }
+    this.placeholderService.updatePlaceholder$.next({
+      dragItem: this._activeDragInstances[0],
+      dragOverItem: dragOverItem,
+      sourceDropList: this._activeDragInstances[0].dropList,
+      destinationDropList: this.activeDropList,
+      newIndex: this._newIndex,
+      before: dragOverData.before,
+      initialScrollOffset: this.initialScrollOffset,
+    });
+  }
+  stopDrag(drag: DragItemRef) {
+    if (this.isDragging == false) return;
+    this.isDragging = false;
+    //const currentIndex = this.activeDropList?.isFlexWrap ? this.placeholderService.state.index : this._newIndex;
+    const currentIndex = this._newIndex;
 
-		if (drag.dropList) drag.dropList.dragging = false;
-		let delay = 0;
-		let endPosition = this.placeholderService.getPlaceholderPosition();
-		if (endPosition) {
-			delay = 150;
-			this.renderer.setStyle(this.dragElementInBody, 'transition', 'transform 150ms cubic-bezier(0,0,0.2,1)');
-			this.renderer.setStyle(
-				this.dragElementInBody,
-				'transform',
-				`translate3d(${endPosition.x + window.scrollX}px, ${endPosition.y + window.scrollY}px, 0)`
-			);
-		}
+    if (drag.dropList) drag.dropList.dragging = false;
+    let delay = 0;
+    let endPosition = this.placeholderService.getPlaceholderPosition();
+    if (endPosition) {
+      delay = 150;
+      this.renderer.setStyle(this.dragElementInBody, 'transition', 'transform 150ms cubic-bezier(0,0,0.2,1)');
+      this.renderer.setStyle(
+        this.dragElementInBody,
+        'transform',
+        `translate3d(${endPosition.x + window.scrollX}px, ${endPosition.y + window.scrollY}px, 0)`
+      );
+    }
 
-		setTimeout(() => {
-			this.dragRegister.dargItems.forEach(d => {
-				// this.renderer.setStyle(d.el, 'transition-property', 'none');
-				// this.renderer.removeStyle(d.el, 'transform');
-				this.renderer.removeStyle(d.el, 'transition');
-			});
-			this.dragElementInBody?.remove();
-			this.placeholderService.hide(this.activeDropList);
+    setTimeout(() => {
+      this.dragRegister.dargItems.forEach(d => {
+        // this.renderer.setStyle(d.el, 'transition-property', 'none');
+        // this.renderer.removeStyle(d.el, 'transform');
+        this.renderer.removeStyle(d.el, 'transition');
+      });
+      this.dragElementInBody?.remove();
+      this.placeholderService.hide(this.activeDropList);
 
-			const index = this._activeDragInstances.indexOf(drag);
-			if (index > -1) {
-				this._activeDragInstances?.forEach(el => {
-					this.renderer.removeStyle(el.el, 'transform');
-					this.renderer.setStyle(el.el, 'display', this.currentDragPreviousStyles.display);
-					this.renderer.setStyle(el.el, 'position', this.currentDragPreviousStyles.position);
-					this.renderer.removeClass(el.el, 'is-shadow-dragging');
-				});
+      const index = this._activeDragInstances.indexOf(drag);
+      if (index > -1) {
+        this._activeDragInstances?.forEach(el => {
+          this.renderer.removeStyle(el.el, 'transform');
+          this.renderer.setStyle(el.el, 'display', this.currentDragPreviousStyles.display);
+          this.renderer.setStyle(el.el, 'position', this.currentDragPreviousStyles.position);
+          this.renderer.removeClass(el.el, 'is-shadow-dragging');
+        });
 
-				if (this._dropEvent && this.activeDropList) {
-					this._dropEvent.container = this.activeDropList;
-					this._dropEvent.currentIndex = currentIndex > 0 ? currentIndex : 0;
-					this.activeDropList.onDrop(this._dropEvent);
-				}
-				this._activeDragInstances.splice(index, 1);
-			}
-			this.activeDropList = undefined;
-			this.scrollSubscription?.unsubscribe();
-			this.scrollSubscription = null;
-			this.scrollableParents = [];
-			this.rectUpdateSubject = new Subject<void>();
-			this._previousDragIndex = 0;
-			this._newIndex = 0;
-			this.initialScrollOffset = { x: 0, y: 0, containerX: 0, containerY: 0 };
-			this.gridOverlay?.remove();
-		}, delay);
-	}
+        if (this._dropEvent && this.activeDropList) {
+          this._dropEvent.container = this.activeDropList;
+          this._dropEvent.currentIndex = currentIndex > 0 ? currentIndex : 0;
+          this.activeDropList.onDrop(this._dropEvent);
+        }
+        this._activeDragInstances.splice(index, 1);
+      }
+      this.activeDropList = undefined;
+      this.scrollSubscription?.unsubscribe();
+      this.scrollSubscription = null;
+      this.scrollableParents = [];
+      this.rectUpdateSubject = new Subject<void>();
+      this._previousDragIndex = 0;
+      this._newIndex = 0;
+      this.initialScrollOffset = { x: 0, y: 0, containerX: 0, containerY: 0 };
+      this.gridOverlay?.remove();
+    }, delay);
+  }
 
-	// Setup scroll listeners with throttling
-	private setupScrollListeners(): void {
-		// ۱️⃣ همه والدهای قابل اسکرول را پیدا کن
-		this.scrollableParents = findScrollableToParents(
-			this._document,
-			this.dragRegister.dropListItems.map(item => item.el)
-		);
-		// console.log(
-		//   'scrollableParents:',
-		//   this.scrollableParents.map((el) => el.tagName)
-		// );
+  // Setup scroll listeners with throttling
+  private setupScrollListeners(): void {
+    // ۱️⃣ همه والدهای قابل اسکرول را پیدا کن
+    this.scrollableParents = findScrollableToParents(
+      this._document,
+      this.dragRegister.dropListItems.map(item => item.el)
+    );
+    // console.log(
+    //   'scrollableParents:',
+    //   this.scrollableParents.map((el) => el.tagName)
+    // );
 
-		// ۲️⃣ اگر قبلاً لیسنر فعال است، تکرار نکن
-		if (this.scrollSubscription) return;
+    // ۲️⃣ اگر قبلاً لیسنر فعال است، تکرار نکن
+    if (this.scrollSubscription) return;
 
-		// ۳️⃣ ساخت آرایه واقعی از منابع event
-		const scrollTargets: (HTMLElement | Window)[] = this.scrollableParents
-			.map(el => {
-				const doc = this._document;
-				const isRoot = el === doc.documentElement || el === doc.body || el === doc.scrollingElement;
-				return isRoot ? doc.defaultView! : el; // ✅ window درست
-			})
-			.filter(Boolean)
-			.reduce((acc: any, cur: any) => (acc.includes(cur) ? acc : [...acc, cur]), []);
+    // ۳️⃣ ساخت آرایه واقعی از منابع event
+    const scrollTargets: (HTMLElement | Window)[] = this.scrollableParents
+      .map(el => {
+        const doc = this._document;
+        const isRoot = el === doc.documentElement || el === doc.body || el === doc.scrollingElement;
+        return isRoot ? doc.defaultView! : el; // ✅ window درست
+      })
+      .filter(Boolean)
+      .reduce((acc: any, cur: any) => (acc.includes(cur) ? acc : [...acc, cur]), []);
 
-		// ۴️⃣ ساخت merged observable از تمام آن‌ها
-		const scroll$ = scrollTargets.map(target => fromEvent(target, 'scroll'));
-		this.scrollSubscription = merge(...scroll$)
-			.pipe(throttleTime(16, undefined, { leading: true, trailing: true }))
-			.subscribe(async () => {
-				await this.dragRegister.updateAllDragItemsRect();
-				this.showDevGridOverlay();
-			});
-	}
+    // ۴️⃣ ساخت merged observable از تمام آن‌ها
+    const scroll$ = scrollTargets.map(target => fromEvent(target, 'scroll'));
+    this.scrollSubscription = merge(...scroll$)
+      .pipe(throttleTime(16, undefined, { leading: true, trailing: true }))
+      .subscribe(async () => {
+        await this.dragRegister.updateAllDragItemsRect();
+        this.showDevGridOverlay();
+      });
+  }
 
-	/**
-	 *
-	 * @param pointer view port pointer (clientX,clientY)
-	 */
-	getPointerElement(pointer: IPosition) {
-		let pe = document.querySelector('.ngxpointer');
-		if (!pe) return;
-		let x = pointer.x + window.scrollX;
-		let y = pointer.y + window.scrollY;
-		pe!.innerHTML = `${x},${y}(${pointer.x},${pointer.y})`;
-		this.renderer.setStyle(pe, 'transform', `translate3d(${x}px,${y}px,0)`);
-	}
+  /**
+   *
+   * @param pointer view port pointer (clientX,clientY)
+   */
+  getPointerElement(pointer: IPosition) {
+    let pe = document.querySelector('.ngxpointer');
+    if (!pe) return;
+    let x = pointer.x + window.scrollX;
+    let y = pointer.y + window.scrollY;
+    pe!.innerHTML = `${x},${y}(${pointer.x},${pointer.y})`;
+    this.renderer.setStyle(pe, 'transform', `translate3d(${x}px,${y}px,0)`);
+  }
 }

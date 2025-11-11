@@ -1,95 +1,95 @@
 .ngx-corner-resize {
-	position: absolute;
-	--pointerSize: 10px;
-	width: var(--pointerSize);
-	height: var(--pointerSize);
-	margin: 0px;
-	visibility: hidden;
-	transition: margin 300ms;
-	&.topLeft {
-		top: 0px;
-		left: 0px;
-		cursor: nw-resize;
-		border: 2px var(--pointerColor) solid;
+  position: absolute;
+  --pointerSize: 10px;
+  width: var(--pointerSize);
+  height: var(--pointerSize);
+  margin: 0px;
+  visibility: hidden;
+  transition: margin 300ms;
+  &.topLeft {
+    top: 0px;
+    left: 0px;
+    cursor: nw-resize;
+    border: 2px var(--pointerColor) solid;
 
-		margin: 3px;
-	}
-	&.topRight {
-		top: 0px;
-		right: 0px;
-		cursor: nesw-resize;
-		border: 2px var(--pointerColor) solid;
-	}
-	&.bottomLeft {
-		bottom: 0px;
-		left: 0px;
-		cursor: nesw-resize;
-		border: 2px var(--pointerColor) solid;
-	}
-	&.bottomRight {
-		bottom: 0px;
-		right: 0px;
-		cursor: nwse-resize;
-		border: 2px var(--pointerColor) solid;
-	}
-	&.top {
-		top: 0;
-		height: var(--pointerSize);
-		width: calc(100% - var(--pointerSize) - var(--pointerSize));
-		cursor: row-resize;
-	}
-	&.right {
-		top: var(--pointerSize);
-		right: 0;
-		width: var(--pointerSize);
-		height: calc(100% - var(--pointerSize) - var(--pointerSize));
-		cursor: col-resize;
-	}
+    margin: 3px;
+  }
+  &.topRight {
+    top: 0px;
+    right: 0px;
+    cursor: nesw-resize;
+    border: 2px var(--pointerColor) solid;
+  }
+  &.bottomLeft {
+    bottom: 0px;
+    left: 0px;
+    cursor: nesw-resize;
+    border: 2px var(--pointerColor) solid;
+  }
+  &.bottomRight {
+    bottom: 0px;
+    right: 0px;
+    cursor: nwse-resize;
+    border: 2px var(--pointerColor) solid;
+  }
+  &.top {
+    top: 0;
+    height: var(--pointerSize);
+    width: calc(100% - var(--pointerSize) - var(--pointerSize));
+    cursor: row-resize;
+  }
+  &.right {
+    top: var(--pointerSize);
+    right: 0;
+    width: var(--pointerSize);
+    height: calc(100% - var(--pointerSize) - var(--pointerSize));
+    cursor: col-resize;
+  }
 
-	&.left {
-		top: var(--pointerSize);
-		left: 0;
-		width: var(--pointerSize);
-		height: calc(100% - var(--pointerSize) - var(--pointerSize));
-		cursor: col-resize;
-	}
-	&.bottom {
-		bottom: 0;
-		height: var(--pointerSize);
-		width: calc(100% - var(--pointerSize) - var(--pointerSize));
-		cursor: row-resize;
-	}
+  &.left {
+    top: var(--pointerSize);
+    left: 0;
+    width: var(--pointerSize);
+    height: calc(100% - var(--pointerSize) - var(--pointerSize));
+    cursor: col-resize;
+  }
+  &.bottom {
+    bottom: 0;
+    height: var(--pointerSize);
+    width: calc(100% - var(--pointerSize) - var(--pointerSize));
+    cursor: row-resize;
+  }
 }
 
 .ngx-resizable {
-	--pointerColor: #005aff;
-	transition: none !important;
-	&.resizing {
-		transition-property: none !important;
-	}
-	&:hover {
-		.ngx-corner-resize {
-			visibility: visible;
-			z-index: 1;
-		}
-		.topRight,
-		.topLeft,
-		.bottomRight,
-		.bottomLeft {
-			margin: -4px;
-		}
-	}
+  --pointerColor: #005aff;
+  transition: none !important;
+  &.resizing {
+    transition-property: none !important;
+  }
+  &:hover {
+    .ngx-corner-resize {
+      visibility: visible;
+      z-index: 1;
+    }
+    .topRight,
+    .topLeft,
+    .bottomRight,
+    .bottomLeft {
+      margin: -4px;
+    }
+  }
 }
 
 .ngx-drag-placeholder {
-	border: 2px rgb(26, 255, 0) solid;
-	pointer-events: none;
-	max-width: 100%;
-	z-index: 9999;
-	transition: all 250ms cubic-bezier(0, 0, 0.2, 1);
+  border: 2px rgb(26, 255, 0) solid;
+  pointer-events: none;
+  max-width: 100%;
+  z-index: 9999;
+  transition: all 250ms cubic-bezier(0, 0, 0.2, 1);
 }
 
 .is-shadow-dragging {
-	opacity: 0.3;
-	filter: grayscale(0.6);
+  opacity: 0.3;
+  filter: grayscale(0.6);
 }

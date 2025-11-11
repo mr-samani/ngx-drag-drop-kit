@@ -4,11 +4,11 @@
 <button (click)="clear()">clear</button>
 
 <grid-layout [options]="options" (layoutChange)="onLayoutChange($event)">
-	@for (item of layouts; track item) {
-		<grid-item [config]="item.config" class="grid-item" [id]="item.id">
-			{{ item.id }}
-		</grid-item>
-	}
+  @for (item of layouts; track item) {
+    <grid-item [config]="item.config" class="grid-item" [id]="item.id">
+      {{ item.id }}
+    </grid-item>
+  }
 </grid-layout>
 
 <pre style="direction: ltr; text-align: start">config:{{ options | json }}</pre>
