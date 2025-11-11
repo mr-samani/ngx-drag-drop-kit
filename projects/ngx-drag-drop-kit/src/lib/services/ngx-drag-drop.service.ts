@@ -11,7 +11,6 @@ import { IDropEvent } from '../../interfaces/IDropEvent';
 
 import { getPointerPositionOnViewPort } from '../../utils/get-position';
 import { NgxDragPlaceholderService } from './ngx-placeholder.service';
-import { copyEssentialStyles } from '../../utils/clone-style';
 import { NgxDragRegisterService } from './ngx-drag-register.service';
 import { Subscription } from 'rxjs/internal/Subscription';
 import { Subject } from 'rxjs/internal/Subject';
@@ -25,7 +24,6 @@ import { merge } from 'rxjs';
 import { IScrollOffset } from '../../interfaces/IScrollOffset';
 import { IGridOverlayOutput, createGridOverlay } from '../../utils/grid-view';
 import { cloneDragElementInBody } from '../../utils/clone-drag-element-in-body';
-import { getXYfromTransform } from '../../utils/get-transform';
 
 @Injectable({
   providedIn: 'root',
@@ -137,7 +135,7 @@ export class NgxDragDropService {
     if (!this.dragElementInBody || !this.isDragging || !this._activeDragInstances[0].dropList || !this.activeDropList) {
       return;
     }
-    if (ev.cancelable) ev.preventDefault();
+    // if (ev.cancelable) ev.preventDefault();
     let containerX = drag.dropList?.el?.scrollLeft || 0;
     let containerY = drag.dropList?.el?.scrollTop || 0;
 

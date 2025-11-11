@@ -141,9 +141,13 @@ export class NgxResizableDirective implements AfterViewInit, OnDestroy {
       child.addEventListener('mousedown', $event => {
         this.onCornerClick($event, self[corner + 'Resize']);
       });
-      child.addEventListener('touchstart', $event => {
-        this.onCornerClick($event, self[corner + 'Resize']);
-      });
+      child.addEventListener(
+        'touchstart',
+        $event => {
+          this.onCornerClick($event, self[corner + 'Resize']);
+        },
+        { passive: false }
+      );
       this.el.insertAdjacentElement('afterbegin', child);
     }
   }

@@ -255,18 +255,18 @@ export class NgxDragRegisterService {
     } else {
     }
 
-    console.debug(
-      closestItem.el.id,
-      dropList.el?.id,
-      'p',
-      dragItemCurrentIndex,
-      'c',
-      closestIndex,
-      'insertBefore',
-      insertBefore,
-      'finalIndex',
-      newIndex
-    );
+    // console.log(
+    //   closestItem.el.id,
+    //   dropList.el?.id,
+    //   'p',
+    //   dragItemCurrentIndex,
+    //   'c',
+    //   closestIndex,
+    //   'insertBefore',
+    //   insertBefore,
+    //   'finalIndex',
+    //   newIndex
+    // );
 
     return { index: newIndex, before: insertBefore, dragItem: closestItem };
   }
