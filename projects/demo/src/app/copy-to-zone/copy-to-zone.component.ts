@@ -13,7 +13,7 @@ import { IDropEvent } from '../../../../ngx-drag-drop-kit/src/interfaces/IDropEv
 })
 export class CopyToZoneComponent {
   sourceList: string[] = [];
-  targetList: string[] = [];
+  targetList: { id: string; title: string }[] = [];
   resizeCorner: Corner[] = ['right', 'bottom', 'bottomRight'];
   constructor() {
     this.sourceList = [];
@@ -23,18 +23,23 @@ export class CopyToZoneComponent {
   }
 
   drop(event: IDropEvent) {
-    // console.log(event);
+    console.log(event);
     if (event.previousContainer !== event.container) {
-      copyArrayItem(event.previousContainer.data, event.container.data, event.previousIndex, event.currentIndex);
+      const newItem = { id: this.generateId(), title: event.previousContainer.data[event.previousIndex] };
+      event.container.data.splice(event.currentIndex, 0, newItem);
     } else {
       moveItemInArray(event.container.data, event.previousIndex, event.currentIndex);
     }
   }
 
+  generateId() {
+    return Math.random().toString(36).substring(2, 9);
+  }
+
   dropToDelete(event: IDropEvent) {
     event.container.data.splice(event.previousIndex, 1);
   }
-  onClick(item: string) {
-    //console.log('Clicked item:', item);
+  onClick(item: { id: string; title: string }) {
+    console.log('Clicked item:', item);
   }
 }

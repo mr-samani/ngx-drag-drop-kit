@@ -6,7 +6,7 @@
     [disableSort]="true"
     [connectedTo]="[copyZone]"
     id="baseList">
-    @for (item of sourceList; track item) {
+    @for (item of sourceList; track $index) {
       <div class="example-box" ngxDraggable>
         {{ item }}
       </div>
@@ -23,9 +23,9 @@
       [data]="targetList"
       (drop)="drop($event)"
       [connectedTo]="[deleteZone]">
-      @for (item of targetList; track item) {
-        <div class="example-box" ngxDraggable ngxResizable (click)="onClick(item)">
-          {{ item }}
+      @for (item of targetList; track item.id) {
+        <div class="example-box" ngxDraggable ngxResizable (click)="onClick(item)" [id]="item.id">
+          {{ item.title }}
         </div>
       }
     </div>

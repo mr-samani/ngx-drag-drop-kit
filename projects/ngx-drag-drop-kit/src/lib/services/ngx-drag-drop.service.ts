@@ -137,7 +137,7 @@ export class NgxDragDropService {
     if (!this.dragElementInBody || !this.isDragging || !this._activeDragInstances[0].dropList || !this.activeDropList) {
       return;
     }
-    ev.preventDefault();
+    if (ev.cancelable) ev.preventDefault();
     let containerX = drag.dropList?.el?.scrollLeft || 0;
     let containerY = drag.dropList?.el?.scrollTop || 0;
 
