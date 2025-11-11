@@ -1,0 +1,182 @@
+<div class="demo-container">
+  <h2>NgxResizable Examples</h2>
+
+  <!-- Example 1: Basic Resizable -->
+  <div class="example">
+    <h3>1. Basic Resizable (All Corners)</h3>
+    <div class="boundary" #boundary1>
+      <div
+        ngxResizable
+        [boundary]="boundary1"
+        (resizeStart)="onResizeStart()"
+        (resize)="onResize($event)"
+        (resizeEnd)="onResizeEnd($event)"
+        class="resizable-box show-corners"
+        #resizable1="NgxResizable">
+        <div class="content">
+          <p>Resize me from any corner!</p>
+          <small>Width: {{ resizable1.width }}px</small>
+          <br />
+          <small>Height: {{ resizable1.height }}px</small>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Example 2: Limited Corners -->
+  <div class="example">
+    <h3>2. Bottom-Right Only</h3>
+    <div class="boundary">
+      <div
+        ngxResizable
+        [corners]="['bottomRight']"
+        [minWidth]="100"
+        [minHeight]="100"
+        [maxWidth]="400"
+        [maxHeight]="400"
+        class="resizable-box show-corners"
+        #resizable2>
+        <div class="content">
+          <p>Only bottom-right corner</p>
+          <small>Min: 100x100, Max: 400x400</small>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Example 3: Aspect Ratio Lock -->
+  <div class="example">
+    <h3>3. Locked Aspect Ratio (16:9)</h3>
+    <div class="boundary">
+      <div
+        ngxResizable
+        [aspectRatio]="16 / 9"
+        [minWidth]="160"
+        [minHeight]="90"
+        class="resizable-box show-corners"
+        style="width: 320px; height: 180px">
+        <div class="content">
+          <p>16:9 Aspect Ratio</p>
+          <small>Always maintains proportion</small>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Example 4: With Boundary Constraint -->
+  <div class="example">
+    <h3>4. Constrained to Boundary</h3>
+    <div class="boundary" #boundary4 style="width: 500px; height: 400px; background: #f0f0f0">
+      <div
+        ngxResizable
+        [boundary]="boundary4"
+        [minWidth]="50"
+        [minHeight]="50"
+        class="resizable-box show-corners"
+        style="width: 150px; height: 150px; left: 50px; top: 50px">
+        <div class="content">
+          <p>Can't go outside gray area</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Example 5: RTL Support -->
+  <div class="example">
+    <h3>5. RTL (Right-to-Left) Support</h3>
+    <div class="boundary" dir="rtl">
+      <div
+        ngxResizable
+        [corners]="['left', 'right', 'topLeft', 'topRight']"
+        class="resizable-box show-corners"
+        style="width: 200px; height: 150px">
+        <div class="content" dir="rtl">
+          <p>نمایش از راست به چپ</p>
+          <small>RTL Layout Support</small>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Example 6: Keyboard Resize -->
+  <div class="example">
+    <h3>6. Keyboard Control</h3>
+    <div class="boundary">
+      <div ngxResizable [enableKeyboard]="true" class="resizable-box show-corners" style="width: 200px; height: 150px">
+        <div class="content">
+          <p>Click me & use arrow keys!</p>
+          <small>↑↓←→ to resize</small>
+          <br />
+          <small>Hold Shift for 10px steps</small>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Example 7: Custom Corner Size -->
+  <div class="example">
+    <h3>7. Large Corner Detection Area</h3>
+    <div class="boundary">
+      <div ngxResizable [cornerSize]="20" class="resizable-box show-corners" style="width: 200px; height: 150px">
+        <div class="content">
+          <p>20px corner detection zone</p>
+          <small>Easier to grab corners</small>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Example 8: Horizontal Only -->
+  <div class="example">
+    <h3>8. Horizontal Resize Only</h3>
+    <div class="boundary">
+      <div
+        ngxResizable
+        [corners]="['left', 'right']"
+        class="resizable-box show-corners"
+        style="width: 200px; height: 100px">
+        <div class="content">
+          <p>Width only (left/right)</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Example 9: Vertical Only -->
+  <div class="example">
+    <h3>9. Vertical Resize Only</h3>
+    <div class="boundary">
+      <div
+        ngxResizable
+        [corners]="['top', 'bottom']"
+        class="resizable-box show-corners"
+        style="width: 200px; height: 150px">
+        <div class="content">
+          <p>Height only (top/bottom)</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Example 10: Dynamic Content -->
+  <div class="example">
+    <h3>10. With Dynamic Content</h3>
+    <div class="boundary">
+      <div ngxResizable class="resizable-box show-corners" style="width: 300px; height: 200px; overflow: auto">
+        <div class="content" style="padding: 15px">
+          <h4>Scrollable Content</h4>
+          <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+          <p>Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+          <p>Ut enim ad minim veniam, quis nostrud exercitation ullamco.</p>
+          <button (click)="addContent()">Add More Content</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Resize Event Log -->
+  <div class="log">
+    <h3>Event Log</h3>
+    <pre>{{ eventLog }}</pre>
+  </div>
+</div>

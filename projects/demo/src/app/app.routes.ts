@@ -9,12 +9,14 @@ import { GridLayoutComponent } from './grid-layout/grid-layout.component';
 import { TestComponent } from './test/test.component';
 import { ResizableLayoutComponent } from './resizable-layout/resizable-layout.component';
 import { DynamicHtmlComponent } from './dynamic-html/dynamic-html.component';
+import { ResizableDemoComponent } from './resize/resize.component';
 
 export const routes: Routes = [
   { path: 'test', component: TestComponent },
   { path: '', redirectTo: 'dynamic-html', pathMatch: 'full' },
   //{ path: '', redirectTo: 'drag-drop', pathMatch: 'full' },
   { path: 'drag-resize', component: DragResizeComponent },
+  { path: 'resize', component: ResizableDemoComponent },
   { path: 'sort-list', component: SortListComponent },
   { path: 'drag-drop', component: DragDropComponent },
   { path: 'horizontal-list', component: HorizontalListComponent },
