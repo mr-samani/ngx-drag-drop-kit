@@ -6,6 +6,7 @@ import {
   ElementRef,
   EmbeddedViewRef,
   EventEmitter,
+  HostListener,
   inject,
   Input,
   OnDestroy,
@@ -89,6 +90,13 @@ export class NgxDropListDirective<T = any> implements IDropList, OnInit, AfterVi
   }
   ngAfterViewInit(): void {
     this.updateDomRect();
+  }
+
+  @HostListener('pointerleave')
+  onPointerLeave() {
+    if (this.el.style.cursor === 'no-drop') {
+      this.el.style.cursor = this.initCursor;
+    }
   }
 
   updateDomRect() {
