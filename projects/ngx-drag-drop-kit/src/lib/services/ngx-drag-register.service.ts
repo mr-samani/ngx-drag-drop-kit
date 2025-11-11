@@ -127,13 +127,15 @@ export class NgxDragRegisterService {
 
   /**
    * Get DropList from viewport pointer
+   * @param drag current drag item
    * @param pointer viewport pointer
    * @returns droplist
    */
-  _getDropListFromPointerPosition(pointer: { x: number; y: number }): IDropList | undefined {
+  _getDropListFromPointerPosition(pointer: { x: number; y: number }, drag: DragItemRef): IDropList | undefined {
     let matchedLists: { list: IDropList; area: number }[] = [];
-
-    for (const list of this.dropListArray) {
+    // فقط DropListهایی که داخل آیتم درگ‌شده نیستند
+    const filteredList = this.dropListArray.filter(x => !drag.el.contains(x.el));
+    for (const list of filteredList) {
       const el = list.el;
       if (!el) continue;
 

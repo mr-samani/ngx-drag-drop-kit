@@ -146,17 +146,17 @@ export class NgxDragDropService {
     const transform = `translate3d(${x}px, ${y}px, 0)`;
     this.renderer.setStyle(this.dragElementInBody, 'transform', transform);
     const viewportPointer = getPointerPositionOnViewPort(ev);
-    const dropList = this.dragRegister._getDropListFromPointerPosition(viewportPointer);
-    // console.log('Active Drop List:', dropList?.el?.id);
-    if (!dropList) {
+    const desDropList = this.dragRegister._getDropListFromPointerPosition(viewportPointer, drag);
+    // console.log('Active Drop List:', desDropList?.el?.id);
+    if (!desDropList) {
       return;
     }
-    if (dropList.checkAllowedConnections(this._activeDragInstances[0]?.dropList) == false) {
+    if (desDropList.checkAllowedConnections(this._activeDragInstances[0]?.dropList) == false) {
       return;
     }
     const dragOverData = this.dragRegister._getItemIndexFromPointerPosition(
       drag,
-      dropList,
+      desDropList,
       viewportPointer,
       this._newIndex
     );
@@ -165,12 +165,12 @@ export class NgxDragDropService {
     }
     const dragOverItem = dragOverData.dragItem;
 
-    if (dropList.disableSort) return;
+    if (desDropList.disableSort) return;
 
-    if (this.activeDropList !== dropList) {
+    if (this.activeDropList !== desDropList) {
       let overDragItem = dragOverData.dragItem;
-      this.activeDropList = dropList;
-      this.placeholderService.createPlaceholder(dropList, this._activeDragInstances[0], overDragItem);
+      this.activeDropList = desDropList;
+      this.placeholderService.createPlaceholder(desDropList, this._activeDragInstances[0], overDragItem);
 
       this._newIndex = this.placeholderService.state.index;
       this.showDevGridOverlay();
