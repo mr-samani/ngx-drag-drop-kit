@@ -1,10 +1,10 @@
 {
   "name": "ngx-drag-drop-kit",
   "description": "**Advanced & blazing-fast Angular Drag & Drop Toolkit** — Grid, Sort, Resize, Nesting, and more!",
-  "version": "3.0.0",
+  "version": "4.0.0",
   "peerDependencies": {
-    "@angular/common": ">=18.0.0 <21.0.0",
-    "@angular/core": ">=18.0.0 <21.0.0"
+    "@angular/common": ">=19",
+    "@angular/core": ">=19"
   },
   "dependencies": {
     "tslib": "^2.3.0"
@@ -29,9 +29,9 @@
   "homepage": "https://mr-samani.github.io/ngx-drag-drop-kit",
   "keywords": [
     "angular",
-    "angular 18",
     "angular 19",
     "angular 20",
+    "angular 21",
     "angular drag drop",
     "angular draggable",
     "angular resizable",
@@ -63,6 +63,9 @@
     "angular components",
     "ui components",
     "angular ui library",
-    "angular dnd"
+    "angular dnd",
+    "ngx-drag-drop-kit",
+    "drag drop kit",
+    "customizable dashboard"
   ]
 }

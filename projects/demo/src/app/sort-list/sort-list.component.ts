@@ -1,34 +1,21 @@
 import { Component } from '@angular/core';
-import { moveItemInArray } from '../../../../ngx-drag-drop-kit/src/drag-utils';
-import { IDropEvent } from '../../../../ngx-drag-drop-kit/src/interfaces/IDropEvent';
-import { NgxDragDropKitModule } from '../../../../ngx-drag-drop-kit/src/public-api';
+import { IDropEvent, moveItemInArray, NgxDragDropKitModule } from '@ngx-drag-drop-kit';
 
 @Component({
   selector: 'app-sort-list',
-  standalone: true,
   imports: [NgxDragDropKitModule],
   templateUrl: './sort-list.component.html',
   styleUrl: './sort-list.component.scss',
 })
 export class SortListComponent {
-  items = [
-    'Episode I - The Phantom Menace',
-    'Episode II - Attack of the Clones',
-    'Episode III - Revenge of the Sith',
-    'Episode IV - A New Hope',
-    'Episode V - The Empire Strikes Back',
-    'Episode VI - Return of the Jedi',
-    'Episode VII - The Force Awakens',
-    'Episode VIII - The Last Jedi',
-    'Episode IX - The Rise of Skywalker',
-  ];
+  items: string[] = Array.from({ length: 30 }).map((m, i) => 'Item ' + i);
+  items2: { id: string; title: string; size: number }[] = Array.from({ length: 5 }).map((m, i) => ({
+    id: 'item_' + i,
+    title: 'Item ' + i,
+    size: [25, 50, 100, 150][Math.floor(Math.random() * 4)],
+  }));
 
-  constructor() {
-    this.items = [];
-    for (let i = 1; i <= 4; i++) {
-      this.items.push('Episode ' + i);
-    }
-  }
+  constructor() {}
 
   add() {
     let rndPosition = Math.floor(Math.random() * this.items.length);
@@ -36,8 +23,8 @@ export class SortListComponent {
     this.items.splice(rndPosition, 0, rndName);
   }
 
-  drop(ev: IDropEvent) {
+  drop(ev: IDropEvent, list: any[]) {
     console.log('Drop event: ', ev);
-    moveItemInArray(this.items, ev.previousIndex, ev.currentIndex);
+    moveItemInArray(list, ev.previousIndex, ev.currentIndex);
   }
 }

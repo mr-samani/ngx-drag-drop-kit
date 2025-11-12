@@ -2,7 +2,7 @@
 build
 .idea/
 .vs/
-.vscode/
+# .vscode/
 bin/
 e2e/
 node_modules/

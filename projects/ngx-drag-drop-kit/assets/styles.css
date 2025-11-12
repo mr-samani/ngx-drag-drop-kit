@@ -1,94 +1,146 @@
-.ngx-corner-resize {
+/*-----------------------------------------------------------------------------------------*/
+/*----------------------------------RESIZE-------------------------------------------------*/
+/*-----------------------------------------------------------------------------------------*/
+/* ngx-resizable.component.css */
+/* Base resizable element */
+.ngx-resizable {
+  box-sizing: border-box;
+  position: relative;
+  min-width: 20px;
+  min-height: 20px;
+}
+.ngx-resizable:after {
+  pointer-events: none;
+  background: var(--ngx-resize-handles);
+  background-repeat: no-repeat;
   position: absolute;
-  --pointerSize: 10px;
-  width: var(--pointerSize);
-  height: var(--pointerSize);
-  margin: 0px;
-  visibility: hidden;
-  transition: margin 300ms;
+  animation: showResizeHandles 0.3s forwards;
+  transition: none;
 }
-.ngx-corner-resize.topLeft {
-  top: 0px;
-  left: 0px;
-  cursor: nw-resize;
-  border: 2px var(--pointerColor) solid;
-  margin: 3px;
-}
-.ngx-corner-resize.topRight {
-  top: 0px;
-  right: 0px;
-  cursor: nesw-resize;
-  border: 2px var(--pointerColor) solid;
-}
-.ngx-corner-resize.bottomLeft {
-  bottom: 0px;
-  left: 0px;
-  cursor: nesw-resize;
-  border: 2px var(--pointerColor) solid;
-}
-.ngx-corner-resize.bottomRight {
-  bottom: 0px;
-  right: 0px;
-  cursor: nwse-resize;
-  border: 2px var(--pointerColor) solid;
-}
-.ngx-corner-resize.top {
-  top: 0;
-  height: var(--pointerSize);
-  width: calc(100% - var(--pointerSize) - var(--pointerSize));
-  cursor: row-resize;
-}
-.ngx-corner-resize.right {
-  top: var(--pointerSize);
-  right: 0;
-  width: var(--pointerSize);
-  height: calc(100% - var(--pointerSize) - var(--pointerSize));
-  cursor: col-resize;
-}
-.ngx-corner-resize.left {
-  top: var(--pointerSize);
-  left: 0;
-  width: var(--pointerSize);
-  height: calc(100% - var(--pointerSize) - var(--pointerSize));
-  cursor: col-resize;
-}
-.ngx-corner-resize.bottom {
-  bottom: 0;
-  height: var(--pointerSize);
-  width: calc(100% - var(--pointerSize) - var(--pointerSize));
-  cursor: row-resize;
+.ngx-resizable.resizing:after {
+  content: " ";
+  inset: -2.5px;
 }
 
-.ngx-resizable {
-  --pointerColor: #005aff;
-  transition: none !important;
+@keyframes showResizeHandles {
+  from {
+    inset: 5px;
+  }
+  to {
+    inset: -2.5px;
+  }
 }
+/* Focus state for keyboard accessibility */
+.ngx-resizable:hover {
+  outline: 2px solid #4a90e2;
+  outline-offset: -2px;
+  z-index: 1000;
+}
+.ngx-resizable:hover:after {
+  content: " ";
+}
+
+/* Resizing state */
 .ngx-resizable.resizing {
   transition-property: none !important;
-}
-.ngx-resizable:hover .ngx-corner-resize {
-  visibility: visible;
-  z-index: 1;
-}
-.ngx-resizable:hover .topRight,
-.ngx-resizable:hover .topLeft,
-.ngx-resizable:hover .bottomRight,
-.ngx-resizable:hover .bottomLeft {
-  margin: -4px;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+  will-change: width, height, top, left;
 }
 
-.ngx-draggable {
-  transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+/* Prevent text selection during resize */
+.ngx-resizable.resizing * {
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
 }
 
+/* Corner cursors */
+.ngx-resizable[data-corner=top],
+.ngx-resizable[data-corner=bottom] {
+  cursor: ns-resize !important;
+}
+
+.ngx-resizable[data-corner=left],
+.ngx-resizable[data-corner=right] {
+  cursor: ew-resize !important;
+}
+
+.ngx-resizable[data-corner=topLeft],
+.ngx-resizable[data-corner=bottomRight] {
+  cursor: nwse-resize !important;
+}
+
+.ngx-resizable[data-corner=topRight],
+.ngx-resizable[data-corner=bottomLeft] {
+  cursor: nesw-resize !important;
+}
+
+/* Mobile/Touch optimizations */
+@media (hover: none) and (pointer: coarse) {
+  .ngx-resizable {
+    /* Larger touch targets for mobile */
+  }
+}
+/* Prevent text selection globally during resize */
+body.ngx-resizing {
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+  cursor: inherit !important;
+}
+
+/* Animation for smooth transitions when not resizing */
+.ngx-resizable:not(.resizing) {
+  transition: all 0.15s ease-out;
+}
+
+/* Grid snapping visual feedback (optional) */
+.ngx-resizable.grid-snap {
+  /* Visual feedback for grid snapping */
+}
+
+/* Boundary constraint visual */
+.ngx-resizable-boundary {
+  position: relative;
+  border: 2px dashed #ccc;
+  background: rgba(0, 0, 0, 0.02);
+}
+
+/* Disabled state */
+.ngx-resizable[disabled],
+.ngx-resizable.disabled {
+  pointer-events: none;
+  opacity: 0.6;
+  cursor: not-allowed !important;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .ngx-resizable:hover {
+    outline: 2px solid currentColor;
+    outline-offset: -2px;
+  }
+}
+/* Reduced motion support */
+/*-----------------------------------------------------------------------------------------*/
+/*----------------------------- DRAG DROP -------------------------------------------------*/
+/*-----------------------------------------------------------------------------------------*/
 .ngx-drag-placeholder {
-  position: absolute;
-  display: none;
-  background: rgba(204, 204, 204, 0.4509803922);
-  border: dotted 2px #999;
-  min-height: 30px;
+  border: 2px rgb(26, 255, 0) solid;
   pointer-events: none;
   max-width: 100%;
+  z-index: 9999;
+  transition: all 250ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+.is-shadow-dragging {
+  opacity: 0.3;
+  filter: grayscale(0.6);
 }
 
 /*# sourceMappingURL=styles.css.map */

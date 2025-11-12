@@ -6,11 +6,10 @@
 [![GitHub stars](https://img.shields.io/github/stars/mr-samani/ngx-drag-drop-kit?style=flat-square)](https://github.com/mr-samani/ngx-drag-drop-kit/stargazers)
 [![Sponsor](https://img.shields.io/badge/Sponsor-%E2%9D%A4-red?style=flat-square)](#-support--sponsor)
 
-
-[Live Demo](https://mr-samani.github.io/ngx-drag-drop-kit/)
----
+## [Live Demo](https://mr-samani.github.io/ngx-drag-drop-kit/)
 
 ## ✨ Features
+
 - 🖱️ **Advanced Drag & Drop** with multi-list and cross-list support
 - 🧩 **Configurable & Responsive Grid Layout**
 - 📏 **Resizable**: Resize items with mouse
@@ -23,7 +22,8 @@
 - 🖼️ **Custom Placeholder**
 - ⚡ **Performance Optimized** and Ultra **lightweight**
 - 🧑‍💻 **Fully modular, Angular 18+ ready**
-- 🧩 **Modular**: Drag & Drop, Grid, Sortable, Resizable  
+- 🧩 **Modular**: Drag & Drop, Grid, Sortable, Resizable
+- ➡️ **AutoDirection**: Auto detect horizontal or verticalor mixed direction
 
 ---
 
@@ -31,7 +31,7 @@
 
 ```bash
 npm install ngx-drag-drop-kit
-````
+```
 
 Or:
 
@@ -47,10 +47,20 @@ yarn add ngx-drag-drop-kit
 import { NgxDragDropKitModule } from 'ngx-drag-drop-kit';
 
 @NgModule({
-  imports: [NgxDragDropKitModule]
+  imports: [NgxDragDropKitModule],
 })
 export class AppModule {}
 ```
+
+## Add Style
+
+add ngx-drag-drop-kit style to your style.scss files
+
+```
+@use '@node_modules/ngx-drag-drop-kit/assets/styles.css';
+```
+
+- or add to styles section in angular.json
 
 ---
 
@@ -77,21 +87,22 @@ drop(event: IDropEvent) {
 ```
 
 ### 🧩 Grid Layout
+
 ```ts
 import { NgxGridLayoutModule } from 'ngx-drag-drop-kit';
 
 @NgModule({
-  imports: [NgxGridLayoutModule]
+  imports: [NgxGridLayoutModule],
 })
 export class AppModule {}
 ```
+
 ```html
 <grid-layout [options]="options">
-  <grid-item *ngFor="let item of layouts" [config]="item.config">
-    {{ item.title }}
-  </grid-item>
+  <grid-item *ngFor="let item of layouts" [config]="item.config">{{ item.title }}</grid-item>
 </grid-layout>
 ```
+
 ```ts
 import { IGridLayoutOptions, GridItemConfig } from 'ngx-drag-drop-kit';
 
@@ -105,9 +116,7 @@ layouts = [
 ### 📏 Resizable
 
 ```html
-<div ngxResizable [minWidth]="50" [minHeight]="50" (resize)="onResize($event)">
-  Resizable!
-</div>
+<div ngxResizable [minWidth]="50" [minHeight]="50" (resize)="onResize($event)">Resizable!</div>
 ```
 
 ---
@@ -119,14 +128,10 @@ Supports multi-level tree-like structures with drag & drop:
 ```html
 <ng-template #tree let-items>
   <div ngxDropList [data]="items" (drop)="drop($event)">
-    <div *ngxPlaceholder class="custom-placeholder"></div>
     <div ngxDraggable *ngFor="let item of items">
       {{ item.name }}
       <ng-container *ngIf="item.children">
-        <ng-container
-          [ngTemplateOutlet]="tree"
-          [ngTemplateOutletContext]="{ $implicit: item.children }">
-        </ng-container>
+        <ng-container [ngTemplateOutlet]="tree" [ngTemplateOutletContext]="{ $implicit: item.children }"></ng-container>
       </ng-container>
     </div>
   </div>
@@ -166,18 +171,16 @@ Maintaining open-source libraries takes time and energy. If you find this projec
 
 ### 🧡 Monthly Sponsorship
 
-[![GitHub Sponsors](https://img.shields.io/badge/GitHub%20Sponsors-Become%20a%20Sponsor-red?logo=github-sponsors\&style=flat-square)](https://github.com/sponsors/mr-samani)
+[![GitHub Sponsors](https://img.shields.io/badge/GitHub%20Sponsors-Become%20a%20Sponsor-red?logo=github-sponsors&style=flat-square)](https://github.com/sponsors/mr-samani)
 
 ### 💸 Crypto Support
 
 You can also support via **Tether (USDT)** or **Bitcoin (BTC)**:
 
-* `BTC: bc1qnhnpn9dtk3det08hkpduv8x9u8rnesujplg0p2`
-* `Ethereum: 0x3891395BB3f6c4642f6C7001FDD9113F22065680`
-* `TRON: TRJ7a8npXFzkfDLfwsRz2CCH1GWHuuthaJ`
-* `TON: UQAejnuN0MUM8zxsbUsLYtCB79gl88NDSGbv6OYzly4h4yfT`
-
-
+- `BTC: bc1qnhnpn9dtk3det08hkpduv8x9u8rnesujplg0p2`
+- `Ethereum: 0x3891395BB3f6c4642f6C7001FDD9113F22065680`
+- `TRON: TRJ7a8npXFzkfDLfwsRz2CCH1GWHuuthaJ`
+- `TON: UQAejnuN0MUM8zxsbUsLYtCB79gl88NDSGbv6OYzly4h4yfT`
 
 > Message me or create an issue if you want to be listed as a sponsor.
 
@@ -203,4 +206,3 @@ MIT — feel free to use & modify.
 ---
 
 > Built with ❤️ in Iran – by [@mr-samani](https://github.com/mr-samani)
-

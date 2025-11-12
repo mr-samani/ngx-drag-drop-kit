@@ -20,12 +20,12 @@
   display: block;
   background: white;
   border-radius: 4px;
-  overflow: auto;
   max-height: 1000px;
   min-height: 50vh;
   .inner {
-    background-color: #ccc;
+    background-color: #cccccc30;
     height: calc(100% - 45px);
+    overflow: auto;
   }
 }
 
@@ -39,6 +39,25 @@
   justify-content: space-between;
   box-sizing: border-box;
   cursor: move;
-  background: white;
   font-size: 14px;
+  &.todo {
+    background-color: white;
+  }
+  &.completed {
+    background-color: rgb(118, 255, 159);
+  }
+  &.in-progress {
+    background-color: rgb(124, 180, 253);
+  }
+  &.failed {
+    background-color: rgb(255, 153, 153);
+  }
+}
+
+.ngxpointer {
+  position: absolute;
+  background-color: #ff0000;
+  top: 11px;
+  left: 10px;
+  z-index: 99999999;
 }

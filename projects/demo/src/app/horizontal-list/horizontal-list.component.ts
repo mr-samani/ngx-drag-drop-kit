@@ -1,11 +1,8 @@
 import { Component } from '@angular/core';
-import { moveItemInArray } from '../../../../ngx-drag-drop-kit/src/drag-utils';
-import { IDropEvent } from '../../../../ngx-drag-drop-kit/src/interfaces/IDropEvent';
-import { NgxDragDropKitModule } from '../../../../ngx-drag-drop-kit/src/public-api';
+import { IDropEvent, moveItemInArray, NgxDragDropKitModule } from '@ngx-drag-drop-kit';
 
 @Component({
   selector: 'app-horizontal-list',
-  standalone: true,
   imports: [NgxDragDropKitModule],
   templateUrl: './horizontal-list.component.html',
   styleUrl: './horizontal-list.component.scss',
@@ -26,11 +23,10 @@ export class HorizontalListComponent {
 
   constructor() {
     this.items = [];
-    for (let i = 1; i < 80; i++) {
-      this.items.push('Episode ' + i);
+    for (let i = 0; i < 80; i++) {
+      this.items.push('item_' + i);
     }
   }
-
 
   add() {
     let rndPosition = Math.floor(Math.random() * this.items.length);

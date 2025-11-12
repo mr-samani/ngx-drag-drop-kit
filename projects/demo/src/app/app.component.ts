@@ -1,22 +1,13 @@
-import { Component, Inject } from '@angular/core';
+import { Component, Inject, DOCUMENT } from '@angular/core';
 import { RouterModule, RouterOutlet } from '@angular/router';
-import { CommonModule, DOCUMENT } from '@angular/common';
+
 import { FormsModule } from '@angular/forms';
 import { NgxDraggableDirective, NgxResizableDirective } from '../../../ngx-drag-drop-kit/src/public-api';
 import { NgxDropListDirective } from '../../../ngx-drag-drop-kit/src/lib/directives/ngx-drop-list.directive';
 
 @Component({
   selector: 'app-root',
-  standalone: true,
-  imports: [
-    RouterOutlet,
-    RouterModule,
-    CommonModule,
-    FormsModule,
-    NgxDraggableDirective,
-    NgxResizableDirective,
-    NgxDropListDirective,
-  ],
+  imports: [RouterOutlet, RouterModule, FormsModule],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss',
 })

@@ -8,8 +8,6 @@ import { GridLayoutService } from './services/grid-layout.service';
   declarations: [GridLayoutComponent, GridItemComponent],
   imports: [CommonModule],
   exports: [GridLayoutComponent, GridItemComponent],
-  providers:[
-    GridLayoutService
-  ]
+  providers: [GridLayoutService],
 })
 export class NgxGridLayoutModule {}

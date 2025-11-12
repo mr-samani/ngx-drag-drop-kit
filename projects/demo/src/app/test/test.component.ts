@@ -1,7 +1,5 @@
-import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
-import { IPosition } from '../../../../ngx-drag-drop-kit/src/interfaces/IPosition';
-import { NgxDragDropKitModule } from '../../../../ngx-drag-drop-kit/src/public-api';
+import { IPosition, NgxDragDropKitModule } from '@ngx-drag-drop-kit';
 
 interface DragEvent {
   type: string;
@@ -12,8 +10,7 @@ interface DragEvent {
 
 @Component({
   selector: 'app-test',
-  standalone: true,
-  imports: [CommonModule, NgxDragDropKitModule],
+  imports: [NgxDragDropKitModule],
   templateUrl: './test.component.html',
   styleUrl: './test.component.scss',
 })

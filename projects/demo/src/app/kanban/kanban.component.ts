@@ -1,16 +1,13 @@
 import { Component } from '@angular/core';
-import { IDropEvent } from '../../../../ngx-drag-drop-kit/src/interfaces/IDropEvent';
-import { moveItemInArray, transferArrayItem } from '../../../../ngx-drag-drop-kit/src/drag-utils';
-import { NgxDragDropKitModule } from '../../../../ngx-drag-drop-kit/src/public-api';
+import { IDropEvent, moveItemInArray, NgxDragDropKitModule, transferArrayItem } from '@ngx-drag-drop-kit';
 
 @Component({
   selector: 'app-drag-drop',
-  standalone: true,
   imports: [NgxDragDropKitModule],
-  templateUrl: './drag-drop.component.html',
-  styleUrl: './drag-drop.component.scss',
+  templateUrl: './kanban.component.html',
+  styleUrl: './kanban.component.scss',
 })
-export class DragDropComponent {
+export class DemoKanbanComponent {
   inProgressList: string[] = [];
   completedList: string[] = [];
   failedList: string[] = [];
@@ -18,7 +15,7 @@ export class DragDropComponent {
 
   constructor() {
     this.todoList = [];
-    for (let i = 1; i < 8; i++) {
+    for (let i = 0; i < 5; i++) {
       this.todoList.push('Episode ' + i);
     }
   }
@@ -30,6 +27,7 @@ export class DragDropComponent {
   }
 
   drop(event: IDropEvent) {
+    console.log('dropEvent', event);
     if (event.previousContainer === event.container) {
       moveItemInArray(event.container.data, event.previousIndex, event.currentIndex);
     } else {

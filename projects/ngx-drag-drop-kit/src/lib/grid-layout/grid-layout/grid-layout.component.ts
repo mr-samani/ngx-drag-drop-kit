@@ -14,14 +14,13 @@ import {
   ViewChild,
   ViewContainerRef,
   ViewEncapsulation,
-  viewChild,
 } from '@angular/core';
 import { IGridLayoutOptions } from '../options/options';
 import { DEFAULT_GRID_LAYOUT_CONFIG, GridLayoutService } from '../services/grid-layout.service';
 import { GridItemComponent } from '../grid-item/grid-item.component';
 import { mergeDeep } from '../../../utils/deep-merge';
 import { getFirstCollision } from '../utils/grid.utils';
-import { LayoutOutput } from "../options/layout-output";
+import { LayoutOutput } from '../options/layout-output';
 
 @Component({
   selector: 'grid-layout',
@@ -35,6 +34,7 @@ import { LayoutOutput } from "../options/layout-output";
   },
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
+  standalone: false,
 })
 export class GridLayoutComponent implements OnInit, AfterViewInit {
   @Input() get options() {
@@ -51,7 +51,7 @@ export class GridLayoutComponent implements OnInit, AfterViewInit {
   el: HTMLElement;
   @ContentChildren(GridItemComponent) set items(value: QueryList<GridItemComponent>) {
     if (value) {
-      value.changes.subscribe((_) => {
+      value.changes.subscribe(_ => {
         // log('Add new item to grid:', _);
       });
       this._gridService._gridItems = Array.from(value);
@@ -143,10 +143,10 @@ export class GridLayoutComponent implements OnInit, AfterViewInit {
   }
 
   private checkDuplicatedId() {
-    let ids = this._gridService._gridItems.map((m) => m.id);
+    let ids = this._gridService._gridItems.map(m => m.id);
     let hasDuplicated = false;
     for (let i = 0; i < ids.length; i++) {
-      if (this._gridService._gridItems.findIndex((x) => x.id == ids[i]) > -1 && ids.indexOf(ids[i]) !== i) {
+      if (this._gridService._gridItems.findIndex(x => x.id == ids[i]) > -1 && ids.indexOf(ids[i]) !== i) {
         this._gridService._gridItems[i].id = this.generateRandomId();
         hasDuplicated = true;
       }
@@ -157,8 +157,11 @@ export class GridLayoutComponent implements OnInit, AfterViewInit {
     return hasDuplicated;
   }
 
-  // TODO:return random string strong
   private generateRandomId() {
-    return 'RandomId' + Math.round(Math.random() * 9999);
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+      const r = (Math.random() * 16) | 0,
+        v = c === 'x' ? r : (r & 0x3) | 0x8;
+      return v.toString(16);
+    });
   }
 }

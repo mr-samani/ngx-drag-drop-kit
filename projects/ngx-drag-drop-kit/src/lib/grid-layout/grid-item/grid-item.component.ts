@@ -4,6 +4,7 @@ import {
   ChangeDetectorRef,
   Component,
   ElementRef,
+  inject,
   Input,
   OnDestroy,
   OnInit,
@@ -27,6 +28,7 @@ import { NgxResizableDirective } from '../../directives/ngx-resizable.directive'
   },
   hostDirectives: [NgxDraggableDirective, NgxResizableDirective],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class GridItemComponent implements OnInit, AfterViewInit, OnDestroy {
   @Input() config: GridItemConfig = new GridItemConfig();
@@ -40,27 +42,28 @@ export class GridItemComponent implements OnInit, AfterViewInit, OnDestroy {
 
   isDragging = false;
   isResizing = false;
+  private draggable = inject(NgxDraggableDirective);
+
   constructor(
     elRef: ElementRef<HTMLElement>,
     private _gridService: GridLayoutService,
     private _changeDetection: ChangeDetectorRef,
-    private draggable: NgxDraggableDirective,
     private resizable: NgxResizableDirective,
-    private _renderer: Renderer2
+    private renderer: Renderer2
   ) {
     this.el = elRef.nativeElement;
   }
 
   ngOnInit(): void {
-    this.draggable.dragStart.subscribe((ev) => (this.isDragging = true));
-    this.draggable.dragMove.subscribe((ev) => this._gridService.onMoveOrResize(this));
-    this.draggable.dragEnd.subscribe((ev) => {
+    this.draggable.dragStart.subscribe(ev => (this.isDragging = true));
+    this.draggable.dragMove.subscribe(ev => this._gridService.onMoveOrResize(this));
+    this.draggable.dragEnd.subscribe(ev => {
       this.isDragging = false;
       this._gridService.onMoveOrResizeEnd(this);
     });
-    this.resizable.resizeStart.subscribe((ev) => (this.isResizing = true));
-    this.resizable.resize.subscribe((ev) => this._gridService.onMoveOrResize(this));
-    this.resizable.resizeEnd.subscribe((ev) => {
+    this.resizable.resizeStart.subscribe(ev => (this.isResizing = true));
+    this.resizable.resize.subscribe(ev => this._gridService.onMoveOrResize(this));
+    this.resizable.resizeEnd.subscribe(ev => {
       this.isResizing = false;
       this._gridService.onMoveOrResizeEnd(this);
     });
@@ -73,10 +76,10 @@ export class GridItemComponent implements OnInit, AfterViewInit, OnDestroy {
   ngOnDestroy(): void {}
 
   updateView() {
-    this._renderer.setStyle(this.el, 'width', this.width + 'px');
-    this._renderer.setStyle(this.el, 'height', this.height + 'px');
-    this._renderer.setStyle(this.el, 'top', this.top + 'px');
-    this._renderer.setStyle(this.el, 'left', this.left + 'px');
+    this.renderer.setStyle(this.el, 'width', this.width + 'px');
+    this.renderer.setStyle(this.el, 'height', this.height + 'px');
+    this.renderer.setStyle(this.el, 'top', this.top + 'px');
+    this.renderer.setStyle(this.el, 'left', this.left + 'px');
     this._changeDetection.detectChanges();
   }
 

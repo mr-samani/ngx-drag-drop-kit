@@ -41,7 +41,7 @@ export function transferArrayItem<T = any>(
   currentArray: T[],
   targetArray: T[],
   currentIndex: number,
-  targetIndex: number,
+  targetIndex: number
 ): void {
   const from = clamp(currentIndex, currentArray.length - 1);
   const to = clamp(targetIndex, targetArray.length);
@@ -64,7 +64,7 @@ export function copyArrayItem<T = any>(
   currentArray: T[],
   targetArray: T[],
   currentIndex: number,
-  targetIndex: number,
+  targetIndex: number
 ): void {
   const to = clamp(targetIndex, targetArray.length);
 

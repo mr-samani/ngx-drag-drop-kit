@@ -1,7 +1,7 @@
 import { IPosition } from '../interfaces/IPosition';
 
-export function getOffsetPosition(evt: MouseEvent | TouchEvent, parent?: HTMLElement) {
-  if (evt instanceof MouseEvent) {
+export function getOffsetPosition(evt: MouseEvent | TouchEvent | PointerEvent, parent?: HTMLElement) {
+  if (evt instanceof MouseEvent || evt instanceof PointerEvent) {
     return {
       x: evt.offsetX,
       y: evt.offsetY,
@@ -21,8 +21,14 @@ export function getOffsetPosition(evt: MouseEvent | TouchEvent, parent?: HTMLEle
   return position;
 }
 
-export function getPointerPosition(evt: MouseEvent | TouchEvent): IPosition {
-  if (evt instanceof MouseEvent) {
+/**
+ * نکته : pageX,pageY اگر صفحه اسکرول داشته باشه هم محاسبه میکنه
+ * اگر بخواهیم فقط Viewport باشد باید clientX , clientY استفاده کنیم
+ * @param evt
+ * @returns
+ */
+export function getPointerPosition(evt: MouseEvent | TouchEvent | PointerEvent): IPosition {
+  if (evt instanceof MouseEvent || evt instanceof PointerEvent) {
     return {
       x: evt.pageX,
       y: evt.pageY,
@@ -35,34 +41,42 @@ export function getPointerPosition(evt: MouseEvent | TouchEvent): IPosition {
     };
   }
 }
-
-export function getRelativePosition(el: HTMLElement, container: HTMLElement): { x: number; y: number } {
-  let elX = 0,
-    elY = 0;
-  let current: HTMLElement | null = el;
-
-  // جمع کردن offset های والدها تا زمانی که به container برسیم یا null بشه
-  while (current && current !== container) {
-    const currentStyles = getComputedStyle(current);
-    const bl: number = parseFloat(currentStyles.borderLeftWidth || '0');
-    const bt: number = parseFloat(currentStyles.borderTopWidth || '0');
-    elX += current.offsetLeft - current.scrollLeft + current.clientLeft - bl;
-    elY += current.offsetTop - current.scrollTop + current.clientTop - bt;
-    current = current.offsetParent as HTMLElement;
-  }
-
-  if (current !== container) {
-    // اگه container اصلاً توی مسیر offsetParent نبود، باید fallback کنیم
-    const elRect = el.getBoundingClientRect();
-    const containerRect = container.getBoundingClientRect();
-
+export function getPointerPositionOnViewPort(evt: MouseEvent | TouchEvent | PointerEvent): IPosition {
+  if (evt instanceof MouseEvent || evt instanceof PointerEvent) {
     return {
-      x: elRect.left - containerRect.left,
-      y: elRect.top - containerRect.top,
+      x: evt.clientX,
+      y: evt.clientY,
+    };
+  } else {
+    const touch = evt.targetTouches[0] || evt.changedTouches[0];
+    return {
+      x: touch.clientX,
+      y: touch.clientY,
     };
   }
+}
+export function getRelativePosition(element: HTMLElement, relativeTo: HTMLElement): { x: number; y: number } {
+  if (!element || !relativeTo) {
+    return { x: 0, y: 0 };
+  }
 
-  return { x: elX, y: elY };
+  // مختصات المان و container
+  const elRect = element.getBoundingClientRect();
+  const containerRect = relativeTo.getBoundingClientRect();
+
+  // اختلاف بین دو rect
+  let x = elRect.left - containerRect.left;
+  let y = elRect.top - containerRect.top;
+
+  // جمع کردن اسکرول داخلی تمام اجداد container
+  let parent = element.parentElement;
+  while (parent && parent !== relativeTo && parent instanceof HTMLElement) {
+    x += parent.scrollLeft || 0;
+    y += parent.scrollTop || 0;
+    parent = parent.parentElement;
+  }
+
+  return { x, y };
 }
 
 export function getAbsoluteOffset(el: HTMLElement): { x: number; y: number } {
