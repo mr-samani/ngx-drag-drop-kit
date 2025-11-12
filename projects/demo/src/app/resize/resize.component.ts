@@ -1,10 +1,11 @@
+import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { IResizableOutput, NgxResizableDirective } from '@ngx-drag-drop-kit';
 
 @Component({
   selector: 'app-resizable-demo',
   standalone: true,
-  imports: [NgxResizableDirective],
+  imports: [NgxResizableDirective, CommonModule],
   templateUrl: './resize.component.html',
   styleUrls: ['./resize.component.scss'],
 })

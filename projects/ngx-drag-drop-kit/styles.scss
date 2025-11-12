@@ -1,85 +1,3 @@
-// .ngx-corner-resize {
-//   position: absolute;
-//   --pointerSize: 10px;
-//   width: var(--pointerSize);
-//   height: var(--pointerSize);
-//   margin: 0px;
-//   visibility: hidden;
-//   transition: margin 300ms;
-//   &.topLeft {
-//     top: 0px;
-//     left: 0px;
-//     cursor: nw-resize;
-//     border: 2px var(--pointerColor) solid;
-
-//     margin: 3px;
-//   }
-//   &.topRight {
-//     top: 0px;
-//     right: 0px;
-//     cursor: nesw-resize;
-//     border: 2px var(--pointerColor) solid;
-//   }
-//   &.bottomLeft {
-//     bottom: 0px;
-//     left: 0px;
-//     cursor: nesw-resize;
-//     border: 2px var(--pointerColor) solid;
-//   }
-//   &.bottomRight {
-//     bottom: 0px;
-//     right: 0px;
-//     cursor: nwse-resize;
-//     border: 2px var(--pointerColor) solid;
-//   }
-//   &.top {
-//     top: 0;
-//     height: var(--pointerSize);
-//     width: calc(100% - var(--pointerSize) - var(--pointerSize));
-//     cursor: row-resize;
-//   }
-//   &.right {
-//     top: var(--pointerSize);
-//     right: 0;
-//     width: var(--pointerSize);
-//     height: calc(100% - var(--pointerSize) - var(--pointerSize));
-//     cursor: col-resize;
-//   }
-
-//   &.left {
-//     top: var(--pointerSize);
-//     left: 0;
-//     width: var(--pointerSize);
-//     height: calc(100% - var(--pointerSize) - var(--pointerSize));
-//     cursor: col-resize;
-//   }
-//   &.bottom {
-//     bottom: 0;
-//     height: var(--pointerSize);
-//     width: calc(100% - var(--pointerSize) - var(--pointerSize));
-//     cursor: row-resize;
-//   }
-// }
-
-// .ngx-resizable {
-//   --pointerColor: #005aff;
-//   transition: none !important;
-//   &.resizing {
-//     transition-property: none !important;
-//   }
-//   &:hover {
-//     .ngx-corner-resize {
-//       visibility: visible;
-//       z-index: 1;
-//     }
-//     .topRight,
-//     .topLeft,
-//     .bottomRight,
-//     .bottomLeft {
-//       margin: -4px;
-//     }
-//   }
-// }
 /*-----------------------------------------------------------------------------------------*/
 /*----------------------------------RESIZE-------------------------------------------------*/
 /*-----------------------------------------------------------------------------------------*/
@@ -91,12 +9,35 @@
   position: relative;
   min-width: 20px;
   min-height: 20px;
+  &:after {
+    pointer-events: none;
+    background: var(--ngx-resize-handles);
+    background-repeat: no-repeat;
+    position: absolute;
+    animation: showResizeHandles 0.3s forwards;
+    transition: none;
+  }
+  &.resizing:after {
+    content: ' ';
+    inset: -2.5px;
+  }
+}
+@keyframes showResizeHandles {
+  from {
+    inset: 5px;
+  }
+  to {
+    inset: -2.5px;
+  }
 }
 
 /* Focus state for keyboard accessibility */
-.ngx-resizable:focus {
+.ngx-resizable:hover {
   outline: 2px solid #4a90e2;
-  outline-offset: 2px;
+  outline-offset: -2px;
+  &:after {
+    content: ' ';
+  }
 }
 
 /* Resizing state */
@@ -115,21 +56,6 @@
   -webkit-user-select: none !important;
   -moz-user-select: none !important;
   -ms-user-select: none !important;
-}
-
-/* Corner detection zones - invisible hit areas */
-.ngx-resizable::before,
-.ngx-resizable::after {
-  content: '';
-  position: absolute;
-  pointer-events: none;
-  z-index: 10;
-}
-
-/* Visual corner handles (optional - can be enabled with a class) */
-.ngx-resizable.show-handles::before,
-.ngx-resizable.show-handles::after {
-  pointer-events: auto;
 }
 
 /* Corner cursors */
@@ -153,90 +79,10 @@
   cursor: nesw-resize !important;
 }
 
-/* Optional: Visual indicators for corners */
-.ngx-resizable.show-corners::after {
-  content: '';
-  position: absolute;
-  width: 8px;
-  height: 8px;
-  background: #4a90e2;
-  border: 1px solid white;
-  border-radius: 50%;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.2s;
-}
-
-.ngx-resizable.show-corners:hover::after,
-.ngx-resizable.show-corners.resizing::after {
-  opacity: 1;
-}
-
-/* Corner positions for visual indicators */
-.ngx-resizable.show-corners[data-corner='topLeft']::after {
-  top: -4px;
-  left: -4px;
-}
-
-.ngx-resizable.show-corners[data-corner='topRight']::after {
-  top: -4px;
-  right: -4px;
-}
-
-.ngx-resizable.show-corners[data-corner='bottomLeft']::after {
-  bottom: -4px;
-  left: -4px;
-}
-
-.ngx-resizable.show-corners[data-corner='bottomRight']::after {
-  bottom: -4px;
-  right: -4px;
-}
-
-.ngx-resizable.show-corners[data-corner='top']::after {
-  top: -4px;
-  left: 50%;
-  transform: translateX(-50%);
-}
-
-.ngx-resizable.show-corners[data-corner='bottom']::after {
-  bottom: -4px;
-  left: 50%;
-  transform: translateX(-50%);
-}
-
-.ngx-resizable.show-corners[data-corner='left']::after {
-  left: -4px;
-  top: 50%;
-  transform: translateY(-50%);
-}
-
-.ngx-resizable.show-corners[data-corner='right']::after {
-  right: -4px;
-  top: 50%;
-  transform: translateY(-50%);
-}
-
-/* Hover effect for better UX */
-.ngx-resizable:hover {
-  /* Optional: Add subtle border or shadow when hoverable */
-}
-
-/* RTL Support */
-[dir='rtl'] .ngx-resizable {
-  /* RTL-specific adjustments if needed */
-}
-
 /* Mobile/Touch optimizations */
 @media (hover: none) and (pointer: coarse) {
   .ngx-resizable {
     /* Larger touch targets for mobile */
-  }
-
-  .ngx-resizable.show-corners::after {
-    width: 12px;
-    height: 12px;
   }
 }
 
@@ -276,23 +122,19 @@ body.ngx-resizing {
 
 /* High contrast mode support */
 @media (prefers-contrast: high) {
-  .ngx-resizable:focus {
-    outline: 3px solid currentColor;
-    outline-offset: 3px;
-  }
-
-  .ngx-resizable.show-corners::after {
-    border-width: 2px;
+  .ngx-resizable:hover {
+    outline: 2px solid currentColor;
+    outline-offset: -2px;
   }
 }
 
 /* Reduced motion support */
-@media (prefers-reduced-motion: reduce) {
-  .ngx-resizable,
-  .ngx-resizable::after {
-    transition: none !important;
-  }
-}
+// @media (prefers-reduced-motion: reduce) {
+//   .ngx-resizable,
+//   .ngx-resizable::after {
+//     transition: none !important;
+//   }
+// }
 
 /*-----------------------------------------------------------------------------------------*/
 /*----------------------------- DRAG DROP -------------------------------------------------*/

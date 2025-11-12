@@ -145,7 +145,7 @@ export class NgxDraggableDirective extends DragItemRef implements OnDestroy, Aft
   initDragHandler() {
     this.startSubscriptions = [
       (fromEvent<MouseEvent>(this.el, 'mousedown').subscribe(ev => this.onMouseDown(ev)),
-      fromEvent<TouchEvent>(this.el, 'touchstart', { passive: false }).subscribe(ev => this.onMouseDown(ev))),
+      fromEvent<TouchEvent>(this.el, 'touchstart').subscribe(ev => this.onMouseDown(ev))),
     ];
   }
 
@@ -176,7 +176,7 @@ export class NgxDraggableDirective extends DragItemRef implements OnDestroy, Aft
     this.subscriptions.forEach(sub => sub.unsubscribe());
     this.subscriptions = [
       fromEvent<MouseEvent>(this.doc, 'mousemove').subscribe(ev => this.onMouseMove(ev)),
-      fromEvent<TouchEvent>(this.doc, 'touchmove').subscribe(ev => this.onMouseMove(ev)),
+      fromEvent<TouchEvent>(this.doc, 'touchmove', { passive: false }).subscribe(ev => this.onMouseMove(ev)),
       fromEvent<PointerEvent>(window, 'pointerup', { capture: true }).subscribe(ev => this.onEndDrag(ev)),
       fromEvent<PointerEvent>(window, 'pointercancel', { capture: true }).subscribe(ev => this.onEndDrag(ev)),
     ];
