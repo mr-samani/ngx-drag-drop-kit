@@ -1,15 +1,13 @@
 import { Component } from '@angular/core';
-import { IDropEvent } from '../../../../ngx-drag-drop-kit/src/interfaces/IDropEvent';
-import { moveItemInArray, transferArrayItem } from '../../../../ngx-drag-drop-kit/src/drag-utils';
-import { NgxDragDropKitModule } from '../../../../ngx-drag-drop-kit/src/public-api';
+import { IDropEvent, moveItemInArray, NgxDragDropKitModule, transferArrayItem } from '@ngx-drag-drop-kit';
 
 @Component({
   selector: 'app-drag-drop',
   imports: [NgxDragDropKitModule],
-  templateUrl: './drag-drop.component.html',
-  styleUrl: './drag-drop.component.scss',
+  templateUrl: './kanban.component.html',
+  styleUrl: './kanban.component.scss',
 })
-export class DragDropComponent {
+export class DemoKanbanComponent {
   inProgressList: string[] = [];
   completedList: string[] = [];
   failedList: string[] = [];

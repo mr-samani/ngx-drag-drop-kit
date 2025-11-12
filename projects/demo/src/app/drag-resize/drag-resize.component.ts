@@ -1,6 +1,5 @@
 import { Component } from '@angular/core';
-import { IPosition, NgxDragDropKitModule } from '../../../../ngx-drag-drop-kit/src/public-api';
-import { IResizableOutput } from '../../../../ngx-drag-drop-kit/src/interfaces/IResizableOutput';
+import { IPosition, IResizableOutput, NgxDragDropKitModule } from '@ngx-drag-drop-kit';
 
 @Component({
   selector: 'app-drag-resize',

@@ -10,11 +10,19 @@ import {
   DOCUMENT,
   OnInit,
 } from '@angular/core';
-import { Corner } from '../../utils/corner-type';
 import { checkBoundX, checkBoundY } from '../../utils/check-boundary';
 import { IResizableOutput } from '../../interfaces/IResizableOutput';
 import { fromEvent, Subscription } from 'rxjs';
-import { filter, throttleTime, asyncScheduler } from 'rxjs';
+import { filter } from 'rxjs';
+export declare type Corner =
+  | 'top'
+  | 'right'
+  | 'left'
+  | 'bottom'
+  | 'topLeft'
+  | 'topRight'
+  | 'bottomLeft'
+  | 'bottomRight';
 
 @Directive({
   selector: '[ngxResizable]',

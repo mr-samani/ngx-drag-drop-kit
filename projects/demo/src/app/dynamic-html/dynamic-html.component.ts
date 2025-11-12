@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { IDropEvent, moveItemInArray, NgxDragDropKitModule } from '../../../../ngx-drag-drop-kit/src/public-api';
+import { IDropEvent, moveItemInArray, NgxDragDropKitModule } from '@ngx-drag-drop-kit';
 
 @Component({
   selector: 'app-dynamic-html',

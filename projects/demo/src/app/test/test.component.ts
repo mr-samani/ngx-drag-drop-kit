@@ -1,6 +1,5 @@
 import { Component } from '@angular/core';
-import { IPosition } from '../../../../ngx-drag-drop-kit/src/interfaces/IPosition';
-import { NgxDragDropKitModule } from '../../../../ngx-drag-drop-kit/src/public-api';
+import { IPosition, NgxDragDropKitModule } from '@ngx-drag-drop-kit';
 
 interface DragEvent {
   type: string;

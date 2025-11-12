@@ -1,6 +1,6 @@
 import { Routes } from '@angular/router';
 import { DragResizeComponent } from './drag-resize/drag-resize.component';
-import { DragDropComponent } from './drag-drop/drag-drop.component';
+import { DemoKanbanComponent } from './kanban/kanban.component';
 import { SortListComponent } from './sort-list/sort-list.component';
 import { HorizontalListComponent } from './horizontal-list/horizontal-list.component';
 import { CopyToZoneComponent } from './copy-to-zone/copy-to-zone.component';
@@ -18,7 +18,7 @@ export const routes: Routes = [
   { path: 'drag-resize', component: DragResizeComponent },
   { path: 'resize', component: ResizableDemoComponent },
   { path: 'sort-list', component: SortListComponent },
-  { path: 'drag-drop', component: DragDropComponent },
+  { path: 'kanban', component: DemoKanbanComponent },
   { path: 'horizontal-list', component: HorizontalListComponent },
   { path: 'copy-to-zone', component: CopyToZoneComponent },
   { path: 'nested-tree-sort', component: NestedTreeSortComponent },

@@ -1,9 +1,5 @@
 import { Component } from '@angular/core';
-import { copyArrayItem, moveItemInArray } from '../../../../ngx-drag-drop-kit/src/drag-utils';
-
-import { Corner } from '../../../../ngx-drag-drop-kit/src/utils/corner-type';
-import { NgxDragDropKitModule } from '../../../../ngx-drag-drop-kit/src/public-api';
-import { IDropEvent } from '../../../../ngx-drag-drop-kit/src/interfaces/IDropEvent';
+import { Corner, IDropEvent, moveItemInArray, NgxDragDropKitModule } from '@ngx-drag-drop-kit';
 
 @Component({
   selector: 'app-copy-to-zone',

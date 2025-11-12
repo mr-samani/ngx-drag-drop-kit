@@ -21,3 +21,4 @@ export * from './lib/grid-layout/grid-item/grid-item.component';
 export * from './lib/grid-layout/options/options';
 export * from './lib/grid-layout/options/gride-item-config';
 export * from './lib/grid-layout/options/layout-output';
+

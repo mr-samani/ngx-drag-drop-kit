@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { IResizableOutput, NgxDragDropKitModule } from '../../../../ngx-drag-drop-kit/src/public-api';
+import { IResizableOutput, NgxDragDropKitModule } from '@ngx-drag-drop-kit';
 
 @Component({
   selector: 'app-resizable-layout',
