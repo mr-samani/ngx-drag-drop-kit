@@ -26,9 +26,7 @@ export class ResizableDemoComponent {
     );
   }
 
-  addContent() {
-    this.log('➕ Content Added');
-  }
+
 
   private log(message: string) {
     const timestamp = new Date().toLocaleTimeString();

@@ -1,7 +1,7 @@
 import { IPosition } from '../interfaces/IPosition';
 
-export function getOffsetPosition(evt: MouseEvent | TouchEvent, parent?: HTMLElement) {
-  if (evt instanceof MouseEvent) {
+export function getOffsetPosition(evt: MouseEvent | TouchEvent | PointerEvent, parent?: HTMLElement) {
+  if (evt instanceof MouseEvent || evt instanceof PointerEvent) {
     return {
       x: evt.offsetX,
       y: evt.offsetY,
@@ -27,8 +27,8 @@ export function getOffsetPosition(evt: MouseEvent | TouchEvent, parent?: HTMLEle
  * @param evt
  * @returns
  */
-export function getPointerPosition(evt: MouseEvent | TouchEvent): IPosition {
-  if (evt instanceof MouseEvent) {
+export function getPointerPosition(evt: MouseEvent | TouchEvent | PointerEvent): IPosition {
+  if (evt instanceof MouseEvent || evt instanceof PointerEvent) {
     return {
       x: evt.pageX,
       y: evt.pageY,
@@ -41,8 +41,8 @@ export function getPointerPosition(evt: MouseEvent | TouchEvent): IPosition {
     };
   }
 }
-export function getPointerPositionOnViewPort(evt: MouseEvent | TouchEvent): IPosition {
-  if (evt instanceof MouseEvent) {
+export function getPointerPositionOnViewPort(evt: MouseEvent | TouchEvent | PointerEvent): IPosition {
+  if (evt instanceof MouseEvent || evt instanceof PointerEvent) {
     return {
       x: evt.clientX,
       y: evt.clientY,

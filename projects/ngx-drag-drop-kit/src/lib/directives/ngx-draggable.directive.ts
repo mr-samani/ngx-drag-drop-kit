@@ -13,7 +13,7 @@ import {
   RendererStyleFlags2,
   DOCUMENT,
 } from '@angular/core';
-import { Subscription, fromEvent } from 'rxjs';
+import { Subscription, asyncScheduler, debounceTime, fromEvent, throttle, throttleTime } from 'rxjs';
 import { getPointerPosition, getPointerPositionOnViewPort } from '../../utils/get-position';
 import { checkBoundX, checkBoundY } from '../../utils/check-boundary';
 import { NgxDropListDirective } from './ngx-drop-list.directive';
@@ -32,12 +32,16 @@ export const NGX_DROP_LIST = new InjectionToken<NgxDropListDirective>('NgxDropLi
   selector: '[ngxDraggable]',
   standalone: true,
   exportAs: 'NgxDraggable',
+  host: {
+    '[style.touch-action]': '"none"', // CRITICAL: Always disable touch actions
+  },
 })
 export class NgxDraggableDirective extends DragItemRef implements OnDestroy, AfterViewInit {
   private boundaryDomRect?: DOMRect;
   @Input() boundary?: HTMLElement;
 
   @Input() dragRootElement = '';
+
   @Output() dragStart = new EventEmitter<IPosition>();
   @Output() dragMove = new EventEmitter<IPosition>();
   @Output() dragEnd = new EventEmitter<IPosition>();
@@ -144,12 +148,14 @@ export class NgxDraggableDirective extends DragItemRef implements OnDestroy, Aft
 
   initDragHandler() {
     this.startSubscriptions = [
-      (fromEvent<MouseEvent>(this.el, 'mousedown').subscribe(ev => this.onMouseDown(ev)),
-      fromEvent<TouchEvent>(this.el, 'touchstart').subscribe(ev => this.onMouseDown(ev))),
+      fromEvent<PointerEvent>(this.el, 'pointerdown', { passive: false })
+        // debounceTime needed to delay for resolving conflict between resize and drag on touch screens
+        .pipe(debounceTime(0))
+        .subscribe(ev => this.onPointerDown(ev)),
     ];
   }
 
-  onEndDrag(ev: MouseEvent | TouchEvent) {
+  onEndDrag(ev: PointerEvent) {
     if (this.dragging) {
       this.dragService.stopDrag(this);
       this.dragEnd.emit({ x: this.x, y: this.y });
@@ -160,9 +166,10 @@ export class NgxDraggableDirective extends DragItemRef implements OnDestroy, Aft
     this.subscriptions.forEach(sub => sub.unsubscribe());
   }
 
-  onMouseDown(ev: MouseEvent | TouchEvent) {
-    const isLeftClick = ev instanceof MouseEvent ? ev.button === 0 : true;
-    if (!isLeftClick) return;
+  onPointerDown(ev: PointerEvent) {
+    if (ev.button !== 0) return;
+    const resizing = this.el.getAttribute('resizing') == 'true';
+    if (resizing) return;
     ev.preventDefault();
     ev.stopPropagation();
     const styles = getComputedStyle(this.el);
@@ -175,14 +182,13 @@ export class NgxDraggableDirective extends DragItemRef implements OnDestroy, Aft
     this.init();
     this.subscriptions.forEach(sub => sub.unsubscribe());
     this.subscriptions = [
-      fromEvent<MouseEvent>(this.doc, 'mousemove').subscribe(ev => this.onMouseMove(ev)),
-      fromEvent<TouchEvent>(this.doc, 'touchmove', { passive: false }).subscribe(ev => this.onMouseMove(ev)),
-      fromEvent<PointerEvent>(window, 'pointerup', { capture: true }).subscribe(ev => this.onEndDrag(ev)),
-      fromEvent<PointerEvent>(window, 'pointercancel', { capture: true }).subscribe(ev => this.onEndDrag(ev)),
+      fromEvent<PointerEvent>(this.doc, 'pointermove', { passive: false }).subscribe(ev => this.onPointerMove(ev)),
+      fromEvent<PointerEvent>(window, 'pointerup', { passive: false }).subscribe(ev => this.onEndDrag(ev)),
+      fromEvent<PointerEvent>(window, 'pointercancel', { passive: false }).subscribe(ev => this.onEndDrag(ev)),
     ];
   }
 
-  onMouseMove(ev: MouseEvent | TouchEvent) {
+  onPointerMove(ev: PointerEvent) {
     let p = getPointerPositionOnViewPort(ev);
     this.dragService.getPointerElement(p);
 

@@ -21,6 +21,11 @@
         </div>
       </div>
     </div>
+    <!-- Resize Event Log -->
+    <div class="log">
+      <h3>Event Log</h3>
+      <pre>{{ eventLog }}</pre>
+    </div>
   </div>
 
   <!-- Example 2: Limited Corners -->
@@ -175,27 +180,5 @@
         </div>
       </div>
     </div>
-  </div>
-
-  <!-- Example 10: Dynamic Content -->
-  <div class="example">
-    <h3>10. With Dynamic Content</h3>
-    <div class="boundary">
-      <div ngxResizable class="resizable-box" style="width: 300px; height: 200px; overflow: auto">
-        <div class="content" style="padding: 15px">
-          <h4>Scrollable Content</h4>
-          <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
-          <p>Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
-          <p>Ut enim ad minim veniam, quis nostrud exercitation ullamco.</p>
-          <button (click)="addContent()">Add More Content</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Resize Event Log -->
-  <div class="log">
-    <h3>Event Log</h3>
-    <pre>{{ eventLog }}</pre>
   </div>
 </div>
