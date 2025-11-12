@@ -143,6 +143,7 @@ export class NgxDropListDirective<T = any> implements IDropList, OnInit, AfterVi
 
     this.renderer.addClass(el, 'ngx-draggable');
     this.renderer.setStyle(el, 'display', 'inline-block');
+    // width = 0 important for RTL
     this.renderer.setStyle(el, 'width', `${0}px`);
     this.renderer.setStyle(el, 'z-index', '9999', RendererStyleFlags2.Important);
     this.renderer.setStyle(el, 'pointer-events', 'none', RendererStyleFlags2.Important);

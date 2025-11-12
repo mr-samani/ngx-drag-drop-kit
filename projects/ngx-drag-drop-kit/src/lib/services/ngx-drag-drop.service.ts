@@ -195,11 +195,13 @@ export class NgxDragDropService {
     if (endPosition) {
       delay = 150;
       this.renderer.setStyle(this.dragElementInBody, 'transition', 'transform 150ms cubic-bezier(0,0,0.2,1)');
-      this.renderer.setStyle(
-        this.dragElementInBody,
-        'transform',
-        `translate3d(${endPosition.x + window.scrollX}px, ${endPosition.y + window.scrollY}px, 0)`
-      );
+      const isRtl = drag.dropList?.isRtl;
+      let nx = endPosition.x + window.scrollX;
+      let ny = endPosition.y + window.scrollY;
+      if (isRtl) {
+        nx = endPosition.right + window.scrollX - drag.domRect.width;
+      }
+      this.renderer.setStyle(this.dragElementInBody, 'transform', `translate3d(${nx}px, ${ny}px, 0)`);
     }
 
     setTimeout(() => {
@@ -281,9 +283,9 @@ export class NgxDragDropService {
   getPointerElement(pointer: IPosition) {
     let pe = document.querySelector('.ngxpointer');
     if (!pe) return;
-    let x = pointer.x + window.scrollX;
-    let y = pointer.y + window.scrollY;
-    pe!.innerHTML = `${x},${y}(${pointer.x},${pointer.y})`;
+    let x = Math.round(pointer.x + window.scrollX);
+    let y = Math.round(pointer.y + window.scrollY);
+    pe!.innerHTML = `${x},${y}(${Math.round(pointer.x)},${Math.round(pointer.y)})`;
     this.renderer.setStyle(pe, 'transform', `translate3d(${x}px,${y}px,0)`);
   }
 }

@@ -122,6 +122,9 @@ export class NgxDragPlaceholderService {
     }
 
     this.state.rect = this.state.element.getBoundingClientRect();
+    if (this.state.rect.width < 5 && this.state.rect.height < 5) {
+      this.renderer.setStyle(this.state.element, 'width', '100%');
+    }
     // this.state.index = this.getVisibleDragItems(destinationDropList.el)
     //   .filter((x) => x != dragItem.el)
     //   .indexOf(this.state.element);
