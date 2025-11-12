@@ -100,6 +100,7 @@ export class NgxDraggableDirective extends DragItemRef implements OnDestroy, Aft
   }
 
   ngAfterViewInit(): void {
+    // important: drag handler must be after resizable handler
     this.initDragHandler();
     this.findFirstParentDragRootElement();
     this.isFullRow = isFullRowElement(this.el);

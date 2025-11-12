@@ -24,7 +24,7 @@
       (drop)="drop($event)"
       [connectedTo]="[deleteZone]">
       @for (item of targetList; track item.id) {
-        <div class="example-box" ngxDraggable ngxResizable (click)="onClick(item)" [id]="item.id">
+        <div class="example-box" ngxDraggable (click)="onClick(item)" [id]="item.id">
           {{ item.title }}
         </div>
       }

@@ -285,6 +285,7 @@ export class NgxDragDropService {
    * @param pointer view port pointer (clientX,clientY)
    */
   getPointerElement(pointer: IPosition) {
+    if (!isDevMode()) return;
     let pe = document.querySelector('.ngxpointer');
     if (!pe) return;
     let x = Math.round(pointer.x + window.scrollX);
