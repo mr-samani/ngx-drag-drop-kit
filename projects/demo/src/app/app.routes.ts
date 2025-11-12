@@ -12,9 +12,9 @@ import { DynamicHtmlComponent } from './dynamic-html/dynamic-html.component';
 import { ResizableDemoComponent } from './resize/resize.component';
 
 export const routes: Routes = [
-  { path: 'test', component: TestComponent },
+  { path: '', redirectTo: 'kanban', pathMatch: 'full' },
+  // { path: 'test', component: TestComponent },
   { path: '', redirectTo: 'dynamic-html', pathMatch: 'full' },
-  //{ path: '', redirectTo: 'drag-drop', pathMatch: 'full' },
   { path: 'drag-resize', component: DragResizeComponent },
   { path: 'resize', component: ResizableDemoComponent },
   { path: 'sort-list', component: SortListComponent },

@@ -1,7 +1,0 @@
-- clone drag item to body with position fixed
-- set class is-dragging to current drag item (opacity , filter grayscale)
-- set dragging item to position absolute
-- add placeholder to dragitem position
-- get current position by pointer location on drag over item 
-- detect dragover item is full row or inline 
-- update placeholder position 
