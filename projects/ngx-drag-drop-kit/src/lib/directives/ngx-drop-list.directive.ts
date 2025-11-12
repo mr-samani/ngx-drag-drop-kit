@@ -109,7 +109,10 @@ export class NgxDropListDirective<T = any> implements IDropList, OnInit, AfterVi
   }
 
   registerDragItem(drag: DragItemRef) {
-    this.dragItems.push(drag);
+    const finded = this.dragItems.findIndex(x => x == drag);
+    if (finded === -1) {
+      this.dragItems.push(drag);
+    }
   }
   removeDragItem(drag: DragItemRef) {
     let indx = this.dragItems.findIndex(x => x == drag);

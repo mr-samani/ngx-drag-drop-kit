@@ -39,7 +39,10 @@ export class NgxDragRegisterService {
       throw new Error('DropList must have an element');
     }
     this.dropListMap.set(dropList.el, dropList);
-    this.dropListArray.push(dropList);
+    let finded = this.dropListArray.findIndex(x => x == dropList);
+    if (finded === -1) {
+      this.dropListArray.push(dropList);
+    }
   }
 
   removeDropList(dropList: IDropList): void {
