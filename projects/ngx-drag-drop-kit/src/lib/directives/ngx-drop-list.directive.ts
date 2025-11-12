@@ -3,6 +3,7 @@ import {
   ApplicationRef,
   ContentChild,
   Directive,
+  effect,
   ElementRef,
   EmbeddedViewRef,
   EventEmitter,
@@ -21,6 +22,7 @@ import { NgxPlaceholderDirective } from './ngx-place-holder.directive';
 import { NgxDragRegisterService } from '../services/ngx-drag-register.service';
 import { IDropList } from '../../interfaces/IDropList';
 import { DragItemRef } from './DragItemRef';
+import { NgxDragDropService } from '../services/ngx-drag-drop.service';
 @Directive({
   selector: '[ngxDropList]',
   host: {
@@ -45,23 +47,10 @@ export class NgxDropListDirective<T = any> implements IDropList, OnInit, AfterVi
   }
 
   @Output() drop = new EventEmitter<IDropEvent>();
+  @Output() enter = new EventEmitter<boolean>();
+
   el: HTMLElement;
-  _dragging: boolean = false;
-  set dragging(val: boolean) {
-    this._dragging = val == true;
-    if (this._dragging) {
-      this.renderer.setStyle(this.el, 'scroll-snap-type', 'none', RendererStyleFlags2.Important);
-      this.renderer.setStyle(this.el, 'user-select', 'none');
-      this.renderer.addClass(this.el, 'dragging');
-    } else {
-      this.renderer.removeStyle(this.el, 'scroll-snap-type');
-      this.renderer.removeStyle(this.el, 'user-select');
-      this.renderer.removeClass(this.el, 'dragging');
-    }
-  }
-  get dragging() {
-    return this._dragging;
-  }
+
   isFlexWrap = false;
   initCursor = '';
   isRtl = false;
@@ -77,10 +66,24 @@ export class NgxDropListDirective<T = any> implements IDropList, OnInit, AfterVi
   private readonly elRef = inject(ElementRef);
   private readonly appRef = inject(ApplicationRef);
   private readonly renderer = inject(Renderer2);
+  private readonly dragDropService = inject(NgxDragDropService);
   constructor() {
     this.el = this.elRef.nativeElement;
     this.initCursor = this.el.style.cursor;
     this.el.classList.add('ngx-drop-list');
+
+    effect(() => {
+      let isDragging = this.dragDropService.isDragging();
+      if (isDragging) {
+        this.renderer.setStyle(this.el, 'scroll-snap-type', 'none', RendererStyleFlags2.Important);
+        this.renderer.setStyle(this.el, 'user-select', 'none');
+        this.renderer.addClass(this.el, 'dragging');
+      } else {
+        this.renderer.removeStyle(this.el, 'scroll-snap-type');
+        this.renderer.removeStyle(this.el, 'user-select');
+        this.renderer.removeClass(this.el, 'dragging');
+      }
+    });
   }
 
   ngOnInit(): void {
@@ -179,5 +182,14 @@ export class NgxDropListDirective<T = any> implements IDropList, OnInit, AfterVi
       return found;
     }
     return true;
+  }
+
+  setInter(val: boolean) {
+    if (val) {
+      this.renderer.setStyle(this.el, 'outline', '2px solid #00afff');
+    } else {
+      this.renderer.setStyle(this.el, 'outline', '');
+    }
+    this.enter.emit(val);
   }
 }

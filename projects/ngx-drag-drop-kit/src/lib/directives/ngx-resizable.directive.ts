@@ -14,6 +14,7 @@ import { checkBoundX, checkBoundY } from '../../utils/check-boundary';
 import { IResizableOutput } from '../../interfaces/IResizableOutput';
 import { fromEvent, Subscription } from 'rxjs';
 import { filter } from 'rxjs';
+import { InteractionLockService } from '../services/interaction-lock.service';
 export declare type Corner =
   | 'top'
   | 'right'
@@ -56,7 +57,7 @@ export class NgxResizableDirective implements OnInit, OnDestroy {
    * Pixel size for corner detection
    */
   @Input() cornerSize = 10;
-  @Input() enableKeyboard = false;
+  @Input() enableKeyboard = true;
 
   handlerStyle = '';
   @Input() corners: Corner[] = ['top', 'right', 'left', 'bottom', 'topLeft', 'topRight', 'bottomLeft', 'bottomRight'];
@@ -99,9 +100,11 @@ export class NgxResizableDirective implements OnInit, OnDestroy {
   private readonly elRef = inject(ElementRef<HTMLElement>);
   private readonly renderer = inject(Renderer2);
   private readonly doc = inject(DOCUMENT);
+  private readonly interaction = inject(InteractionLockService);
 
   constructor() {
     this.el = this.elRef.nativeElement;
+    this.initHandler(); // Initialize all handlers at once
   }
 
   ngOnInit(): void {
@@ -117,7 +120,6 @@ export class NgxResizableDirective implements OnInit, OnDestroy {
     // Add corner indicators with CSS only
     this.addCornerStyles();
     this.init();
-    this.initHandler(); // Initialize all handlers at once
 
     // Setup keyboard support
     if (this.enableKeyboard) {
@@ -168,6 +170,8 @@ export class NgxResizableDirective implements OnInit, OnDestroy {
   }
 
   onPointerDown(event: PointerEvent) {
+    debugger;
+
     // Only handle left click or touch
     if (event.button !== 0) return;
 
@@ -176,6 +180,7 @@ export class NgxResizableDirective implements OnInit, OnDestroy {
 
     // Start resizing
     this.resizing = true;
+    this.interaction.startResizing();
     this.currentCorner = corner;
 
     // Store original aspect ratio if shift is pressed or aspectRatio is set
@@ -218,7 +223,7 @@ export class NgxResizableDirective implements OnInit, OnDestroy {
   }
 
   private onPointerMove(event: PointerEvent) {
-    console.log('pointer move');
+    // console.log('pointer move');
     if (!this.resizing) return;
 
     event.preventDefault();
@@ -253,6 +258,7 @@ export class NgxResizableDirective implements OnInit, OnDestroy {
     });
 
     this.resizing = false;
+    this.interaction.stopResizing();
     this.currentCorner = null;
   }
 
@@ -401,8 +407,8 @@ export class NgxResizableDirective implements OnInit, OnDestroy {
         const step = ev.shiftKey ? 10 : 1;
 
         // Handle RTL for keyboard
-        const leftKey = this.isRtl ? 'ArrowRight' : 'ArrowLeft';
-        const rightKey = this.isRtl ? 'ArrowLeft' : 'ArrowRight';
+        const leftKey = this.isRtl && !this.isAbsoluteOrFixed ? 'ArrowRight' : 'ArrowLeft';
+        const rightKey = this.isRtl && !this.isAbsoluteOrFixed ? 'ArrowLeft' : 'ArrowRight';
 
         if (ev.key === rightKey) {
           this.width = Math.min(this.width + step, this.maxWidth || Infinity);

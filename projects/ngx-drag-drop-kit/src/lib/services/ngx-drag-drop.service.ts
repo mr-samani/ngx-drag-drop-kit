@@ -6,6 +6,7 @@ import {
   RendererFactory2,
   RendererStyleFlags2,
   DOCUMENT,
+  signal,
 } from '@angular/core';
 import { IDropEvent } from '../../interfaces/IDropEvent';
 
@@ -29,7 +30,7 @@ import { cloneDragElementInBody } from '../../utils/clone-drag-element-in-body';
   providedIn: 'root',
 })
 export class NgxDragDropService {
-  isDragging = false;
+  isDragging = signal(false);
 
   private _activeDragInstances: DragItemRef[] = [];
   private activeDropList?: IDropList;
@@ -62,12 +63,12 @@ export class NgxDragDropService {
   }
 
   startDrag(drag: DragItemRef) {
-    if (!drag.dropList || this.isDragging) {
+    if (!drag.dropList || this.isDragging()) {
       return;
     }
     this.activeDropList = drag.dropList;
 
-    this.isDragging = true;
+    this.isDragging.set(true);
     this.activeDropList.dragging = true;
 
     this.dragRegister.updateAllDragItemsRect();
@@ -164,8 +165,9 @@ export class NgxDragDropService {
     const dragOverItem = dragOverData.dragItem;
 
     if (desDropList.disableSort) return;
-
+    desDropList.setInter(true);
     if (this.activeDropList !== desDropList) {
+      this.activeDropList?.setInter(false);
       let overDragItem = dragOverData.dragItem;
       this.activeDropList = desDropList;
       this.placeholderService.createPlaceholder(desDropList, this._activeDragInstances[0], overDragItem);
@@ -184,12 +186,14 @@ export class NgxDragDropService {
     });
   }
   stopDrag(drag: DragItemRef) {
-    if (this.isDragging == false) return;
-    this.isDragging = false;
+    if (this.isDragging() == false) return;
+    this.isDragging.set(false);
     //const currentIndex = this.activeDropList?.isFlexWrap ? this.placeholderService.state.index : this._newIndex;
     const currentIndex = this._newIndex;
-
-    if (drag.dropList) drag.dropList.dragging = false;
+    this.activeDropList?.setInter(false);
+    if (drag.dropList) {
+      drag.dropList.dragging = false;
+    }
     let delay = 0;
     let endPosition = this.placeholderService.getPlaceholderPosition();
     if (endPosition) {

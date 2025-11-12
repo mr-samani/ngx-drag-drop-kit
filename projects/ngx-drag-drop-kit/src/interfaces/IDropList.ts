@@ -19,4 +19,6 @@ export interface IDropList<T = any> {
   onDrop(_dropEvent: IDropEvent<any>): unknown;
   dragging?: boolean;
   data?: T;
+
+  setInter(val: boolean): void;
 }

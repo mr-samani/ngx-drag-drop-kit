@@ -3,7 +3,6 @@ import {
   Directive,
   ElementRef,
   EventEmitter,
-  Inject,
   inject,
   InjectionToken,
   Input,
@@ -13,7 +12,7 @@ import {
   RendererStyleFlags2,
   DOCUMENT,
 } from '@angular/core';
-import { Subscription, asyncScheduler, debounceTime, fromEvent, throttle, throttleTime } from 'rxjs';
+import { Subscription, fromEvent } from 'rxjs';
 import { getPointerPosition, getPointerPositionOnViewPort } from '../../utils/get-position';
 import { checkBoundX, checkBoundY } from '../../utils/check-boundary';
 import { NgxDropListDirective } from './ngx-drop-list.directive';
@@ -26,6 +25,7 @@ import { NgxDragRegisterService } from '../services/ngx-drag-register.service';
 import { AutoScrollService } from '../services/auto-scroll.service';
 import { DragItemRef } from './DragItemRef';
 import { isFullRowElement } from '../../utils/element-is-full-row';
+import { InteractionLockService } from '../services/interaction-lock.service';
 export const NGX_DROP_LIST = new InjectionToken<NgxDropListDirective>('NgxDropList');
 
 @Directive({
@@ -69,7 +69,6 @@ export class NgxDraggableDirective extends DragItemRef implements OnDestroy, Aft
       this.renderer.removeStyle(this.el, 'pointer-events');
       this.renderer.removeStyle(this.el, 'cursor');
       this.renderer.removeStyle(this.el, 'z-index');
-      this.renderer.removeStyle(this.el, 'touch-action');
       this.renderer.removeStyle(this.el, '-webkit-user-drag');
       this.renderer.removeStyle(this.el, '-webkit-tap-highlight-color');
       this.renderer.removeStyle(this.el, 'will-change');
@@ -93,14 +92,15 @@ export class NgxDraggableDirective extends DragItemRef implements OnDestroy, Aft
   private readonly dragRegister = inject(NgxDragRegisterService);
   private readonly dragService = inject(NgxDragDropService);
   private readonly autoScroll = inject(AutoScrollService);
+  private readonly interaction = inject(InteractionLockService);
 
   constructor(elRef: ElementRef) {
     super(elRef.nativeElement);
     this.el = elRef.nativeElement;
-    this.initDragHandler();
   }
 
   ngAfterViewInit(): void {
+    this.initDragHandler();
     this.findFirstParentDragRootElement();
     this.isFullRow = isFullRowElement(this.el);
     this.init();
@@ -148,10 +148,7 @@ export class NgxDraggableDirective extends DragItemRef implements OnDestroy, Aft
 
   initDragHandler() {
     this.startSubscriptions = [
-      fromEvent<PointerEvent>(this.el, 'pointerdown', { passive: false })
-        // debounceTime needed to delay for resolving conflict between resize and drag on touch screens
-        .pipe(debounceTime(0))
-        .subscribe(ev => this.onPointerDown(ev)),
+      fromEvent<PointerEvent>(this.el, 'pointerdown', { passive: false }).subscribe(ev => this.onPointerDown(ev)),
     ];
   }
 
@@ -168,8 +165,7 @@ export class NgxDraggableDirective extends DragItemRef implements OnDestroy, Aft
 
   onPointerDown(ev: PointerEvent) {
     if (ev.button !== 0) return;
-    const resizing = this.el.getAttribute('resizing') == 'true';
-    if (resizing) return;
+    if (this.interaction.isResizing()) return;
     ev.preventDefault();
     ev.stopPropagation();
     const styles = getComputedStyle(this.el);
