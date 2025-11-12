@@ -6,6 +6,8 @@
 [![GitHub stars](https://img.shields.io/github/stars/mr-samani/ngx-drag-drop-kit?style=flat-square)](https://github.com/mr-samani/ngx-drag-drop-kit/stargazers)
 [![Sponsor](https://img.shields.io/badge/Sponsor-%E2%9D%A4-red?style=flat-square)](#-support--sponsor)
 
+
+[Live Demo](https://mr-samani.github.io/ngx-drag-drop-kit/)
 ---
 
 ## ✨ Features
@@ -117,7 +119,7 @@ Supports multi-level tree-like structures with drag & drop:
 ```html
 <ng-template #tree let-items>
   <div ngxDropList [data]="items" (drop)="drop($event)">
-    <div *ngxPlaceholder class="custom-placeholder"></div>
+    <!-- <div *ngxPlaceholder class="custom-placeholder"></div> -->
     <div ngxDraggable *ngFor="let item of items">
       {{ item.name }}
       <ng-container *ngIf="item.children">

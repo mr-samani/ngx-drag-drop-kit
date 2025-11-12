@@ -1,0 +1,26 @@
+<div
+  ngxDropList
+  class="example-list"
+  (drop)="drop($event, items)"
+  id="el_baseList"
+  #baseList
+  [connectedTo]="[baseList]">
+  <!-- <span class="placeholder" *ngxPlaceholder></span> -->
+
+  @for (item of items; track $index) {
+    @switch (item.tag) {
+      @case ('div') {
+        <div class="box" ngxDraggable [id]="item.title">{{ item.title }}</div>
+      }
+      @case ('input') {
+        <input type="email" ngxDraggable [value]="item.title" [id]="item.title" />
+      }
+      @case ('button') {
+        <button ngxDraggable [id]="item.title">{{ item.title }}</button>
+      }
+    }
+  }
+</div>
+<!-- <pre>{{ items | json }}</pre> -->
+
+<div class="ngxpointer"></div>

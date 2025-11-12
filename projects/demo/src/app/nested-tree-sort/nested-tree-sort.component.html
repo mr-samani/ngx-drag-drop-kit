@@ -1,27 +1,25 @@
-<ng-container [ngTemplateOutlet]="tree" [ngTemplateOutletContext]="{ $implicit: items }"></ng-container>
+<ng-container [ngTemplateOutlet]="tree" [ngTemplateOutletContext]="{ $implicit: items, level: 0 }"></ng-container>
 
 <button (click)="add()">add</button>
 
-<ng-template #tree let-items>
-  <div
-    ngxDropList
-    class="example-list"
-    (drop)="drop($event)"
-    [data]="items"
-    *ngIf="items && items.length > 0"
-    id="base">
-    <div class="custom-placeholder2" *ngxPlaceholder></div>
+<ng-template #tree let-items let-level="level" let-class="class">
+  <div ngxDropList class="example-list" [ngClass]="class" (drop)="drop($event)" [data]="items" id="level_{{ level }}">
+    <!-- <div class="custom-placeholder2" *ngxPlaceholder></div> -->
     @for (item of items; track item) {
-    <div class="example-box" ngxDraggable [id]="item.name">
-      <div>{{ item.name }}</div>
-      <div class="children" ngxDropList (drop)="drop($event)" [data]="item.children" [id]="'child_' + item.name">
-        <div class="custom-placeholder" *ngxPlaceholder></div>
-        <ng-container
-          *ngIf="item.children"
-          [ngTemplateOutlet]="tree"
-          [ngTemplateOutletContext]="{ $implicit: item.children }"></ng-container>
+      <div class="example-box" ngxDraggable [id]="item.name">
+        <div>{{ item.name }}</div>
+        @if (item.children) {
+          <ng-container
+            [ngTemplateOutlet]="tree"
+            [ngTemplateOutletContext]="{
+              $implicit: item.children,
+              level: level + 1,
+              class: 'children',
+            }"></ng-container>
+        }
       </div>
-    </div>
     }
   </div>
 </ng-template>
+<div class="ngxpointer"></div>
+<pre>{{ items | json }}</pre>

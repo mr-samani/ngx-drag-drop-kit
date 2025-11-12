@@ -18,4 +18,3 @@ export class FakeItem {
   w!: number;
   h!: number;
 }
-

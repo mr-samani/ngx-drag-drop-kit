@@ -5,7 +5,7 @@
     "ng": "ng",
     "start": "ng serve --open --port=8545",
     "build": "ng build --project=demo",
-
+    "buildDemo": "ng build demo --base-href /ngx-drag-drop-kit/  --output-path ./docs",
     "link:lib": "cd dist/ngx-drag-drop-kit && npm link",
     "link:app": "cd projects/sandbox && npm link ngx-drag-drop-kit",
     "link:all": "npm run link:lib && npm run link:app",
@@ -20,28 +20,32 @@
     "pack:lib": "cd dist/ngx-drag-drop-kit && npm pack",
     "lib:all": "npm run build:all && npm run pack:lib",
     "publish:all": "npm run lib:all && npm publish dist/ngx-drag-drop-kit",
+    "publish:beta": "npm run lib:all && npm publish --tag beta dist/ngx-drag-drop-kit",
     "publish:local": "npm run lib:all && npm publish dist/ngx-drag-drop-kit --registry http://localhost:4873",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "ng test",
+    "test-headless": "ng test --no-watch --no-progress --browsers=ChromeHeadless --project=ngx-drag-drop-kit",
+    "test-covrage": "ng test --no-watch --code-coverage  --no-progress --browsers=ChromeHeadless --project=ngx-drag-drop-kit",
+    "format": "prettier --write \".//projects//**//*.{ts,html,css,scss}\" "
   },
   "private": true,
   "dependencies": {
-    "@angular/animations": "^18.0.0",
-    "@angular/common": "^18.0.0",
-    "@angular/compiler": "^18.0.0",
-    "@angular/core": "^18.0.0",
-    "@angular/forms": "^18.0.0",
-    "@angular/platform-browser": "^18.0.0",
-    "@angular/platform-browser-dynamic": "^18.0.0",
-    "@angular/router": "^18.0.0",
+    "@angular/animations": "^20.3.10",
+    "@angular/common": "^20.3.10",
+    "@angular/compiler": "^20.3.10",
+    "@angular/core": "^20.3.10",
+    "@angular/forms": "^20.3.10",
+    "@angular/platform-browser": "^20.3.10",
+    "@angular/platform-browser-dynamic": "^20.3.10",
+    "@angular/router": "^20.3.10",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
-    "zone.js": "~0.14.3"
+    "zone.js": "~0.15.1"
   },
   "devDependencies": {
-    "@angular-devkit/build-angular": "^18.0.1",
-    "@angular/cli": "^18.0.1",
-    "@angular/compiler-cli": "^18.0.0",
+    "@angular/build": "^20.3.9",
+    "@angular/cli": "^20.3.9",
+    "@angular/compiler-cli": "^20.3.10",
     "@types/jasmine": "~5.1.0",
     "jasmine-core": "~5.1.0",
     "karma": "~6.4.0",
@@ -49,7 +53,8 @@
     "karma-coverage": "~2.2.0",
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "~2.1.0",
-    "ng-packagr": "^18.0.0",
-    "typescript": "~5.4.2"
+    "ng-packagr": "^20.3.0",
+    "prettier": "^3.6.2",
+    "typescript": "~5.8.3"
   }
 }

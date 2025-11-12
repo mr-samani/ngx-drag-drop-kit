@@ -1,8 +1,16 @@
-import { ComponentRef, Inject, Injectable, Renderer2, RendererFactory2, ViewContainerRef } from '@angular/core';
+import {
+  ComponentRef,
+  Inject,
+  Injectable,
+  Renderer2,
+  RendererFactory2,
+  ViewContainerRef,
+  DOCUMENT,
+} from '@angular/core';
 import { GridLayoutOptions } from '../options/options';
 import { GridItemComponent } from '../grid-item/grid-item.component';
 import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
-import { DOCUMENT } from '@angular/common';
+
 import {
   collides,
   getAllCollisions,
@@ -18,7 +26,7 @@ import {
   sortGridItems,
 } from '../utils/grid.utils';
 import { FakeItem, GridItemConfig } from '../options/gride-item-config';
-import { LayoutOutput } from "../options/layout-output";
+import { LayoutOutput } from '../options/layout-output';
 import { mergeDeep } from '../../../utils/deep-merge';
 import { GridLayoutComponent } from '../grid-layout/grid-layout.component';
 
@@ -36,10 +44,10 @@ export class GridLayoutService {
   private placeHolderRef?: ComponentRef<GridItemComponent>;
 
   private updatePlaceholderPosition$ = new Subject<FakeItem>();
-  private _renderer: Renderer2;
+  private renderer: Renderer2;
 
   constructor(rendererFactory: RendererFactory2) {
-    this._renderer = rendererFactory.createRenderer(null, null);
+    this.renderer = rendererFactory.createRenderer(null, null);
     this.updatePlaceholderPosition$
       .pipe(
         distinctUntilChanged((prev, curr) => {
@@ -50,7 +58,7 @@ export class GridLayoutService {
         }),
         debounceTime(10)
       )
-      .subscribe((input) => {
+      .subscribe(input => {
         this.updatePlaceholderPosition(input);
       });
   }
@@ -127,13 +135,11 @@ export class GridLayoutService {
 
   onMoveOrResizeEnd(item: GridItemComponent) {
     this.placeHolderRef?.destroy();
-    if (!this.placeHolder) {
-      // this.updateGridItem(item);
-      return;
+    if (this.placeHolder) {
+      item.config = this.placeHolder.config;
     }
-    item.config = this.placeHolder.config;
     this.updateGridItem(item);
-    this._renderer.setStyle(item.el, 'transform', '');
+    this.renderer.setStyle(item.el, 'transform', '');
     this.placeHolder = undefined;
     // todo: if pushOnDrag config is on -> no need to checkCollisson in end drag
     this.cehckCollesions({ ...item.config, id: item.id });
@@ -165,9 +171,9 @@ export class GridLayoutService {
    */
   private updatePlaceholderPosition(fakeItem: FakeItem) {
     // console.log(input);
-    if (this._options.pushOnDrag) {
-      this.cehckCollesions(fakeItem);
-    }
+    // if (this._options.pushOnDrag) {
+    // 	this.cehckCollesions(fakeItem);
+    // }
 
     if (!this.placeHolderRef || !this.placeHolder) {
       this.placeHolderRef = this._placeholderContainerRef.createComponent(GridItemComponent);

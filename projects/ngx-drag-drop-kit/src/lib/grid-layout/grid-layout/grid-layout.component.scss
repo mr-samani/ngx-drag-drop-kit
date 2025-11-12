@@ -17,7 +17,8 @@ grid-layout {
     z-index: 0;
     transition: opacity 0.2s;
     // opacity: 0;
-    background-image: repeating-linear-gradient(
+    background-image:
+      repeating-linear-gradient(
         var(--border-color) 0 var(--border-width),
         var(--row-color) var(--border-width) calc(var(--row-height) - var(--border-width)),
         var(--border-color) calc(var(--row-height) - var(--border-width)) calc(var(--row-height)),
@@ -40,7 +41,7 @@ grid-layout {
   z-index: 0;
   transition-property: transform;
   transition: all 150ms ease !important;
-
+  pointer-events: none;
   &-default {
     opacity: 0.5;
     background-color: #6e02fc;

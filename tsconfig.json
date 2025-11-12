@@ -2,36 +2,33 @@
 {
   "compileOnSave": false,
   "compilerOptions": {
-    "outDir": "./dist/out-tsc",
     "strict": true,
     "noImplicitOverride": true,
     "noPropertyAccessFromIndexSignature": true,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
     "skipLibCheck": true,
-    "paths": {
-      "ngx-drag-drop-kit": [
-        "./dist/ngx-drag-drop-kit"
-      ]
-    },
-    "esModuleInterop": true,
-    "sourceMap": true,
-    "declaration": false,
+    "isolatedModules": true,
     "experimentalDecorators": true,
-    "moduleResolution": "bundler",
     "importHelpers": true,
     "target": "ES2022",
-    "module": "ES2022",
-    "useDefineForClassFields": false,
-    "lib": [
-      "ES2022",
-      "dom"
-    ]
+    "module": "preserve",
+    "paths": {
+      "ngx-drag-drop-kit": ["./dist/ngx-drag-drop-kit"]
+    }
   },
   "angularCompilerOptions": {
     "enableI18nLegacyMessageIdFormat": false,
     "strictInjectionParameters": true,
     "strictInputAccessModifiers": true,
+    "typeCheckHostBindings": true,
     "strictTemplates": true
-  }
+  },
+  "files": [],
+  "references": [
+    { "path": "./projects/demo/tsconfig.app.json" },
+    { "path": "./projects/demo/tsconfig.spec.json" },
+    { "path": "./projects/ngx-drag-drop-kit/tsconfig.lib.json" },
+    { "path": "./projects/ngx-drag-drop-kit/tsconfig.spec.json" }
+  ]
 }

@@ -1,4 +1,3 @@
-
 export interface IResizableOutput {
   width: number;
   height: number;

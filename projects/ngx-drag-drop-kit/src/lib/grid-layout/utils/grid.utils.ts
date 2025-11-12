@@ -59,7 +59,7 @@ export function gridHToScreenHeight(cellHeight: number, h: number, gap: number) 
 
 /*------------------------------------------------------------------------------*/
 export function getAllCollisions(gridItems: GridItemComponent[], item: FakeItem): Array<GridItemComponent> {
-  return gridItems.filter((l) => collides(l, item));
+  return gridItems.filter(l => collides(l, item));
 }
 
 export function getFirstCollision(gridItems: GridItemComponent[], item: FakeItem): GridItemComponent | null {

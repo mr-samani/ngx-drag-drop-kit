@@ -1,3 +1,5 @@
+import { NgxDraggableDirective, NgxDropListDirective } from '../public-api';
+
 export abstract class ElementHelper {
   private static collectionHas(a: NodeListOf<Element>, b: ParentNode) {
     //helper function (see below)
@@ -18,7 +20,7 @@ export abstract class ElementHelper {
 }
 
 export function getFirstLevelDraggables(container: HTMLElement): HTMLElement[] {
-  const all = Array.from(container.querySelectorAll<HTMLElement>('.ngx-draggable'));
+  const all = Array.from(container.querySelectorAll<HTMLElement>('.ngx-draggable:not(.dragging)'));
   const firstLevel: HTMLElement[] = [];
 
   for (const el of all) {

@@ -1,7 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
-import { NgxDragDropKitModule, transferArrayItem } from '../../../../ngx-drag-drop-kit/src/public-api';
-import { IDropEvent } from '../../../../ngx-drag-drop-kit/src/interfaces/IDropEvent';
+import { IDropEvent, NgxDragDropKitModule, transferArrayItem } from '@ngx-drag-drop-kit';
 
 export interface TreeModel {
   name: string;
@@ -10,22 +9,63 @@ export interface TreeModel {
 
 @Component({
   selector: 'app-nested-tree-sort',
-  standalone: true,
   imports: [CommonModule, NgxDragDropKitModule],
   templateUrl: './nested-tree-sort.component.html',
   styleUrl: './nested-tree-sort.component.scss',
 })
 export class NestedTreeSortComponent {
-  items: TreeModel[] = [];
+  items: TreeModel[] = [
+    {
+      name: 'Item 0',
+      children: [],
+    },
+    {
+      name: 'Item 1',
+      children: [
+        {
+          name: 'Item 4',
+          children: [],
+        },
+        {
+          name: 'Item 6',
+          children: [],
+        },
+        {
+          name: 'Item 5',
+          children: [],
+        },
+      ],
+    },
+    {
+      name: 'Item 2',
+      children: [],
+    },
+    {
+      name: 'Item 3',
+      children: [],
+    },
+    {
+      name: 'Item 7',
+      children: [],
+    },
+    {
+      name: 'Item 8',
+      children: [],
+    },
+    {
+      name: 'Item 9',
+      children: [],
+    },
+  ];
 
   constructor() {
-    this.items = [];
-    for (let i = 1; i < 10; i++) {
-      this.items.push({
-        name: 'Item ' + i,
-        children: [],
-      });
-    }
+    if (!this.items.length)
+      for (let i = 0; i < 10; i++) {
+        this.items.push({
+          name: 'Item ' + i,
+          children: [],
+        });
+      }
   }
 
   add() {

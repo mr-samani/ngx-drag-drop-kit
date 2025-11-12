@@ -1,5 +1,5 @@
 // @import "../../../dist/ngx-drag-drop-kit/assets/styles.css";
-@import '../../ngx-drag-drop-kit/styles.scss';
+@use '../../ngx-drag-drop-kit/styles.scss';
 * {
   box-sizing: border-box;
 }
@@ -21,6 +21,7 @@ nav {
   ul {
     list-style: none;
     display: flex;
+    flex-wrap: wrap;
     gap: 15px;
     padding: 15px;
     margin: 0;
@@ -33,4 +34,10 @@ nav {
 
 .main-content {
   padding: 20px;
+}
+
+@media (max-width: 500px) {
+  .main-content {
+    padding: 10px;
+  }
 }

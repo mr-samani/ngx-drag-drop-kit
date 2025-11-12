@@ -1,16 +1,19 @@
 .example-list {
   width: 500px;
   max-width: 100%;
-  border: solid 1px #ccc;
   min-height: 60px;
   display: block;
   background: white;
   border-radius: 4px;
+  padding: 5px;
+  &.dragging .example-box:hover .children {
+    background-color: #e4fcfc;
+  }
 }
 
 .example-box {
   padding: 20px 10px;
-  border-bottom: solid 1px #ccc;
+  border: solid 1px #ccc;
   color: rgba(0, 0, 0, 0.87);
   display: flex;
   flex-direction: column;
@@ -22,7 +25,6 @@
   font-size: 14px;
   .children {
     width: 100%;
-    // background-color: #e9e9e9;
     min-height: 10px;
   }
 }
@@ -37,7 +39,53 @@
 }
 .custom-placeholder {
   border: 2px red solid;
+  &:after,
+  &::before {
+    position: absolute;
+    content: ' ';
+    border: 8px red solid;
+    top: -8px;
+  }
+  &:after {
+    border-bottom-color: transparent;
+    border-top-color: transparent;
+    border-left-color: transparent;
+    right: -2px;
+  }
+  &:before {
+    border-bottom-color: transparent;
+    border-top-color: transparent;
+    border-right-color: transparent;
+    left: -2px;
+  }
 }
 .custom-placeholder2 {
   border: 2px blue solid;
+  &:after,
+  &::before {
+    position: absolute;
+    content: ' ';
+    border: 8px blue solid;
+    top: -8px;
+  }
+  &:after {
+    border-bottom-color: transparent;
+    border-top-color: transparent;
+    border-left-color: transparent;
+    right: -2px;
+  }
+  &:before {
+    border-bottom-color: transparent;
+    border-top-color: transparent;
+    border-right-color: transparent;
+    left: -2px;
+  }
+}
+
+.ngxpointer {
+  position: absolute;
+  background-color: #ff0000;
+  top: 11px;
+  left: 10px;
+  z-index: 99999999;
 }
