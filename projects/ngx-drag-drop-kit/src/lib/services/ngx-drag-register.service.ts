@@ -123,9 +123,9 @@ export class NgxDragRegisterService {
   }
 
   private findParentDropList(element: HTMLElement): IDropList | null {
-    const container = element.closest('[ngxDropList]');
-    if (!container) return null;
-    return this.dropListMap.get(container) ?? null;
+    const parent = element.parentElement?.closest('[ngxDropList]') as HTMLElement | null;
+    if (!parent) return null;
+    return this.dropListMap.get(parent) ?? null;
   }
 
   /**

@@ -23,7 +23,7 @@
 - ⚡ **Performance Optimized** and Ultra **lightweight**
 - 🧑‍💻 **Fully modular, Angular 18+ ready**
 - 🧩 **Modular**: Drag & Drop, Grid, Sortable, Resizable
-- ➡️ **AutoDirection**: Auto detect horizontal or verticalor mixed direction
+- ➡️ **AutoDirection**: Auto detect horizontal or vertical or mixed direction
 
 ---
 
