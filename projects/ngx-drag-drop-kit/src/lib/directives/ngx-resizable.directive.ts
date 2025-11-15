@@ -170,8 +170,6 @@ export class NgxResizableDirective implements OnInit, OnDestroy {
   }
 
   onPointerDown(event: PointerEvent) {
-    debugger;
-
     // Only handle left click or touch
     if (event.button !== 0) return;
 
