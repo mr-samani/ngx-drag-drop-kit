@@ -148,6 +148,7 @@ export class NgxDraggableDirective extends DragItemRef implements OnDestroy, Aft
   }
 
   initDragHandler() {
+    // if passive = true => browser won't allow preventDefault
     this.startSubscriptions = [
       fromEvent<PointerEvent>(this.el, 'pointerdown', { passive: false }).subscribe(ev => this.onPointerDown(ev)),
     ];
@@ -168,6 +169,7 @@ export class NgxDraggableDirective extends DragItemRef implements OnDestroy, Aft
     if (ev.button !== 0) return;
     if (this.interaction.isResizing()) return;
     ev.preventDefault();
+    // stopPropagation required for nested tree elements
     ev.stopPropagation();
     const styles = getComputedStyle(this.el);
     this.isFixedPosition = styles.position === 'fixed';
@@ -189,15 +191,6 @@ export class NgxDraggableDirective extends DragItemRef implements OnDestroy, Aft
     let p = getPointerPositionOnViewPort(ev);
     this.dragService.getPointerElement(p);
 
-    if (this.isTouched && !this.dragging) {
-      this.dragging = true;
-      this.dragService.startDrag(this);
-      this.dragStart.emit(this.previousXY);
-    }
-    if (!this.dragging) {
-      return;
-    }
-
     let position = getPointerPosition(ev);
 
     if (this.isFixedPosition) {
@@ -207,7 +200,20 @@ export class NgxDraggableDirective extends DragItemRef implements OnDestroy, Aft
     const offsetX = position.x - this.previousXY.x;
     const offsetY = position.y - this.previousXY.y;
 
-    this.autoScroll.handleAutoScroll(ev);
+    //fixed for lag to start dragging
+    if (Math.abs(offsetY) < 1 || Math.abs(offsetX) < 1) {
+      return;
+    }
+
+    if (this.isTouched && !this.dragging) {
+      this.dragging = true;
+      this.dragService.startDrag(this);
+      this.dragStart.emit(this.previousXY);
+      this.autoScroll.handleAutoScroll(ev);
+    }
+    if (!this.dragging) {
+      return;
+    }
 
     if (this.dropList) {
       this.dragService.dragMove(this, ev, offsetX, offsetY);

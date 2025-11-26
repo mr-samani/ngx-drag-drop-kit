@@ -1,7 +1,7 @@
 {
   "name": "ngx-drag-drop-kit",
   "description": "**Advanced & blazing-fast Angular Drag & Drop Toolkit** — Grid, Sort, Resize, Nesting, and more!",
-  "version": "4.0.3",
+  "version": "4.0.4",
   "peerDependencies": {
     "@angular/common": ">=19",
     "@angular/core": ">=19"
