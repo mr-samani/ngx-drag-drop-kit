@@ -19,3 +19,13 @@
   left: 10px;
   z-index: 99999999;
 }
+
+table {
+  width: 100%;
+  max-width: 768px;
+  margin: 10px auto;
+  td {
+    border: 1px red solid;
+    padding: 25px;
+  }
+}

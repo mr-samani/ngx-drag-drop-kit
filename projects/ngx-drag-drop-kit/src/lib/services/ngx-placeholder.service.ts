@@ -123,7 +123,8 @@ export class NgxDragPlaceholderService {
 
     this.state.rect = this.state.element.getBoundingClientRect();
     if (this.state.rect.width < 5 && this.state.rect.height < 5) {
-      this.renderer.setStyle(this.state.element, 'width', '100%');
+      let w = dragItem.domRect.width;
+      this.renderer.setStyle(this.state.element, 'width', w ? w + 'px' : '100%');
     }
     // this.state.index = this.getVisibleDragItems(destinationDropList.el)
     //   .filter((x) => x != dragItem.el)
