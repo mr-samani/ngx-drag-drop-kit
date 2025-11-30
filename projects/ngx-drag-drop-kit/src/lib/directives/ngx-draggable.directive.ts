@@ -37,8 +37,13 @@ export const NGX_DROP_LIST = new InjectionToken<NgxDropListDirective>('NgxDropLi
   },
 })
 export class NgxDraggableDirective extends DragItemRef implements OnDestroy, AfterViewInit {
-  private boundaryDomRect?: DOMRect;
-  @Input() boundary?: HTMLElement;
+  @Input() set boundary(value: HTMLElement | undefined) {
+    this._boundary = value;
+    this.updateDomRect();
+  }
+  get boundary(): HTMLElement | undefined {
+    return this._boundary;
+  }
 
   @Input() dragRootElement = '';
 
@@ -105,7 +110,6 @@ export class NgxDraggableDirective extends DragItemRef implements OnDestroy, Aft
     this.findFirstParentDragRootElement();
     this.isFullRow = isFullRowElement(this.el);
     this.init();
-    this.updateDomRect();
   }
 
   adjustDomRect(x: number, y: number) {
@@ -142,9 +146,7 @@ export class NgxDraggableDirective extends DragItemRef implements OnDestroy, Aft
     const xy = getXYfromTransform(this.el);
     this.x = xy.x;
     this.y = xy.y;
-    if (this.boundary) {
-      this.boundaryDomRect = this.boundary.getBoundingClientRect();
-    }
+    this.updateDomRect();
   }
 
   initDragHandler() {
@@ -201,7 +203,7 @@ export class NgxDraggableDirective extends DragItemRef implements OnDestroy, Aft
     const offsetY = position.y - this.previousXY.y;
 
     //fixed for lag to start dragging
-    if (Math.abs(offsetY) < 1 || Math.abs(offsetX) < 1) {
+    if (Math.abs(offsetY) < 1 && Math.abs(offsetX) < 1) {
       return;
     }
 
@@ -218,20 +220,25 @@ export class NgxDraggableDirective extends DragItemRef implements OnDestroy, Aft
     if (this.dropList) {
       this.dragService.dragMove(this, ev, offsetX, offsetY);
     } else {
-      this.updatePosition(offsetX, offsetY, position);
+      this.updatePosition(offsetX, offsetY);
     }
     this.dragMove.emit({ x: this.x, y: this.y });
   }
 
-  updatePosition(offsetX: number, offsetY: number, position: IPosition) {
-    if (checkBoundX(this.boundaryDomRect, this.el, offsetX)) {
-      this.x += offsetX;
-      this.previousXY.x = position.x;
-    }
-    if (checkBoundY(this.boundaryDomRect, this.el, offsetY)) {
-      this.y += offsetY;
-      this.previousXY.y = position.y;
-    }
+  updatePosition(offsetX: number, offsetY: number) {
+    const selfRect = this.el.getBoundingClientRect();
+
+    const clampedOffsetX = checkBoundX(selfRect, this.boundaryDomRect, offsetX);
+    this.x += clampedOffsetX;
+
+    const clampedOffsetY = checkBoundY(selfRect, this.boundaryDomRect, offsetY);
+    this.y += clampedOffsetY;
+
+    this.previousXY = {
+      x: clampedOffsetX + this.previousXY.x,
+      y: clampedOffsetY + this.previousXY.y,
+    };
+
     let transform = `translate3d(${this.x}px, ${this.y}px, 0)`;
     this.renderer.setStyle(this.el, 'transform', transform);
     return transform;

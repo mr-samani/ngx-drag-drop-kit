@@ -2,14 +2,7 @@
  * Improved boundary checking with floating point tolerance and transform support
  */
 
-const FLOATING_POINT_TOLERANCE = 0.5; // pixels
-
-/**
- * Get element's position accounting for transforms
- */
-function getTransformedRect(el: HTMLElement): DOMRect {
-  return el.getBoundingClientRect();
-}
+const FLOATING_POINT_TOLERANCE = 1; // pixels
 
 /**
  * Check if new position exceeds boundary in Y axis
@@ -21,31 +14,36 @@ function getTransformedRect(el: HTMLElement): DOMRect {
  * @returns true if within bounds, false otherwise
  */
 export function checkBoundY(
+  selfRec: DOMRect,
   boundaryDomRec: DOMRect | undefined,
-  el: HTMLElement,
   offsetY: number,
   checkTop = true,
   checkBottom = true
-): boolean {
+): number {
   if (!boundaryDomRec) {
-    return true;
+    return offsetY;
   }
 
-  const selfRec = getTransformedRect(el);
+  console.log('selfRec', selfRec.top);
+
   const newTop = selfRec.top + offsetY;
   const newBottom = selfRec.bottom + offsetY;
 
-  // Check top boundary with tolerance
-  if (checkTop && newTop < boundaryDomRec.top - FLOATING_POINT_TOLERANCE) {
-    return false;
+  // Check top boundary
+  if (checkTop && newTop < boundaryDomRec.top + FLOATING_POINT_TOLERANCE) {
+    // المان از بالا خارج شده، offset را محدود کن
+    const overflow = boundaryDomRec.top - newTop;
+    return offsetY + overflow;
   }
 
-  // Check bottom boundary with tolerance
-  if (checkBottom && newBottom > boundaryDomRec.bottom + FLOATING_POINT_TOLERANCE) {
-    return false;
+  // Check bottom boundary
+  if (checkBottom && newBottom > boundaryDomRec.bottom - FLOATING_POINT_TOLERANCE) {
+    // المان از پایین خارج شده، offset را محدود کن
+    const overflow = newBottom - boundaryDomRec.bottom;
+    return offsetY - overflow;
   }
 
-  return true;
+  return offsetY;
 }
 
 /**
@@ -58,41 +56,43 @@ export function checkBoundY(
  * @returns true if within bounds, false otherwise
  */
 export function checkBoundX(
+  selfRec: DOMRect,
   boundaryDomRec: DOMRect | undefined,
-  el: HTMLElement,
   offsetX: number,
   checkLeft = true,
   checkRight = true
-): boolean {
+): number {
   if (!boundaryDomRec) {
-    return true;
+    return offsetX;
   }
-
-  const selfRec = getTransformedRect(el);
   const newLeft = selfRec.left + offsetX;
   const newRight = selfRec.right + offsetX;
 
-  // Check left boundary with tolerance
-  if (checkLeft && newLeft < boundaryDomRec.left - FLOATING_POINT_TOLERANCE) {
-    return false;
+  // Check left boundary
+  if (checkLeft && newLeft < boundaryDomRec.left + FLOATING_POINT_TOLERANCE) {
+    // المان از چپ خارج شده
+    const overflow = boundaryDomRec.left - newLeft;
+    return offsetX + overflow;
   }
 
-  // Check right boundary with tolerance
-  if (checkRight && newRight > boundaryDomRec.right + FLOATING_POINT_TOLERANCE) {
-    return false;
+  // Check right boundary
+  if (checkRight && newRight > boundaryDomRec.right - FLOATING_POINT_TOLERANCE) {
+    // المان از راست خارج شده
+    const overflow = newRight - boundaryDomRec.right;
+    return offsetX - overflow;
   }
 
-  return true;
+  return offsetX;
 }
 
 /**
- * Clamp resize within boundary - prevents element from going outside
- * @param boundaryDomRec - Boundary element rectangle
+ * ✅ Clamp resize within boundary 
+ * @param boundaryDomRec - Boundary element rectangle (viewport coordinates)
  * @param el - Element being resized
  * @param newWidth - Proposed new width
  * @param newHeight - Proposed new height
- * @param newLeft - Proposed new left position
- * @param newTop - Proposed new top position
+ * @param newLeft - Proposed new left position (relative to current position)
+ * @param newTop - Proposed new top position (relative to current position)
  * @returns Clamped dimensions and position
  */
 export function clampWithinBoundary(
@@ -107,37 +107,56 @@ export function clampWithinBoundary(
     return { width: newWidth, height: newHeight, left: newLeft, top: newTop };
   }
 
-  const parentRect = el.offsetParent?.getBoundingClientRect() ?? { left: 0, top: 0 };
-  
-  // Convert boundary coordinates to parent-relative
-  const boundaryLeft = boundaryDomRec.left - parentRect.left;
-  const boundaryTop = boundaryDomRec.top - parentRect.top;
-  const boundaryRight = boundaryDomRec.right - parentRect.left;
-  const boundaryBottom = boundaryDomRec.bottom - parentRect.top;
+  // ✅ Get element's CURRENT position in viewport
+  const currentRect = el.getBoundingClientRect();
+
+  // ✅ Calculate where element WOULD BE after applying new values
+  // currentRect gives us viewport position, newLeft/newTop are CSS left/top values
+  const computed = getComputedStyle(el);
+  const currentCSSLeft = parseFloat(computed.left || '0');
+  const currentCSSTop = parseFloat(computed.top || '0');
+
+  // Calculate the offset between current CSS values and new values
+  const leftDelta = newLeft - currentCSSLeft;
+  const topDelta = newTop - currentCSSTop;
+
+  // Calculate new viewport position
+  const newViewportLeft = currentRect.left + leftDelta;
+  const newViewportTop = currentRect.top + topDelta;
+  const newViewportRight = newViewportLeft + newWidth;
+  const newViewportBottom = newViewportTop + newHeight;
 
   let clampedWidth = newWidth;
   let clampedHeight = newHeight;
   let clampedLeft = newLeft;
   let clampedTop = newTop;
 
-  // Clamp left
-  if (clampedLeft < boundaryLeft) {
-    clampedLeft = boundaryLeft;
+  // ✅ Clamp left edge
+  if (newViewportLeft < boundaryDomRec.left) {
+    const overflow = boundaryDomRec.left - newViewportLeft;
+    clampedLeft = newLeft + overflow;
+    clampedWidth = Math.max(0, clampedWidth - overflow);
   }
 
-  // Clamp top
-  if (clampedTop < boundaryTop) {
-    clampedTop = boundaryTop;
+  // ✅ Clamp top edge
+  if (newViewportTop < boundaryDomRec.top) {
+    const overflow = boundaryDomRec.top - newViewportTop;
+    clampedTop = newTop + overflow;
+    clampedHeight = Math.max(0, clampedHeight - overflow);
   }
 
-  // Clamp width (don't exceed right boundary)
-  if (clampedLeft + clampedWidth > boundaryRight) {
-    clampedWidth = boundaryRight - clampedLeft;
+  // ✅ Clamp right edge
+  const clampedViewportLeft = newViewportLeft + (clampedLeft - newLeft);
+  const clampedRightEdge = clampedViewportLeft + clampedWidth;
+  if (clampedRightEdge > boundaryDomRec.right) {
+    clampedWidth = Math.max(0, boundaryDomRec.right - clampedViewportLeft);
   }
 
-  // Clamp height (don't exceed bottom boundary)
-  if (clampedTop + clampedHeight > boundaryBottom) {
-    clampedHeight = boundaryBottom - clampedTop;
+  // ✅ Clamp bottom edge
+  const clampedViewportTop = newViewportTop + (clampedTop - newTop);
+  const clampedBottomEdge = clampedViewportTop + clampedHeight;
+  if (clampedBottomEdge > boundaryDomRec.bottom) {
+    clampedHeight = Math.max(0, boundaryDomRec.bottom - clampedViewportTop);
   }
 
   return {
@@ -157,7 +176,7 @@ export function getPageZoom(): number {
   if (window.visualViewport) {
     return window.visualViewport.scale;
   }
-  
+
   // Fallback
   return window.devicePixelRatio || 1;
 }

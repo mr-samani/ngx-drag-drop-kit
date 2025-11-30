@@ -1,6 +1,8 @@
 import { IDropList } from '../../interfaces/IDropList';
 
 export class DragItemRef {
+  boundaryDomRect?: DOMRect;
+  _boundary?: HTMLElement;
   el: HTMLElement;
   dropList?: IDropList;
 
@@ -19,5 +21,8 @@ export class DragItemRef {
 
   updateDomRect() {
     this._domRect = this.el.getBoundingClientRect();
+    if (this._boundary) {
+      this.boundaryDomRect = this._boundary.getBoundingClientRect();
+    }
   }
 }

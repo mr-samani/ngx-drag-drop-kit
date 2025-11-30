@@ -8,11 +8,12 @@
 }
 
 .boundary {
-  border: 2px dashed red;
+  border: 3px dashed red;
   border-radius: 10px;
   height: 60vh;
   width: 1024px;
   margin: 0 auto;
+  padding: 5px;
   max-width: 100%;
 }
 

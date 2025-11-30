@@ -10,7 +10,7 @@ import {
   DOCUMENT,
   OnInit,
 } from '@angular/core';
-import { checkBoundX, checkBoundY } from '../../utils/check-boundary';
+import { clampWithinBoundary } from '../../utils/check-boundary';
 import { IResizableOutput } from '../../interfaces/IResizableOutput';
 import { fromEvent, Subscription } from 'rxjs';
 import { filter } from 'rxjs';
@@ -83,7 +83,7 @@ export class NgxResizableDirective implements OnInit, OnDestroy {
 
   left: number = 0;
   top: number = 0;
-
+  domRect!: DOMRect;
   width!: number;
   height!: number;
 
@@ -194,6 +194,7 @@ export class NgxResizableDirective implements OnInit, OnDestroy {
       const parentRect = this.el.offsetParent?.getBoundingClientRect() ?? { left: 0 };
       this.left = rect.left - parentRect.left;
     }
+    this.domRect = this.el.getBoundingClientRect();
 
     this.px = event.clientX;
     this.py = event.clientY;
@@ -380,6 +381,7 @@ export class NgxResizableDirective implements OnInit, OnDestroy {
     if (canSetTop || canSetBottom) {
       this.renderer.setStyle(this.el, 'height', `${this.height}px`);
     }
+    this.domRect = new DOMRect(this.domRect.x + this.left, this.domRect.y + this.top, this.width, this.height);
   }
 
   private checkFlexible() {
@@ -440,7 +442,6 @@ export class NgxResizableDirective implements OnInit, OnDestroy {
     const lastTop = this.top;
     const lastWidth = this.width;
     const lastHeight = this.height;
-
     this.resizer(offsetX, offsetY);
 
     // Apply min/max constraints
@@ -469,6 +470,12 @@ export class NgxResizableDirective implements OnInit, OnDestroy {
     }
     this.px = clientX;
     this.py = clientY;
+ 
+    const clamped = clampWithinBoundary(this.boundaryDomRect, this.el, this.width, this.height, this.left, this.top);
+    this.width = clamped.width;
+    this.height = clamped.height;
+    this.left = clamped.left;
+    this.top = clamped.top;
 
     if (this.left !== lastLeft || this.top !== lastTop || this.width !== lastWidth || this.height !== lastHeight) {
       this.setElPosition();
@@ -518,90 +525,71 @@ export class NgxResizableDirective implements OnInit, OnDestroy {
   /* ----------------- Resize Corner Logic ----------------- */
   private topLeftResize(offsetX: number, offsetY: number) {
     // Handle X axis with proper RTL support
-    if (checkBoundX(this.boundaryDomRect, this.el, offsetX, true, false)) {
-      this.width += -offsetX;
-      if (!this.isRtl || this.isAbsoluteOrFixed) {
-        this.left -= -offsetX;
-      }
+    this.width += -offsetX;
+    if (!this.isRtl || this.isAbsoluteOrFixed) {
+      this.left -= -offsetX;
     }
+
     // Handle Y axis
-    if (checkBoundY(this.boundaryDomRect, this.el, offsetY, true, false)) {
-      this.top += offsetY;
-      this.height -= offsetY;
-    }
+    this.top += offsetY;
+    this.height -= offsetY;
   }
 
   private topRightResize(offsetX: number, offsetY: number) {
     // Handle X axis with proper RTL support
-    if (checkBoundX(this.boundaryDomRect, this.el, offsetX, false, true)) {
-      this.width += offsetX;
-      if (this.isRtl && !this.isAbsoluteOrFixed) {
-        this.left -= -offsetX;
-      }
+
+    this.width += offsetX;
+    if (this.isRtl && !this.isAbsoluteOrFixed) {
+      this.left -= -offsetX;
     }
+
     // Handle Y axis
-    if (checkBoundY(this.boundaryDomRect, this.el, offsetY, true, false)) {
-      this.top += offsetY;
-      this.height -= offsetY;
-    }
+    this.top += offsetY;
+    this.height -= offsetY;
   }
 
   private bottomLeftResize(offsetX: number, offsetY: number) {
     // Handle X axis with proper RTL support
-    if (checkBoundX(this.boundaryDomRect, this.el, offsetX, true, false)) {
-      this.width += -offsetX;
-      if (!this.isRtl || this.isAbsoluteOrFixed) {
-        this.left -= -offsetX;
-      }
+    this.width += -offsetX;
+    if (!this.isRtl || this.isAbsoluteOrFixed) {
+      this.left -= -offsetX;
     }
+
     // Handle Y axis
-    if (checkBoundY(this.boundaryDomRect, this.el, offsetY, false, true)) {
-      this.height += offsetY;
-    }
+    this.height += offsetY;
   }
 
   private bottomRightResize(offsetX: number, offsetY: number) {
     // Handle X axis with proper RTL support
-    if (checkBoundX(this.boundaryDomRect, this.el, offsetX, false, true)) {
-      this.width += offsetX;
-      if (this.isRtl && !this.isAbsoluteOrFixed) {
-        this.left -= -offsetX;
-      }
+    this.width += offsetX;
+    if (this.isRtl && !this.isAbsoluteOrFixed) {
+      this.left -= -offsetX;
     }
+
     // Handle Y axis
-    if (checkBoundY(this.boundaryDomRect, this.el, offsetY, false, true)) {
-      this.height += offsetY;
-    }
+    this.height += offsetY;
   }
 
   private topResize(offsetX: number, offsetY: number) {
-    if (checkBoundY(this.boundaryDomRect, this.el, offsetY, true, false)) {
-      this.top += offsetY;
-      this.height -= offsetY;
-    }
+    this.top += offsetY;
+    this.height -= offsetY;
   }
 
   private rightResize(offsetX: number, offsetY: number) {
-    if (checkBoundX(this.boundaryDomRect, this.el, offsetX, false, true)) {
-      this.width += offsetX;
-      if (this.isRtl && !this.isAbsoluteOrFixed) {
-        this.left -= -offsetX;
-      }
+    this.width += offsetX;
+    if (this.isRtl && !this.isAbsoluteOrFixed) {
+      this.left -= -offsetX;
     }
   }
 
   private bottomResize(offsetX: number, offsetY: number) {
-    if (checkBoundY(this.boundaryDomRect, this.el, offsetY, false, true)) {
-      this.height += offsetY;
-    }
+    this.height += offsetY;
   }
 
   private leftResize(offsetX: number, offsetY: number) {
-    if (checkBoundX(this.boundaryDomRect, this.el, offsetX, true, false)) {
-      this.width += -offsetX;
-      if (!this.isRtl || this.isAbsoluteOrFixed) {
-        this.left -= -offsetX;
-      }
+    this.width += -offsetX;
+    if (!this.isRtl || this.isAbsoluteOrFixed) {
+      this.left -= -offsetX;
     }
   }
 }
