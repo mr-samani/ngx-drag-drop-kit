@@ -442,6 +442,7 @@ export class NgxResizableDirective implements OnInit, OnDestroy {
     const lastTop = this.top;
     const lastWidth = this.width;
     const lastHeight = this.height;
+
     this.resizer(offsetX, offsetY);
 
     // Apply min/max constraints
@@ -468,15 +469,44 @@ export class NgxResizableDirective implements OnInit, OnDestroy {
       this.width = result.width;
       this.height = result.height;
     }
-    this.px = clientX;
-    this.py = clientY;
- 
+
+    // ✅ Clamp within boundary
     const clamped = clampWithinBoundary(this.boundaryDomRect, this.el, this.width, this.height, this.left, this.top);
+    // ✅ CRITICAL: Only update px/py based on ACTUAL changes
+    // محاسبه تغییرات واقعی
+    const actualLeftDelta = clamped.left - this.left;
+    const actualTopDelta = clamped.top - this.top;
+    const actualWidthDelta = clamped.width - this.width;
+    const actualHeightDelta = clamped.height - this.height;
+
     this.width = clamped.width;
     this.height = clamped.height;
     this.left = clamped.left;
     this.top = clamped.top;
 
+    // محاسبه offset واقعی که المان استفاده کرد
+    let usedOffsetX = 0;
+    let usedOffsetY = 0;
+
+    if (this.currentCorner?.toLowerCase()?.includes('left')) {
+      // از سمت چپ: left تغییر می‌کنه
+      usedOffsetX = actualLeftDelta;
+    } else if (this.currentCorner?.toLowerCase()?.includes('right')) {
+      // از سمت راست: width تغییر می‌کنه
+      usedOffsetX = actualWidthDelta;
+    }
+
+    if (this.currentCorner?.toLowerCase()?.includes('top')) {
+      // از سمت بالا: top تغییر می‌کنه
+      usedOffsetY = actualTopDelta;
+    } else if (this.currentCorner?.toLowerCase()?.includes('bottom')) {
+      // از سمت پایین: height تغییر می‌کنه
+      usedOffsetY = actualHeightDelta;
+    }
+    this.px = clientX + usedOffsetX;
+    this.py = clientY + usedOffsetY;
+
+    // Apply changes to DOM if anything changed
     if (this.left !== lastLeft || this.top !== lastTop || this.width !== lastWidth || this.height !== lastHeight) {
       this.setElPosition();
       const realPos = this.getRealPosition();
