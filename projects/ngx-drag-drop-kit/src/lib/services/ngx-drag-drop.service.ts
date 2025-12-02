@@ -133,7 +133,7 @@ export class NgxDragDropService {
     }
   }
   dragMove(drag: DragItemRef, ev: MouseEvent | TouchEvent, offsetX: number, offsetY: number) {
-    if (!this.dragElementInBody || !this.isDragging || !this._activeDragInstances[0].dropList || !this.activeDropList) {
+    if (!this.dragElementInBody || !this.isDragging() || !this._activeDragInstances[0].dropList || !this.activeDropList) {
       return;
     }
     // if (ev.cancelable) ev.preventDefault();
