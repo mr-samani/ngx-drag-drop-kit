@@ -62,7 +62,7 @@ export class NgxDragDropService {
     this.renderer = rendererFactory.createRenderer(null, null);
   }
 
-  startDrag(drag: DragItemRef) {
+  async startDrag(drag: DragItemRef) {
     if (!drag.dropList || this.isDragging()) {
       return;
     }
@@ -71,7 +71,7 @@ export class NgxDragDropService {
     this.isDragging.set(true);
     this.activeDropList.dragging = true;
 
-    this.dragRegister.updateAllDragItemsRect();
+    await this.dragRegister.updateAllDragItemsRect();
     const currDomRect = drag.domRect;
     this._activeDragInstances.push(drag);
     this._previousDragIndex = this.dragRegister.getDragItemIndex(drag);

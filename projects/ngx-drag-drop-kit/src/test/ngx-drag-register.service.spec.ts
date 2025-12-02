@@ -70,12 +70,12 @@ describe('NgxDragRegisterService', () => {
   //   expect(dragItems[0].updateDomRect).toHaveBeenCalled();
   // });
 
-  it('should skip hidden elements when updating rects', () => {
+  it('should skip hidden elements when updating rects', async () => {
     service.registerDropList(mockDropList);
     mockDropList.dragItems = dragItems;
     // Mock hidden element
     Object.defineProperty(mockDropList.el, 'offsetParent', { value: null, configurable: true });
-    service.updateAllDragItemsRect();
+    await service.updateAllDragItemsRect();
     expect(mockDropList.updateDomRect).not.toHaveBeenCalled();
   });
 });

@@ -134,8 +134,6 @@ export class NgxDragPlaceholderService {
     this.state.dragItem._domRect = this.state.rect;
     this.state.dragItem.isPlaceholder = true;
 
-    // this.dragRegister.registerDragItem(this.state.dragItem);
-    //this.dragRegister.updateAllDragItemsRect();
     this.state.index = this.dragRegister.getDragItemIndex(dragItem, false);
   }
 
