@@ -89,7 +89,6 @@ export class NgxResizableDirective implements OnInit, OnDestroy {
 
   resizing = false;
   el: HTMLElement;
-  isRtl: boolean = false;
   private currentCorner: Corner | null = null;
   private isShiftPressed = false;
 
@@ -114,7 +113,6 @@ export class NgxResizableDirective implements OnInit, OnDestroy {
     if (!this.isAbsoluteOrFixed) {
       this.renderer.setStyle(this.el, 'position', 'relative');
     }
-    this.isRtl = selfStyle.direction === 'rtl' || this.el.closest('[dir=rtl]') !== null;
     this.el.classList.add('ngx-resizable');
 
     // Add corner indicators with CSS only
@@ -129,6 +127,10 @@ export class NgxResizableDirective implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.subscriptions.forEach(sub => sub.unsubscribe());
+  }
+
+  get isRtl() {
+    return getComputedStyle(this.el).direction === 'rtl' || this.el.closest('[dir=rtl]') !== null;
   }
 
   private getRealPosition() {

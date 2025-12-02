@@ -53,7 +53,6 @@ export class NgxDropListDirective<T = any> implements IDropList, OnInit, AfterVi
 
   isFlexWrap = false;
   initCursor = '';
-  isRtl = false;
   private subscriptions: Subscription[] = [];
 
   /**
@@ -89,10 +88,13 @@ export class NgxDropListDirective<T = any> implements IDropList, OnInit, AfterVi
   ngOnInit(): void {
     this.dragRegister.registerDropList(this);
     this.checkIsFlexibleAndWrap();
-    this.isRtl = getComputedStyle(this.el).direction === 'rtl';
   }
   ngAfterViewInit(): void {
     this.updateDomRect();
+  }
+
+  get isRtl() {
+    return getComputedStyle(this.el).direction === 'rtl';
   }
 
   @HostListener('pointerleave')
