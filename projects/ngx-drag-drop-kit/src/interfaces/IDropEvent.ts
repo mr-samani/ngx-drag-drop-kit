@@ -9,7 +9,7 @@ export interface IDropEvent<DataType = any> {
   /** Item that is being dropped. */
   item: DragItemRef;
   /** Container in which the item was dropped. */
-  container: IDropList;
+  container: IDropList<DataType>;
   /** Container from which the item was picked up. Can be the same as the `container`. */
-  previousContainer: IDropList;
+  previousContainer: IDropList<DataType>;
 }

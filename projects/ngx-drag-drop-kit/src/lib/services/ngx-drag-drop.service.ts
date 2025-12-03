@@ -68,9 +68,6 @@ export class NgxDragDropService {
     }
     this.activeDropList = drag.dropList;
 
-    this.isDragging.set(true);
-    this.activeDropList.dragging = true;
-
     await this.dragRegister.updateAllDragItemsRect();
     const currDomRect = drag.domRect;
     this._activeDragInstances.push(drag);
@@ -113,6 +110,9 @@ export class NgxDragDropService {
       before: false,
       initialScrollOffset: this.initialScrollOffset,
     });
+
+    this.isDragging.set(true);
+    this.activeDropList.dragging = true;
   }
   showDevGridOverlay() {
     if (isDevMode() && false) {
@@ -133,7 +133,13 @@ export class NgxDragDropService {
     }
   }
   dragMove(drag: DragItemRef, ev: MouseEvent | TouchEvent, offsetX: number, offsetY: number) {
-    if (!this.dragElementInBody || !this.isDragging() || !this._activeDragInstances[0].dropList || !this.activeDropList) {
+    if (
+      !this.dragElementInBody ||
+      !this.isDragging() ||
+      !this._activeDragInstances[0] ||
+      !this._activeDragInstances[0].dropList ||
+      !this.activeDropList
+    ) {
       return;
     }
     // if (ev.cancelable) ev.preventDefault();
@@ -150,7 +156,7 @@ export class NgxDragDropService {
     if (!desDropList) {
       return;
     }
-    if (desDropList.checkAllowedConnections(this._activeDragInstances[0]?.dropList) == false) {
+    if (desDropList.checkAllowedConnections(this._activeDragInstances[0].dropList) == false) {
       return;
     }
     const dragOverData = this.dragRegister._getItemIndexFromPointerPosition(
@@ -231,12 +237,14 @@ export class NgxDragDropService {
     });
     const cleanUpFn = (dragElementInBody: HTMLElement) => {
       dragElementInBody.remove();
+      this.dragElementInBody = undefined;
     };
 
     const elInBody = this.dragElementInBody!;
     setTimeout(() => {
       cleanUpFn(elInBody);
     }, delay);
+    this._activeDragInstances = [];
     this.activeDropList = undefined;
     this.scrollSubscription?.unsubscribe();
     this.scrollSubscription = null;

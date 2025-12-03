@@ -173,7 +173,6 @@ export class NgxDragRegisterService {
     currentPlaceholderIndex: number
   ): { index: number; dragItem?: DragItemRef; before: boolean } {
     const items = dropList.dragItems.filter(x => !x.isPlaceholder);
-
     if (items.length === 0) {
       return { index: 0, dragItem: undefined, before: false };
     }
@@ -186,17 +185,22 @@ export class NgxDragRegisterService {
     // ─────────────────────────────────────────────────────
     let closestItem: DragItemRef | undefined;
     let closestIndex = -1;
+    const threshold = 2;
 
     for (let i = 0; i < items.length; i++) {
+      const rect = items[i].domRect;
       const item = items[i];
-      const rect = item.domRect;
-
-      if (px >= rect.left && px <= rect.right && py >= rect.top && py <= rect.bottom) {
-        closestItem = item;
+      if (
+        px + threshold >= rect.left &&
+        px - threshold <= rect.right &&
+        py + threshold >= rect.top &&
+        py - threshold <= rect.bottom
+      ) {
         closestIndex = i;
+        closestItem = item;
+        break;
       }
     }
-
     if (!closestItem) {
       return { index: currentPlaceholderIndex, dragItem: undefined, before: false };
     }
