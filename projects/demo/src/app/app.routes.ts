@@ -5,7 +5,7 @@ import { SortListComponent } from './sort-list/sort-list.component';
 import { HorizontalListComponent } from './horizontal-list/horizontal-list.component';
 import { CopyToZoneComponent } from './copy-to-zone/copy-to-zone.component';
 import { NestedTreeSortComponent } from './nested-tree-sort/nested-tree-sort.component';
-import { GridLayoutComponent } from './grid-layout/grid-layout.component';
+import { NgxGridLayoutComponent } from './grid-layout/grid-layout.component';
 import { TestComponent } from './test/test.component';
 import { ResizableLayoutComponent } from './resizable-layout/resizable-layout.component';
 import { DynamicHtmlComponent } from './dynamic-html/dynamic-html.component';
@@ -23,7 +23,7 @@ export const routes: Routes = [
   { path: 'copy-to-zone', component: CopyToZoneComponent },
   { path: 'nested-tree-sort', component: NestedTreeSortComponent },
 
-  { path: 'grid-layout', component: GridLayoutComponent },
+  { path: 'grid-layout', component: NgxGridLayoutComponent },
   { path: 'resizable-layout', component: ResizableLayoutComponent },
 
   { path: 'dynamic-html', component: DynamicHtmlComponent },

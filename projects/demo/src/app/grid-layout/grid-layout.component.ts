@@ -9,7 +9,8 @@ import { GridItemConfig, IGridLayoutOptions, NgxGridLayoutModule } from '@ngx-dr
   templateUrl: './grid-layout.component.html',
   styleUrl: './grid-layout.component.scss',
 })
-export class GridLayoutComponent {
+export class NgxGridLayoutComponent {
+  editMode = true;
   options: IGridLayoutOptions = {
     cols: 12,
     gap: 10,

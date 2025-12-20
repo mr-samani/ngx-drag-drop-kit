@@ -103,10 +103,10 @@ export class NgxResizableDirective implements OnInit, OnDestroy {
 
   constructor() {
     this.el = this.elRef.nativeElement;
-    this.initHandler(); // Initialize all handlers at once
   }
 
   ngOnInit(): void {
+    this.initHandler(); // Initialize all handlers at once
     this.checkFlexible();
     const selfStyle = getComputedStyle(this.el);
     this.isAbsoluteOrFixed = selfStyle.position === 'absolute' || selfStyle.position === 'fixed';

@@ -1,5 +1,6 @@
 import {
   AfterViewInit,
+  booleanAttribute,
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
@@ -17,13 +18,14 @@ import {
 } from '@angular/core';
 import { IGridLayoutOptions } from '../options/options';
 import { DEFAULT_GRID_LAYOUT_CONFIG, GridLayoutService } from '../services/grid-layout.service';
-import { GridItemComponent } from '../grid-item/grid-item.component';
+import { NgxGridItemComponent } from '../grid-item/grid-item.component';
 import { mergeDeep } from '../../../utils/deep-merge';
 import { getFirstCollision } from '../utils/grid.utils';
 import { LayoutOutput } from '../options/layout-output';
+import { Subscription } from 'rxjs/internal/Subscription';
 
 @Component({
-  selector: 'grid-layout',
+  selector: 'ngx-grid-layout',
   templateUrl: './grid-layout.component.html',
   styleUrls: ['./grid-layout.component.scss'],
   host: {
@@ -31,12 +33,16 @@ import { LayoutOutput } from '../options/layout-output';
     '[style.boxSizing]': '"border-box"',
     '[style.height.px]': '_gridService.getGridHeight',
     '[style.user-select]': '"none"',
+    '[class.edit-mode]': '_gridService.editMode',
   },
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: false,
 })
-export class GridLayoutComponent implements OnInit, AfterViewInit {
+export class NgxGridLayoutComponent implements OnInit, AfterViewInit {
+  @Input({ alias: 'editMode', transform: booleanAttribute }) set setEditMode(val: boolean) {
+    this._gridService.editMode = val;
+  }
   @Input() get options() {
     return this._gridService._options;
   }
@@ -49,7 +55,7 @@ export class GridLayoutComponent implements OnInit, AfterViewInit {
   @Output() layoutChange = new EventEmitter<LayoutOutput[]>();
 
   el: HTMLElement;
-  @ContentChildren(GridItemComponent) set items(value: QueryList<GridItemComponent>) {
+  @ContentChildren(NgxGridItemComponent) set items(value: QueryList<NgxGridItemComponent>) {
     if (value) {
       value.changes.subscribe(_ => {
         // log('Add new item to grid:', _);
@@ -64,6 +70,7 @@ export class GridLayoutComponent implements OnInit, AfterViewInit {
   ) {
     this._gridService._placeholderContainerRef = val;
   }
+
   constructor(
     public _gridService: GridLayoutService,
     private _elRef: ElementRef<HTMLElement>,

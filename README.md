@@ -98,8 +98,8 @@ export class AppModule {}
 ```
 
 ```html
-<grid-layout [options]="options">
-  <grid-item *ngFor="let item of layouts" [config]="item.config">{{ item.title }}</grid-item>
+<ngx-grid-layout [options]="options">
+  <ngx-grid-item *ngFor="let item of layouts" [config]="item.config">{{ item.title }}</grid-item>
 </grid-layout>
 ```
 
@@ -150,8 +150,8 @@ Supports multi-level tree-like structures with drag & drop:
 |                       | Output: `(drop)`            | Drop event              |
 | `ngxResizable`        | `[minWidth]`, `[minHeight]` | Resizing constraints    |
 |                       | Output: `(resize)`          | Emits size changes      |
-| `GridLayoutComponent` | `options`                   | Grid options            |
-| `GridItemComponent`   | `config`                    | Grid item configuration |
+| `NgxGridLayoutComponent` | `options`                   | Grid options            |
+| `NgxGridItemComponent`   | `config`                    | Grid item configuration |
 
 ---
 

@@ -1,13 +1,13 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { GridLayoutComponent } from './grid-layout/grid-layout.component';
-import { GridItemComponent } from './grid-item/grid-item.component';
+import { NgxGridLayoutComponent } from './grid-layout/grid-layout.component';
+import { NgxGridItemComponent } from './grid-item/grid-item.component';
 import { GridLayoutService } from './services/grid-layout.service';
 
 @NgModule({
-  declarations: [GridLayoutComponent, GridItemComponent],
+  declarations: [NgxGridLayoutComponent, NgxGridItemComponent],
   imports: [CommonModule],
-  exports: [GridLayoutComponent, GridItemComponent],
+  exports: [NgxGridLayoutComponent, NgxGridItemComponent],
   providers: [GridLayoutService],
 })
 export class NgxGridLayoutModule {}

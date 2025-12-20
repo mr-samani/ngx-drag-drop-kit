@@ -2,13 +2,16 @@
 <button (click)="add()">add</button>
 <button (click)="add10()">add 10</button>
 <button (click)="clear()">clear</button>
-
-<grid-layout [options]="options" (layoutChange)="onLayoutChange($event)">
+<label>
+  <input type="checkbox" [(ngModel)]="editMode" />
+  Edit mode
+</label>
+<ngx-grid-layout [options]="options" [editMode]="editMode" (layoutChange)="onLayoutChange($event)">
   @for (item of layouts; track item) {
-    <grid-item [config]="item.config" class="grid-item" [id]="item.id">
+    <ngx-grid-item [config]="item.config" class="grid-item" [id]="item.id">
       {{ item.id }}
-    </grid-item>
+    </ngx-grid-item>
   }
-</grid-layout>
+</ngx-grid-layout>
 
 <pre style="direction: ltr; text-align: start">config:{{ options | json }}</pre>

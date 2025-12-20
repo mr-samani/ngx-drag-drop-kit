@@ -8,7 +8,7 @@ import {
   DOCUMENT,
 } from '@angular/core';
 import { GridLayoutOptions } from '../options/options';
-import { GridItemComponent } from '../grid-item/grid-item.component';
+import { NgxGridItemComponent } from '../grid-item/grid-item.component';
 import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
 
 import {
@@ -28,7 +28,7 @@ import {
 import { FakeItem, GridItemConfig } from '../options/gride-item-config';
 import { LayoutOutput } from '../options/layout-output';
 import { mergeDeep } from '../../../utils/deep-merge';
-import { GridLayoutComponent } from '../grid-layout/grid-layout.component';
+import { NgxGridLayoutComponent } from '../grid-layout/grid-layout.component';
 
 export const DEFAULT_GRID_ITEM_CONFIG = new GridItemConfig();
 export const DEFAULT_GRID_LAYOUT_CONFIG = new GridLayoutOptions();
@@ -36,15 +36,16 @@ export const DEFAULT_GRID_LAYOUT_CONFIG = new GridLayoutOptions();
 @Injectable()
 export class GridLayoutService {
   public _options: GridLayoutOptions = DEFAULT_GRID_LAYOUT_CONFIG;
-  public gridLayout!: GridLayoutComponent;
-  public _gridItems: GridItemComponent[] = [];
+  public gridLayout!: NgxGridLayoutComponent;
+  public _gridItems: NgxGridItemComponent[] = [];
 
   public _placeholderContainerRef!: ViewContainerRef;
-  private placeHolder?: GridItemComponent;
-  private placeHolderRef?: ComponentRef<GridItemComponent>;
+  private placeHolder?: NgxGridItemComponent;
+  private placeHolderRef?: ComponentRef<NgxGridItemComponent>;
 
   private updatePlaceholderPosition$ = new Subject<FakeItem>();
   private renderer: Renderer2;
+  editMode: boolean = true;
 
   constructor(rendererFactory: RendererFactory2) {
     this.renderer = rendererFactory.createRenderer(null, null);
@@ -63,7 +64,7 @@ export class GridLayoutService {
       });
   }
 
-  public updateGridItem(item: GridItemComponent) {
+  public updateGridItem(item: NgxGridItemComponent) {
     item.config = mergeDeep(DEFAULT_GRID_ITEM_CONFIG, item.config);
     item.width = gridWToScreenWidth(this.cellWidth, item.config.w, this._options.gap);
     item.height = gridHToScreenHeight(this.cellHeight, item.config.h, this._options.gap);
@@ -120,7 +121,7 @@ export class GridLayoutService {
     );
   }
 
-  onMoveOrResize(item: GridItemComponent) {
+  onMoveOrResize(item: NgxGridItemComponent) {
     const gridItemRec = item.el.getBoundingClientRect();
     let plcInfo = this.convertPointToCell(gridItemRec.left, gridItemRec.top, gridItemRec.width, gridItemRec.height);
     const fakeItem: FakeItem = {
@@ -128,18 +129,18 @@ export class GridLayoutService {
       y: plcInfo.cellY,
       w: plcInfo.cellW,
       h: plcInfo.cellH,
-      id: item.id,
+      id: 'plc_' + item.id,
     };
     this.updatePlaceholderPosition$.next(fakeItem);
   }
 
-  onMoveOrResizeEnd(item: GridItemComponent) {
+  onMoveOrResizeEnd(item: NgxGridItemComponent) {
     this.placeHolderRef?.destroy();
     if (this.placeHolder) {
       item.config = this.placeHolder.config;
     }
     this.updateGridItem(item);
-    this.renderer.setStyle(item.el, 'transform', '');
+    //debugger;
     this.placeHolder = undefined;
     // todo: if pushOnDrag config is on -> no need to checkCollisson in end drag
     this.cehckCollesions({ ...item.config, id: item.id });
@@ -176,7 +177,7 @@ export class GridLayoutService {
     // }
 
     if (!this.placeHolderRef || !this.placeHolder) {
-      this.placeHolderRef = this._placeholderContainerRef.createComponent(GridItemComponent);
+      this.placeHolderRef = this._placeholderContainerRef.createComponent(NgxGridItemComponent);
       this.placeHolder = this.placeHolderRef.instance;
       this.placeHolder.el.className = 'grid-item-placeholder grid-item-placeholder-default';
       this.placeHolder.id = 'PLACEHOLDER_GRID_ITEM';
@@ -206,7 +207,7 @@ export class GridLayoutService {
     }
   }
 
-  private moveGridItem(gridItem: GridItemComponent, cellX: number, cellY: number) {
+  private moveGridItem(gridItem: NgxGridItemComponent, cellX: number, cellY: number) {
     if (!gridItem.isDraggingOrResizing) {
       gridItem.config.y = cellY;
     }

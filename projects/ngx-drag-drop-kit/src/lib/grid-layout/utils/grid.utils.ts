@@ -2,7 +2,7 @@
  * TODO: https://github.com/katoid/angular-grid-layout/blob/main/projects/angular-grid-layout/src/lib/utils/grid.utils.ts
  */
 
-import { GridItemComponent } from '../grid-item/grid-item.component';
+import { NgxGridItemComponent } from '../grid-item/grid-item.component';
 import { FakeItem } from '../options/gride-item-config';
 import { CompactType } from '../options/options';
 
@@ -58,21 +58,22 @@ export function gridHToScreenHeight(cellHeight: number, h: number, gap: number) 
 }
 
 /*------------------------------------------------------------------------------*/
-export function getAllCollisions(gridItems: GridItemComponent[], item: FakeItem): Array<GridItemComponent> {
+export function getAllCollisions(gridItems: NgxGridItemComponent[], item: FakeItem): Array<NgxGridItemComponent> {
   return gridItems.filter(l => collides(l, item));
 }
 
-export function getFirstCollision(gridItems: GridItemComponent[], item: FakeItem): GridItemComponent | null {
+export function getFirstCollision(gridItems: NgxGridItemComponent[], item: FakeItem): NgxGridItemComponent | null {
+ debugger
   for (let i = 0; i < gridItems.length; i++) {
     if (collides(gridItems[i], item) && gridItems[i].isDraggingOrResizing == false) {
-      // console.log('first collession:', item, ' with: ', gridItems[i].id, gridItems[i].config);
+      console.log('first collession:', item, ' with: ', gridItems[i].id, gridItems[i].config);
       return gridItems[i];
     }
   }
   return null;
 }
 
-// export function getPreviusGridItem(gridItems: GridItemComponent[], item: FakeItem): GridItemComponent | null {
+// export function getPreviusGridItem(gridItems: NgxGridItemComponent[], item: FakeItem): NgxGridItemComponent | null {
 //   const m1 = item.x;
 //   const m2 = item.x + item.w;
 //   let verticalCollissions = gridItems
@@ -106,9 +107,9 @@ export function getFirstCollision(gridItems: GridItemComponent[], item: FakeItem
 //   return null; //item.y;
 // }
 /**
- * Given two GridItemComponent, check if they collide.
+ * Given two NgxGridItemComponent, check if they collide.
  */
-export function collides(l1: GridItemComponent, l2: FakeItem): boolean {
+export function collides(l1: NgxGridItemComponent, l2: FakeItem): boolean {
   if (l1.id === l2.id) {
     return false;
   } // same element
@@ -135,7 +136,7 @@ export function collides(l1: GridItemComponent, l2: FakeItem): boolean {
  * @return {Array} Array of grid objects.
  * @return {Array}        grid, sorted static items first.
  */
-export function sortGridItems(grid: GridItemComponent[], compactType: CompactType): GridItemComponent[] {
+export function sortGridItems(grid: NgxGridItemComponent[], compactType: CompactType): NgxGridItemComponent[] {
   if (compactType === 'horizontal') {
     return sortGridItemsByColRow(grid);
   } else {
@@ -143,7 +144,7 @@ export function sortGridItems(grid: GridItemComponent[], compactType: CompactTyp
   }
 }
 
-export function sortGridItemsByRowCol(grid: GridItemComponent[]): GridItemComponent[] {
+export function sortGridItemsByRowCol(grid: NgxGridItemComponent[]): NgxGridItemComponent[] {
   return grid.sort((a, b) => {
     if (a.config.y > b.config.y || (a.config.y === b.config.y && a.config.x > b.config.x)) {
       return 1;
@@ -155,7 +156,7 @@ export function sortGridItemsByRowCol(grid: GridItemComponent[]): GridItemCompon
   });
 }
 
-export function sortGridItemsByColRow(grid: GridItemComponent[]): GridItemComponent[] {
+export function sortGridItemsByColRow(grid: NgxGridItemComponent[]): NgxGridItemComponent[] {
   return grid.sort((a, b) => {
     if (a.config.x > b.config.x || (a.config.x === b.config.x && a.config.y > b.config.y)) {
       return 1;
