@@ -9,7 +9,6 @@ import {
   EventEmitter,
   HostListener,
   Input,
-  OnDestroy,
   OnInit,
   Output,
   QueryList,
@@ -23,263 +22,207 @@ import { NgxGridItemComponent } from '../grid-item/grid-item.component';
 import { mergeDeep } from '../../../utils/deep-merge';
 import { getFirstCollision } from '../utils/grid.utils';
 import { LayoutOutput } from '../options/layout-output';
-import { Subject, takeUntil, debounceTime } from 'rxjs';
 
 @Component({
   selector: 'ngx-grid-layout',
   templateUrl: './grid-layout.component.html',
   styleUrls: ['./grid-layout.component.scss'],
   host: {
-    '[style.position]': '"relative"',
+    '[style.position]': '"relative !important"',
     '[style.boxSizing]': '"border-box"',
-    '[style.height.px]': 'gridHeight',
-    '[style.user-select]': 'editMode ? "none" : "auto"',
-    '[class.edit-mode]': 'editMode',
+    '[style.height.px]': '_gridService.getGridHeight',
+    '[style.user-select]': '_gridService.editMode ? "none" : "auto"',
+    '[class.edit-mode]': '_gridService.editMode',
   },
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: false,
 })
-export class NgxGridLayoutComponent implements OnInit, AfterViewInit, OnDestroy {
-  private readonly destroy$ = new Subject<void>();
-  private resizeObserver?: ResizeObserver;
-  private cachedGridHeight = 0;
-
-  @Input({ alias: 'editMode', transform: booleanAttribute }) 
+export class NgxGridLayoutComponent implements OnInit, AfterViewInit {
+  @Input({ alias: 'editMode', transform: booleanAttribute })
   set setEditMode(val: boolean) {
     this._gridService.editMode = val;
-    this.updateEditMode(val);
+    this._changeDetection.markForCheck();
   }
-
-  @Input() 
-  get options(): IGridLayoutOptions {
-    return this._gridService.options;
-  }
-  set options(val: IGridLayoutOptions) {
-    if (val) {
-      this._gridService.options = mergeDeep(DEFAULT_GRID_LAYOUT_CONFIG, val);
-      this.setBackgroundCssVariables();
-      // Schedule re-layout after options change
-      this.scheduleLayout();
-    }
-  }
-
-  @Output() layoutChange = new EventEmitter<LayoutOutput[]>();
 
   get editMode(): boolean {
     return this._gridService.editMode;
   }
 
-  get gridHeight(): number {
-    return this.cachedGridHeight;
+  @Input()
+  get options(): IGridLayoutOptions {
+    return this._gridService._options;
+  }
+  set options(val: IGridLayoutOptions) {
+    if (val) {
+      this._gridService._options = mergeDeep(DEFAULT_GRID_LAYOUT_CONFIG, val);
+      this.setBackgroundCssVariables();
+    }
   }
 
-  @ContentChildren(NgxGridItemComponent) 
+  @Output() layoutChange = new EventEmitter<LayoutOutput[]>();
+
+  el: HTMLElement;
+
+  @ContentChildren(NgxGridItemComponent)
   set items(value: QueryList<NgxGridItemComponent>) {
     if (value) {
-      value.changes
-        .pipe(takeUntil(this.destroy$), debounceTime(50))
-        .subscribe(() => {
-          this._gridService.setGridItems(Array.from(value));
-          this.initGridItems();
-        });
-      
-      this._gridService.setGridItems(Array.from(value));
+      value.changes.subscribe(() => {
+        this._gridService._gridItems = Array.from(value);
+        this.initGridItems();
+      });
+      this._gridService._gridItems = Array.from(value);
       this.initGridItems();
     }
   }
 
-  @ViewChild('placeholder', { read: ViewContainerRef, static: false }) 
+  @ViewChild('placeholder', { read: ViewContainerRef, static: false })
   private set placeholderRef(val: ViewContainerRef) {
-    if (val) {
-      this._gridService.setPlaceholderContainer(val);
-    }
+    this._gridService._placeholderContainerRef = val;
   }
 
   constructor(
     public _gridService: GridLayoutService,
-    private elRef: ElementRef<HTMLElement>,
-    private cdr: ChangeDetectorRef
-  ) {}
+    private _elRef: ElementRef<HTMLElement>,
+    private _changeDetection: ChangeDetectorRef
+  ) {
+    this.el = _elRef.nativeElement;
+  }
 
   ngOnInit(): void {
     this.setBackgroundCssVariables();
-    this._gridService.setGridLayout(this);
-    this.setupResizeObserver();
-    
-    // Subscribe to grid height changes
-    this._gridService.gridHeight$
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(height => {
-        this.cachedGridHeight = height;
-        this.cdr.markForCheck();
-      });
+    this._gridService.gridLayout = this;
   }
 
   ngAfterViewInit(): void {
-    // Initial layout calculation
-    this.scheduleLayout();
+    // Trigger initial layout calculation
+    setTimeout(() => {
+      this._changeDetection.detectChanges();
+    }, 0);
   }
 
-  ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
-    this.resizeObserver?.disconnect();
-    this._gridService.cleanup();
+  public update(val: IGridLayoutOptions) {
+    this.options = val;
+    this.initGridItems();
   }
 
-  private setupResizeObserver(): void {
-    if (typeof ResizeObserver === 'undefined') {
+  /**
+   * Set CSS variables for grid background
+   */
+  private setBackgroundCssVariables(): void {
+    const style = this.el.style;
+    const backgroundConfig = this._gridService._options.gridBackgroundConfig;
+    const rowHeight = this._gridService._options.rowHeight;
+    const cols = this._gridService._options.cols;
+    const gap = this._gridService._options.gap;
+
+    if (backgroundConfig) {
+      // Structure
+      style.setProperty('--gap', gap + 'px');
+      style.setProperty('--row-height', rowHeight + 'px');
+      style.setProperty('--columns', `${cols}`);
+      style.setProperty('--border-width', backgroundConfig.borderWidth + 'px');
+
+      // Colors
+      style.setProperty('--border-color', backgroundConfig.borderColor);
+      style.setProperty('--gap-color', backgroundConfig.gapColor);
+      style.setProperty('--row-color', backgroundConfig.rowColor);
+      style.setProperty('--column-color', backgroundConfig.columnColor);
+    } else {
+      // Remove properties if no background config
+      style.removeProperty('--gap');
+      style.removeProperty('--row-height');
+      style.removeProperty('--columns');
+      style.removeProperty('--border-width');
+      style.removeProperty('--border-color');
+      style.removeProperty('--gap-color');
+      style.removeProperty('--row-color');
+      style.removeProperty('--column-color');
+    }
+  }
+
+  /**
+   * Initialize grid items - validate positions and resolve collisions
+   */
+  private initGridItems(): void {
+    if (!this._gridService._gridItems.length) {
       return;
     }
 
-    this.resizeObserver = new ResizeObserver(
-      debounce(() => {
-        this.updateGridLayout();
-      }, 150)
-    );
-
-    this.resizeObserver.observe(this.elRef.nativeElement);
-  }
-
-  private setBackgroundCssVariables(): void {
-    const style = this.elRef.nativeElement.style;
-    const config = this._gridService.options;
-    const bgConfig = config.gridBackgroundConfig;
-
-    if (bgConfig) {
-      style.setProperty('--gap', `${config.gap}px`);
-      style.setProperty('--row-height', `${config.rowHeight}px`);
-      style.setProperty('--columns', `${config.cols}`);
-      style.setProperty('--border-width', `${bgConfig.borderWidth}px`);
-      style.setProperty('--border-color', bgConfig.borderColor);
-      style.setProperty('--gap-color', bgConfig.gapColor);
-      style.setProperty('--row-color', bgConfig.rowColor);
-      style.setProperty('--column-color', bgConfig.columnColor);
-    } else {
-      // Clear all custom properties
-      [
-        '--gap', '--row-height', '--columns', '--border-width',
-        '--border-color', '--gap-color', '--row-color', '--column-color'
-      ].forEach(prop => style.removeProperty(prop));
-    }
-  }
-
-  private initGridItems(): void {
-    const items = this._gridService.getGridItems();
-    
-    // Assign IDs and validate positions
-    items.forEach((item, index) => {
+    // Assign IDs to items without one
+    for (let i = 0; i < this._gridService._gridItems.length; i++) {
+      const item = this._gridService._gridItems[i];
       if (!item.id) {
-        item.id = this.generateItemId(index);
+        item.id = 'GRID_ITEM_' + (i + 1);
       }
 
-      // Fix collisions
-      while (getFirstCollision(items, { ...item.config, id: item.id })) {
+      // Validate and resolve collisions
+      while (getFirstCollision(this._gridService._gridItems, { ...item.config, id: item.id })) {
         item.config.y++;
       }
 
       this._gridService.updateGridItem(item);
-    });
-
-    // Check for duplicate IDs and fix them
-    this.validateAndFixDuplicateIds();
-    
-    // Compact and calculate layout
-    this._gridService.compactGridItems();
-    
-    this.cdr.markForCheck();
-  }
-
-  private validateAndFixDuplicateIds(): void {
-    const items = this._gridService.getGridItems();
-    const ids = new Set<string>();
-    const duplicates: NgxGridItemComponent[] = [];
-
-    items.forEach(item => {
-      if (ids.has(item.id!)) {
-        duplicates.push(item);
-      } else {
-        ids.add(item.id!);
-      }
-    });
-
-    if (duplicates.length > 0) {
-      console.warn(
-        '[GridLayout] Duplicate IDs detected and fixed:', 
-        duplicates.map(d => d.id)
-      );
-      
-      duplicates.forEach((item, index) => {
-        item.id = this.generateUniqueId(ids);
-        ids.add(item.id);
-      });
     }
+
+    // Check for duplicate IDs
+    this.checkDuplicatedIds();
+
+    // Compact items to remove gaps
+    this._gridService.compactGridItems();
+
+    // Trigger change detection
+    this._changeDetection.detectChanges();
   }
 
-  private generateItemId(index: number): string {
-    return `grid-item-${index + 1}`;
-  }
-
-  private generateUniqueId(existingIds: Set<string>): string {
-    let id: string;
-    do {
-      id = `grid-item-${this.generateRandomString()}`;
-    } while (existingIds.has(id));
-    return id;
-  }
-
-  private generateRandomString(): string {
-    return Math.random().toString(36).substring(2, 11);
-  }
-
+  /**
+   * Handle window resize - recalculate grid layout
+   */
   @HostListener('window:resize')
   public updateGridLayout(): void {
     this.setBackgroundCssVariables();
-    this.scheduleLayout();
+    this.initGridItems();
   }
 
-  private scheduleLayout(): void {
-    // Use requestAnimationFrame for better performance
-    requestAnimationFrame(() => {
-      this.initGridItems();
-    });
-  }
-
-  private updateEditMode(editMode: boolean): void {
-    const items = this._gridService.getGridItems();
-    items.forEach(item => {
-      if (editMode) {
-        item.enableDragAndResize();
-      } else {
-        item.disableDragAndResize();
-      }
-    });
-  }
-
+  /**
+   * Emit layout changes to parent component
+   */
   public emitChangeLayout(layout: LayoutOutput[]): void {
-    // Clone to prevent external mutations
-    const clonedLayout = layout.map(item => ({ ...item }));
-    this.layoutChange.emit(clonedLayout);
+    this.layoutChange.emit(layout);
   }
 
-  public getElement(): HTMLElement {
-    return this.elRef.nativeElement;
-  }
-}
+  /**
+   * Check for duplicate IDs and generate new ones if needed
+   */
+  private checkDuplicatedIds(): boolean {
+    const ids = this._gridService._gridItems.map(m => m.id);
+    let hasDuplicated = false;
 
-// Utility function for debouncing
-function debounce<T extends (...args: any[]) => any>(
-  func: T,
-  wait: number
-): (...args: Parameters<T>) => void {
-  let timeout: any;
-  return function executedFunction(...args: Parameters<T>) {
-    const later = () => {
-      clearTimeout(timeout);
-      func(...args);
-    };
-    clearTimeout(timeout);
-    timeout = setTimeout(later, wait);
-  };
+    for (let i = 0; i < ids.length; i++) {
+      const currentId = ids[i];
+      const firstIndex = ids.indexOf(currentId);
+
+      if (firstIndex !== i) {
+        // Duplicate found - generate new ID
+        this._gridService._gridItems[i].id = this.generateUniqueId();
+        hasDuplicated = true;
+      }
+    }
+
+    if (hasDuplicated) {
+      console.warn('GridLayout: Grid items must have unique IDs. Auto-generated IDs for duplicates.', ids);
+    }
+
+    return hasDuplicated;
+  }
+
+  /**
+   * Generate a unique UUID v4
+   */
+  private generateUniqueId(): string {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+      const r = (Math.random() * 16) | 0;
+      const v = c === 'x' ? r : (r & 0x3) | 0x8;
+      return v.toString(16);
+    });
+  }
 }

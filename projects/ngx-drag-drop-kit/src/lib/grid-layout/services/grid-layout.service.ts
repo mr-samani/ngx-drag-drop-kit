@@ -1,14 +1,7 @@
-import {
-  ComponentRef,
-  Injectable,
-  OnDestroy,
-  Renderer2,
-  RendererFactory2,
-  ViewContainerRef,
-} from '@angular/core';
+import { ComponentRef, Injectable, Renderer2, RendererFactory2, ViewContainerRef } from '@angular/core';
 import { GridLayoutOptions } from '../options/options';
 import { NgxGridItemComponent } from '../grid-item/grid-item.component';
-import { BehaviorSubject, Subject, debounceTime, distinctUntilChanged, takeUntil } from 'rxjs';
+import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
 
 import {
   collides,
@@ -32,247 +25,141 @@ import { NgxGridLayoutComponent } from '../grid-layout/grid-layout.component';
 export const DEFAULT_GRID_ITEM_CONFIG = new GridItemConfig();
 export const DEFAULT_GRID_LAYOUT_CONFIG = new GridLayoutOptions();
 
-interface PlaceholderUpdate {
-  x: number;
-  y: number;
-  w: number;
-  h: number;
-  timestamp: number;
-}
-
 @Injectable()
-export class GridLayoutService implements OnDestroy {
-  private readonly destroy$ = new Subject<void>();
-  private readonly placeholderUpdate$ = new Subject<FakeItem>();
-  private readonly gridHeightSubject$ = new BehaviorSubject<number>(0);
-  
-  public readonly gridHeight$ = this.gridHeightSubject$.asObservable();
+export class GridLayoutService {
+  public _options: GridLayoutOptions = DEFAULT_GRID_LAYOUT_CONFIG;
+  public gridLayout!: NgxGridLayoutComponent;
+  public _gridItems: NgxGridItemComponent[] = [];
 
-  private _options: GridLayoutOptions = DEFAULT_GRID_LAYOUT_CONFIG;
-  private gridLayout?: NgxGridLayoutComponent;
-  private gridItems: NgxGridItemComponent[] = [];
-  private placeholderContainerRef?: ViewContainerRef;
-  private placeholder?: NgxGridItemComponent;
-  private placeholderRef?: ComponentRef<NgxGridItemComponent>;
+  public _placeholderContainerRef!: ViewContainerRef;
+  private placeHolder?: NgxGridItemComponent;
+  private placeHolderRef?: ComponentRef<NgxGridItemComponent>;
+
+  private updatePlaceholderPosition$ = new Subject<FakeItem>();
   private renderer: Renderer2;
-  private cachedCellWidth = 0;
-  private cachedCellHeight = 0;
-  private cachedMainWidth = 0;
-  private draggedItem?: NgxGridItemComponent;
-
-  public editMode = true;
+  private _editMode: boolean = true;
 
   constructor(rendererFactory: RendererFactory2) {
     this.renderer = rendererFactory.createRenderer(null, null);
-    this.setupPlaceholderUpdates();
-  }
-
-  ngOnDestroy(): void {
-    this.cleanup();
-  }
-
-  public cleanup(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
-    this.destroyPlaceholder();
-    this.gridHeightSubject$.complete();
-  }
-
-  private setupPlaceholderUpdates(): void {
-    this.placeholderUpdate$
+    this.updatePlaceholderPosition$
       .pipe(
-        distinctUntilChanged((prev, curr) =>
-          prev.x === curr.x &&
-          prev.y === curr.y &&
-          prev.w === curr.w &&
-          prev.h === curr.h
-        ),
-        debounceTime(10),
-        takeUntil(this.destroy$)
+        distinctUntilChanged((prev, curr) => {
+          return prev.x === curr.x && prev.y === curr.y && prev.w === curr.w && prev.h === curr.h;
+        }),
+        debounceTime(10)
       )
-      .subscribe(fakeItem => {
-        this.updatePlaceholderPosition(fakeItem);
+      .subscribe(input => {
+        this.updatePlaceholderPosition(input);
       });
   }
 
-  // Public API
-  public setGridLayout(layout: NgxGridLayoutComponent): void {
-    this.gridLayout = layout;
+  public get editMode(): boolean {
+    return this._editMode;
   }
 
-  public setGridItems(items: NgxGridItemComponent[]): void {
-    this.gridItems = items;
-  }
-
-  public getGridItems(): NgxGridItemComponent[] {
-    return this.gridItems;
-  }
-
-  public setPlaceholderContainer(container: ViewContainerRef): void {
-    this.placeholderContainerRef = container;
-  }
-
-  public get options(): GridLayoutOptions {
-    return this._options;
-  }
-
-  public set options(val: GridLayoutOptions) {
-    this._options = val;
-    this.invalidateCache();
-  }
-
-  // Cache management
-  private invalidateCache(): void {
-    this.cachedCellWidth = 0;
-    this.cachedCellHeight = 0;
-    this.cachedMainWidth = 0;
-  }
-
-  // Dimension calculations
-  private get mainWidth(): number {
-    if (this.cachedMainWidth > 0) {
-      return this.cachedMainWidth;
+  public set editMode(value: boolean) {
+    if (this._editMode !== value) {
+      this._editMode = value;
+      this.updateGridItemsEditMode();
     }
-
-    if (!this.gridLayout) {
-      return 0;
-    }
-
-    const mainElRec = this.gridLayout.getElement().getBoundingClientRect();
-    const bgConfig = this._options.gridBackgroundConfig;
-    this.cachedMainWidth =
-      mainElRec.width - (this._options.gap * 2 + bgConfig.borderWidth * 2);
-    return this.cachedMainWidth;
   }
 
-  private get cellWidth(): number {
-    if (this.cachedCellWidth > 0) {
-      return this.cachedCellWidth;
-    }
+  /**
+   * Update edit mode for all grid items
+   */
+  private updateGridItemsEditMode(): void {
+    this._gridItems.forEach(item => {
+      item.setEditMode(this._editMode);
+    });
+  }
 
+  public updateGridItem(item: NgxGridItemComponent): void {
+    item.config = mergeDeep(DEFAULT_GRID_ITEM_CONFIG, item.config);
+    item.width = gridWToScreenWidth(this.cellWidth, item.config.w, this._options.gap);
+    item.height = gridHToScreenHeight(this.cellHeight, item.config.h, this._options.gap);
+    item.left = gridXToScreenX(this.cellWidth, item.config.x, this._options.gap);
+    item.top = gridYToScreenY(this.cellHeight, item.config.y, this._options.gap);
+    item.updateView();
+  }
+
+  public get mainWidth(): number {
+    const mainElRec = this.gridLayout.el.getBoundingClientRect();
+    return mainElRec.width - (this._options.gap * 2 + this._options.gridBackgroundConfig.borderWidth * 2);
+  }
+
+  public get mainHeight(): number {
+    const mainElRec = this.gridLayout.el.getBoundingClientRect();
+    return mainElRec.height;
+  }
+
+  public get cellWidth(): number {
     const { cols, gap } = this._options;
     const widthExcludingGap = this.mainWidth - Math.max(gap * (cols - 1), 0);
-    this.cachedCellWidth = widthExcludingGap / cols;
-    return this.cachedCellWidth;
+    return widthExcludingGap / cols;
   }
 
-  private get cellHeight(): number {
-    if (this.cachedCellHeight > 0) {
-      return this.cachedCellHeight;
-    }
-
+  public get cellHeight(): number {
     if (typeof this._options.rowHeight === 'number') {
-      this.cachedCellHeight = this._options.rowHeight;
-      return this.cachedCellHeight;
+      return this._options.rowHeight;
     }
-
-    // Fallback to container height
-    if (this.gridLayout) {
-      const mainElRec = this.gridLayout.getElement().getBoundingClientRect();
-      this.cachedCellHeight = mainElRec.height;
-      return this.cachedCellHeight;
-    }
-
-    return 100; // Default fallback
+    return this.mainHeight;
   }
 
-  private calculateGridHeight(): number {
+  public get getGridHeight(): number {
     const rowHeight = this.cellHeight;
     const gap = this._options.gap;
     const border = this._options.gridBackgroundConfig.borderWidth;
 
-    const maxRow = this.gridItems.reduce(
-      (max, item) => Math.max(max, item.config.y + item.config.h),
-      0
-    );
+    const maxY = this._gridItems.reduce((acc, cur) => Math.max(acc, cur.config.y + cur.config.h), 0);
 
     return (
-      rowHeight * maxRow +
-      gap * Math.max(maxRow - 1, 0) +
-      gap * 2 +
-      border * 2
+      rowHeight * maxY +
+      gap * Math.max(maxY - 1, 0) +
+      gap * 2 + // padding
+      border * 2 // border
     );
   }
 
-  private updateGridHeight(): void {
-    const height = this.calculateGridHeight();
-    this.gridHeightSubject$.next(height);
-  }
-
-  // Grid item management
-  public updateGridItem(item: NgxGridItemComponent, animate = true): void {
-    if (!item.config) {
-      console.error('[GridLayoutService] Item config is undefined', item);
-      return;
-    }
-
-    item.config = mergeDeep(DEFAULT_GRID_ITEM_CONFIG, item.config);
-
-    const width = gridWToScreenWidth(this.cellWidth, item.config.w, this._options.gap);
-    const height = gridHToScreenHeight(this.cellHeight, item.config.h, this._options.gap);
-    const left = gridXToScreenX(this.cellWidth, item.config.x, this._options.gap);
-    const top = gridYToScreenY(this.cellHeight, item.config.y, this._options.gap);
-
-    item.updatePosition(left, top, width, height, animate);
-  }
-
-  // Drag and resize handlers
-  public onDragOrResizeStart(item: NgxGridItemComponent): void {
-    this.draggedItem = item;
-    this.invalidateCache();
-  }
-
-  public onMoveOrResize(item: NgxGridItemComponent): void {
-    const rect = item.el.getBoundingClientRect();
-    const cellPos = this.convertPointToCell(
-      rect.left,
-      rect.top,
-      rect.width,
-      rect.height
-    );
+  onMoveOrResize(item: NgxGridItemComponent): void {
+    const gridItemRec = item.el.getBoundingClientRect();
+    const plcInfo = this.convertPointToCell(gridItemRec.left, gridItemRec.top, gridItemRec.width, gridItemRec.height);
 
     const fakeItem: FakeItem = {
-      x: cellPos.cellX,
-      y: cellPos.cellY,
-      w: cellPos.cellW,
-      h: cellPos.cellH,
-      id: `placeholder-${item.id}`,
+      x: plcInfo.cellX,
+      y: plcInfo.cellY,
+      w: plcInfo.cellW,
+      h: plcInfo.cellH,
+      id: 'plc_' + item.id,
     };
 
-    this.placeholderUpdate$.next(fakeItem);
+    this.updatePlaceholderPosition$.next(fakeItem);
   }
 
-  public onMoveOrResizeEnd(item: NgxGridItemComponent): void {
-    if (this.placeholder) {
-      item.setConfig(this.placeholder.config);
+  onMoveOrResizeEnd(item: NgxGridItemComponent): void {
+    this.placeHolderRef?.destroy();
+
+    if (this.placeHolder) {
+      item.config.x = this.placeHolder.config.x;
+      item.config.y = this.placeHolder.config.y;
+      item.config.w = this.placeHolder.config.w;
+      item.config.h = this.placeHolder.config.h;
     }
 
     this.updateGridItem(item);
-    this.destroyPlaceholder();
+    this.placeHolder = undefined;
 
-    this.checkCollisions({ ...item.config, id: item.id! });
+    this.checkCollisions({ ...item.config, id: item.id });
     this.compactGridItems();
-    this.calculateLayout();
-    
-    this.draggedItem = undefined;
+    this.calcLayout();
   }
 
-  private convertPointToCell(
-    x: number,
-    y: number,
-    width: number,
-    height: number
-  ): { cellX: number; cellY: number; cellW: number; cellH: number } {
-    if (!this.gridLayout) {
-      return { cellX: 0, cellY: 0, cellW: 1, cellH: 1 };
-    }
+  convertPointToCell(x: number, y: number, width: number, height: number) {
+    const mainRec = this.gridLayout.el.getBoundingClientRect();
+    const newX = x - mainRec.left;
+    const newY = y - mainRec.top;
 
-    const mainRec = this.gridLayout.getElement().getBoundingClientRect();
-    const relX = x - mainRec.left;
-    const relY = y - mainRec.top;
-
-    let cellX = screenXToGridX(relX, this._options.cols, mainRec.width, this._options.gap);
-    let cellY = screenYToGridY(relY, this.cellHeight, this._options.gap);
+    let cellX = screenXToGridX(newX, this._options.cols, mainRec.width, this._options.gap);
+    let cellY = screenYToGridY(newY, this.cellHeight, this._options.gap);
     let cellW = screenWidthToGridWidth(width, this._options.cols, mainRec.width, this._options.gap);
     let cellH = screenHeightToGridHeight(height, this.cellHeight, mainRec.height, this._options.gap);
 
@@ -288,159 +175,142 @@ export class GridLayoutService implements OnDestroy {
     return { cellX, cellY, cellW, cellH };
   }
 
-  // Placeholder management
+  /**
+   * Update placeholder position and handle collisions
+   */
   private updatePlaceholderPosition(fakeItem: FakeItem): void {
-    if (!this.placeholderContainerRef) {
-      return;
+    if (!this.placeHolderRef || !this.placeHolder) {
+      this.placeHolderRef = this._placeholderContainerRef.createComponent(NgxGridItemComponent);
+      this.placeHolder = this.placeHolderRef.instance;
+      this.placeHolder.el.className = 'grid-item-placeholder grid-item-placeholder-default';
+      this.placeHolder.id = 'PLACEHOLDER_GRID_ITEM';
     }
 
-    if (!this.placeholderRef || !this.placeholder) {
-      this.createPlaceholder();
+    // Move placeholder up until it hits a collision or reaches top
+    let targetY = fakeItem.y;
+    while (targetY > 0) {
+      const testItem = { ...fakeItem, y: targetY - 1 };
+      const collision = getFirstCollision(this._gridItems, testItem);
+
+      if (collision) {
+        // If there's a collision, stay above it
+        break;
+      }
+      targetY--;
     }
 
-    if (!this.placeholder) {
-      return;
+    this.placeHolder.config = new GridItemConfig(fakeItem.x, targetY, fakeItem.w, fakeItem.h);
+    this.updateGridItem(this.placeHolder);
+
+    // Push down items that collide with placeholder
+    if (this._options.pushOnDrag) {
+      this.checkCollisions(fakeItem);
     }
 
-    // Snap to top-most available position
-    while (
-      fakeItem.y > 0 &&
-      !getFirstCollision(this.gridItems, { ...fakeItem, y: fakeItem.y - 1 })
-    ) {
-      fakeItem.y--;
-    }
-
-    this.placeholder.config = new GridItemConfig(
-      fakeItem.x,
-      fakeItem.y,
-      fakeItem.w,
-      fakeItem.h
-    );
-
-    this.updateGridItem(this.placeholder, false);
-    this.compactGridItems();
+   // this.compactGridItems();
   }
 
-  private createPlaceholder(): void {
-    if (!this.placeholderContainerRef) {
-      return;
-    }
-
-    this.placeholderRef = this.placeholderContainerRef.createComponent(
-      NgxGridItemComponent
-    );
-    this.placeholder = this.placeholderRef.instance;
-    this.placeholder.el.className = 'grid-item-placeholder grid-item-placeholder-default';
-    this.placeholder.id = 'PLACEHOLDER';
-    this.placeholder.disableDragAndResize();
-  }
-
-  private destroyPlaceholder(): void {
-    this.placeholderRef?.destroy();
-    this.placeholderRef = undefined;
-    this.placeholder = undefined;
-  }
-
-  // Collision detection and resolution
+  /**
+   * Check and resolve collisions recursively
+   */
   private checkCollisions(fakeItem: FakeItem): void {
-    const collisions = getAllCollisions(this.gridItems, fakeItem);
+    const collisions = getAllCollisions(this._gridItems, fakeItem);
+    const movedItems = new Set<string>();
 
     for (const collision of collisions) {
-      if (collision.id === fakeItem.id || collision.isDraggingOrResizing) {
-        continue;
-      }
+      if (movedItems.has(collision.id!)) continue;
 
-      const movedItem = this.moveGridItem(
-        collision,
-        fakeItem.y + fakeItem.h
-      );
+      const moved = this.moveGridItem(collision, fakeItem.y + fakeItem.h);
+      movedItems.add(moved.id!);
 
       const movedFakeItem: FakeItem = {
-        x: movedItem.config.x,
-        y: movedItem.config.y,
-        w: movedItem.config.w,
-        h: movedItem.config.h,
-        id: movedItem.id!,
+        x: moved.config.x,
+        y: moved.config.y,
+        w: moved.config.w,
+        h: moved.config.h,
+        id: moved.id,
       };
 
       this.checkCollisions(movedFakeItem);
     }
   }
 
-  private moveGridItem(
-    item: NgxGridItemComponent,
-    targetY: number
-  ): NgxGridItemComponent {
-    if (!item.isDraggingOrResizing) {
-      item.config.y = targetY;
-      this.updateGridItem(item);
+  /**
+   * Move grid item to avoid collision
+   */
+  private moveGridItem(gridItem: NgxGridItemComponent, targetY: number): NgxGridItemComponent {
+    if (!gridItem.isDraggingOrResizing) {
+      gridItem.config.y = targetY;
+      this.updateGridItem(gridItem);
     }
-    return item;
+    return gridItem;
   }
 
-  // Compaction algorithm
-  public compactGridItems(): void {
-    this.gridItems = sortGridItems(this.gridItems, 'vertical');
+  /**
+   * Compact grid items - move items up when there's space
+   */
+  compactGridItems(): void {
+    this._gridItems = sortGridItems(this._gridItems, 'vertical');
 
-    for (const item of this.gridItems) {
-      if (item.config.y <= 0 || item.config.h <= 0) {
+    for (const gridItem of this._gridItems) {
+      if (gridItem.config.y <= 0 || gridItem.config.h <= 0) {
         continue;
       }
 
-      // Try to move item up as much as possible
-      let targetY = item.config.y;
+      // Skip if currently being dragged/resized
+      if (gridItem.isDraggingOrResizing) {
+        continue;
+      }
 
+      // Try to move item up
+      let targetY = gridItem.config.y;
       while (targetY > 0) {
         const testItem: FakeItem = {
-          x: item.config.x,
+          x: gridItem.config.x,
           y: targetY - 1,
-          w: item.config.w,
-          h: item.config.h,
-          id: item.id!,
+          w: gridItem.config.w,
+          h: gridItem.config.h,
+          id: gridItem.id,
         };
 
-        // Check for collisions
-        if (getFirstCollision(this.gridItems, testItem)) {
+        const collision = getFirstCollision(this._gridItems, testItem);
+
+        // Check collision with placeholder
+        if (
+          this.placeHolder &&
+          collides(gridItem, {
+            ...this.placeHolder.config,
+            y: this.placeHolder.config.y,
+            id: this.placeHolder.id,
+          })
+        ) {
           break;
         }
 
-        // Check for placeholder collision
-        if (
-          item.isDraggingOrResizing ||
-          (this.placeholder &&
-            collides(item, {
-              ...this.placeholder.config,
-              y: this.placeholder.config.y + 1,
-              id: this.placeholder.id!,
-            }))
-        ) {
+        if (collision) {
           break;
         }
 
         targetY--;
       }
 
-      if (targetY !== item.config.y) {
-        item.config.y = targetY;
-        this.updateGridItem(item);
+      if (targetY !== gridItem.config.y) {
+        gridItem.config.y = targetY;
+        this.updateGridItem(gridItem);
       }
     }
-
-    this.updateGridHeight();
   }
 
-  // Layout calculation
-  private calculateLayout(): void {
-    if (!this.gridLayout) {
-      return;
-    }
-
-    const layout: LayoutOutput[] = this.gridItems.map(item => ({
-      id: item.id!,
+  /**
+   * Calculate and emit layout changes
+   */
+  calcLayout(): void {
+    const layout: LayoutOutput[] = this._gridItems.map(item => ({
+      id: item.id,
+      h: item.config.h,
+      w: item.config.w,
       x: item.config.x,
       y: item.config.y,
-      w: item.config.w,
-      h: item.config.h,
     }));
 
     this.gridLayout.emitChangeLayout(layout);

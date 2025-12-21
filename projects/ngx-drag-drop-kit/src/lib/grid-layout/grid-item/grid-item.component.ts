@@ -4,229 +4,236 @@ import {
   ChangeDetectorRef,
   Component,
   ElementRef,
+  Injector,
   Input,
   OnDestroy,
   OnInit,
   Renderer2,
-  ViewChild,
+  runInInjectionContext,
+  SimpleChanges,
+  OnChanges,
 } from '@angular/core';
 import { GridItemConfig } from '../options/gride-item-config';
 import { GridLayoutService } from '../services/grid-layout.service';
 import { NgxDraggableDirective } from '../../directives/ngx-draggable.directive';
 import { NgxResizableDirective } from '../../directives/ngx-resizable.directive';
-import { Subject, takeUntil } from 'rxjs';
+import { Subscription } from 'rxjs/internal/Subscription';
+import 'reflect-metadata';
 
 @Component({
   selector: 'ngx-grid-item',
   templateUrl: './grid-item.component.html',
   styleUrl: './grid-item.component.scss',
   host: {
-    '[style.position]': '"absolute"',
+    '[style.position]': '"absolute !important"',
     '[style.display]': '"block"',
-    '[style.overflow]': '"hidden"',
     '[style.boxSizing]': '"border-box"',
     '[style.transition]': 'transitionStyle',
-    '[style.width.px]': 'width',
-    '[style.height.px]': 'height',
-    '[style.left.px]': 'left',
-    '[style.top.px]': 'top',
   },
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: false,
-  hostDirectives: [
-    {
-      directive: NgxDraggableDirective,
-      inputs: ['draggableDisabled'],
-    },
-    {
-      directive: NgxResizableDirective,
-      inputs: ['resizableDisabled'],
-    },
-  ],
 })
-export class NgxGridItemComponent implements OnInit, AfterViewInit, OnDestroy {
-  private readonly destroy$ = new Subject<void>();
-  private static readonly TRANSITION_DURATION = 'left 300ms ease, top 300ms ease, width 300ms ease, height 300ms ease';
-  
+export class NgxGridItemComponent implements OnInit, AfterViewInit, OnDestroy, OnChanges {
   @Input() config: GridItemConfig = new GridItemConfig();
   @Input() id?: string;
 
-  width = 0;
-  height = 0;
-  left = 0;
-  top = 0;
-  transitionStyle: string = NgxGridItemComponent.TRANSITION_DURATION;
+  width?: number;
+  height?: number;
+  left?: number;
+  top?: number;
+  el: HTMLElement;
+  transitionStyle = 'left 500ms ease, top 500ms ease, width 500ms ease, height 500ms ease';
 
-  private isDragging = false;
-  private isResizing = false;
-  private dragStartTime = 0;
-
-  @ViewChild(NgxDraggableDirective, { static: true })
+  isDragging = false;
+  isResizing = false;
   private draggable?: NgxDraggableDirective;
-
-  @ViewChild(NgxResizableDirective, { static: true })
   private resizable?: NgxResizableDirective;
+  private subscriptions: Subscription[] = [];
+  private directivesAttached = false;
 
   constructor(
     private elRef: ElementRef<HTMLElement>,
-    private gridService: GridLayoutService,
-    private cdr: ChangeDetectorRef,
-    private renderer: Renderer2
-  ) {}
+    private _gridService: GridLayoutService,
+    private _changeDetection: ChangeDetectorRef,
+    private renderer: Renderer2,
+    private injector: Injector
+  ) {
+    this.el = elRef.nativeElement;
+  }
 
   ngOnInit(): void {
-    this.setupDragAndResize();
+    // Initialize directives based on edit mode
+    if (this._gridService.editMode) {
+      this.attachDirectivesIfNeeded();
+    }
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    // React to config changes
+    if (changes['config'] && !changes['config'].firstChange) {
+      this._gridService.updateGridItem(this);
+    }
   }
 
   ngAfterViewInit(): void {
-    this.cdr.detectChanges();
+    this._changeDetection.detectChanges();
   }
 
   ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
+    this.detachDirectives();
   }
 
-  private setupDragAndResize(): void {
-    if (!this.gridService.editMode) {
-      this.disableDragAndResize();
+  /**
+   * Attach directives for drag and resize functionality
+   */
+  private attachDirectivesIfNeeded(): void {
+    if (this.directivesAttached) return;
+
+    this.draggable = this.attachDirective(NgxDraggableDirective) as NgxDraggableDirective;
+    this.resizable = this.attachDirective(NgxResizableDirective) as NgxResizableDirective;
+
+    if (!this.draggable || !this.resizable) {
+      console.error('Failed to attach directives');
       return;
     }
 
-    if (this.draggable) {
-      this.draggable.dragStart
-        .pipe(takeUntil(this.destroy$))
-        .subscribe(() => this.onDragStart());
+    // Subscribe to drag events
+    this.subscriptions.push(
+      this.draggable.dragStart.subscribe(() => {
+        this.isDragging = true;
+        this.startDragOrResize();
+      }),
+      this.draggable.dragMove.subscribe(() => this._gridService.onMoveOrResize(this)),
+      this.draggable.dragEnd.subscribe(() => {
+        this.isDragging = false;
+        this._gridService.onMoveOrResizeEnd(this);
+      })
+    );
 
-      this.draggable.dragMove
-        .pipe(takeUntil(this.destroy$))
-        .subscribe(() => this.onDragMove());
+    // Subscribe to resize events
+    this.subscriptions.push(
+      this.resizable.resizeStart.subscribe(() => {
+        this.isResizing = true;
+        this.startDragOrResize();
+      }),
+      this.resizable.resize.subscribe(() => this._gridService.onMoveOrResize(this)),
+      this.resizable.resizeEnd.subscribe(() => {
+        this.isResizing = false;
+        this._gridService.onMoveOrResizeEnd(this);
+      })
+    );
 
-      this.draggable.dragEnd
-        .pipe(takeUntil(this.destroy$))
-        .subscribe(() => this.onDragEnd());
+    this.directivesAttached = true;
+  }
+
+  /**
+   * Detach directives and clean up subscriptions
+   */
+  public detachDirectives(): void {
+    // Unsubscribe from all events
+    this.subscriptions.forEach(sub => sub.unsubscribe());
+    this.subscriptions = [];
+
+    // Call ngOnDestroy on directives if they exist
+    if (this.draggable && typeof this.draggable.ngOnDestroy === 'function') {
+      try {
+        this.draggable.ngOnDestroy();
+      } catch (err) {
+        console.error('Error destroying draggable directive:', err);
+      }
     }
 
-    if (this.resizable) {
-      this.resizable.resizeStart
-        .pipe(takeUntil(this.destroy$))
-        .subscribe(() => this.onResizeStart());
+    if (this.resizable && typeof this.resizable.ngOnDestroy === 'function') {
+      try {
+        this.resizable.ngOnDestroy();
+      } catch (err) {
+        console.error('Error destroying resizable directive:', err);
+      }
+    }
 
-      this.resizable.resize
-        .pipe(takeUntil(this.destroy$))
-        .subscribe(() => this.onResize());
+    this.draggable = undefined;
+    this.resizable = undefined;
+    this.directivesAttached = false;
+  }
 
-      this.resizable.resizeEnd
-        .pipe(takeUntil(this.destroy$))
-        .subscribe(() => this.onResizeEnd());
+  /**
+   * Toggle edit mode - attach or detach directives
+   */
+  public setEditMode(enabled: boolean): void {
+    if (enabled && !this.directivesAttached) {
+      this.attachDirectivesIfNeeded();
+    } else if (!enabled && this.directivesAttached) {
+      this.detachDirectives();
     }
   }
 
-  private onDragStart(): void {
-    this.isDragging = true;
-    this.dragStartTime = Date.now();
-    this.disableTransition();
-    this.gridService.onDragOrResizeStart(this);
-  }
-
-  private onDragMove(): void {
-    if (this.isDragging) {
-      this.gridService.onMoveOrResize(this);
-    }
-  }
-
-  private onDragEnd(): void {
-    this.isDragging = false;
-    this.enableTransition();
-    this.gridService.onMoveOrResizeEnd(this);
-  }
-
-  private onResizeStart(): void {
-    this.isResizing = true;
-    this.disableTransition();
-    this.gridService.onDragOrResizeStart(this);
-  }
-
-  private onResize(): void {
-    if (this.isResizing) {
-      this.gridService.onMoveOrResize(this);
-    }
-  }
-
-  private onResizeEnd(): void {
-    this.isResizing = false;
-    this.enableTransition();
-    this.gridService.onMoveOrResizeEnd(this);
-  }
-
-  private disableTransition(): void {
+  startDragOrResize(): void {
     this.transitionStyle = 'none';
-    this.cdr.markForCheck();
+    this._changeDetection.detectChanges();
   }
 
-  private enableTransition(): void {
-    // Small delay to ensure the transition doesn't apply to the final position
-    requestAnimationFrame(() => {
-      this.transitionStyle = NgxGridItemComponent.TRANSITION_DURATION;
-      this.cdr.markForCheck();
-    });
-  }
-
-  public updatePosition(
-    left: number,
-    top: number,
-    width: number,
-    height: number,
-    animate: boolean = true
-  ): void {
-    if (!animate) {
-      this.disableTransition();
-    }
-
-    this.left = left;
-    this.top = top;
-    this.width = width;
-    this.height = height;
-
-    this.cdr.markForCheck();
-
-    if (!animate) {
-      // Re-enable transition after the next frame
-      requestAnimationFrame(() => this.enableTransition());
-    }
+  updateView(): void {
+    this.transitionStyle = 'left 500ms ease, top 500ms ease, width 500ms ease, height 500ms ease';
+    this.renderer.setStyle(this.el, 'transform', '');
+    this.renderer.setStyle(this.el, 'width', this.width + 'px');
+    this.renderer.setStyle(this.el, 'height', this.height + 'px');
+    this.renderer.setStyle(this.el, 'top', this.top + 'px');
+    this.renderer.setStyle(this.el, 'left', this.left + 'px');
+    this._changeDetection.detectChanges();
   }
 
   public get isDraggingOrResizing(): boolean {
     return this.isDragging || this.isResizing;
   }
 
-  public get el(): HTMLElement {
-    return this.elRef.nativeElement;
-  }
-
-  public enableDragAndResize(): void {
-    if (this.draggable) {
-      this.draggable.disable = false;
+  /**
+   * Attach a single directive dynamically
+   */
+  private attachDirective(
+    DirType: typeof NgxDraggableDirective | typeof NgxResizableDirective
+  ): NgxDraggableDirective | NgxResizableDirective | undefined {
+    let paramTypes: any[] = [];
+    try {
+      paramTypes = Reflect.getMetadata('design:paramtypes', DirType) || [];
+    } catch {
+      paramTypes = [];
     }
-    if (this.resizable) {
-      this.resizable.disable = false;
-    }
-  }
 
-  public disableDragAndResize(): void {
-    if (this.draggable) {
-      this.draggable.disable = true;
-    }
-    if (this.resizable) {
-      this.resizable.disable = true;
-    }
-  }
+    let dirInstance = runInInjectionContext(this.injector, () => {
+      if (paramTypes && paramTypes.length) {
+        const deps = paramTypes.map((p: any) => {
+          try {
+            return this.injector.get(p);
+          } catch (err) {
+            console.warn('Could not resolve dependency:', p, err);
+            return undefined;
+          }
+        });
+        return new (DirType as any)(...deps);
+      } else {
+        return new (DirType as any)(this.elRef);
+      }
+    });
 
-  public setConfig(config: GridItemConfig): void {
-    this.config = { ...config };
-  }
+    // Call lifecycle hooks
+    if (typeof dirInstance.ngOnInit === 'function') {
+      try {
+        dirInstance.ngOnInit();
+      } catch (err) {
+        console.error('ngOnInit error:', err);
+      }
+    }
 
-  public getConfig(): GridItemConfig {
-    return { ...this.config };
+    setTimeout(() => {
+      if (typeof dirInstance.ngAfterViewInit === 'function') {
+        try {
+          dirInstance.ngAfterViewInit();
+        } catch (err) {
+          console.error('ngAfterViewInit error:', err);
+        }
+      }
+    }, 0);
+
+    return dirInstance;
   }
 }

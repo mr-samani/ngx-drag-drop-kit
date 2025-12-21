@@ -6,6 +6,7 @@ export interface IGridLayoutOptions {
   gap?: number;
   gridBackgroundConfig?: IGridBackgroundCfg;
   compactType?: CompactType;
+  pushOnDrag: boolean;
 
   //TODO : add responsive layout
   // breakpoints={{ lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 }}
@@ -29,6 +30,7 @@ export class GridLayoutOptions implements IGridLayoutOptions {
     columnColor: 'rgba(128, 128, 128, 0.10)',
   };
   compactType: CompactType = 'vertical';
+  pushOnDrag: boolean = true;
 }
 
 export interface IGridBackgroundCfg {
