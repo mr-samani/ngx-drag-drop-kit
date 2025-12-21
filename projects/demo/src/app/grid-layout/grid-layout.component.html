@@ -1,4 +1,30 @@
 <div class="advanced-demo">
+  <!-- Grid -->
+  <div class="grid-container">
+    <ngx-grid-layout
+      #ngxGridLayout
+      [editMode]="gridSettings.editMode"
+      [options]="gridOptions"
+      (layoutChange)="onLayoutChange($event)">
+      @for (item of items; track $index) {
+        <ngx-grid-item [id]="item.id" [config]="item.config" [ngClass]="'item-' + item.type">
+          <div class="item-wrapper">
+            <div class="item-header">
+              <span class="item-icon">{{ item.icon }}</span>
+              <h4>{{ item.title }}</h4>
+            </div>
+            <div class="item-body">
+              <p>id={{ item.id }}</p>
+              {{ item.description }}
+            </div>
+            @if (gridSettings.editMode) {
+              <button (click)="removeItem(item.id)" class="remove-btn">🗑️</button>
+            }
+          </div>
+        </ngx-grid-item>
+      }
+    </ngx-grid-layout>
+  </div>
   <!-- پنل تنظیمات -->
   <div class="settings-panel">
     <h3>⚙️ Grid Setting</h3>
@@ -6,9 +32,12 @@
     <div class="setting-group">
       <label>
         <input type="checkbox" [(ngModel)]="gridSettings.editMode" />
-        Edit Mode
+        {{ gridSettings.editMode ? '🔓 Edit Mode' : '🔒 View Mode' }}
       </label>
     </div>
+    <button (click)="addRandomItem()">➕ Add Random Item</button>
+
+    <button (click)="resetToDefault()">🔄 Reset</button>
 
     <div class="setting-group">
       <label>Columns Count:</label>
@@ -26,14 +55,6 @@
       <label>Space (gap):</label>
       <input type="range" [(ngModel)]="gridOptions.gap" min="0" max="30" step="5" />
       <span>{{ gridOptions.gap }}px</span>
-    </div>
-
-    <div class="setting-group">
-      <label>Compact Type:</label>
-      <select [(ngModel)]="gridOptions.compactType">
-        <option value="vertical">Vertical</option>
-        <option value="horizontal">Horizontal</option>
-      </select>
     </div>
 
     @if (gridOptions.gridBackgroundConfig) {
@@ -54,28 +75,5 @@
       </div>
     }
     <button (click)="update()" class="preset-btn">Update</button>
-  </div>
-
-  <!-- Grid -->
-  <div class="grid-container">
-    <ngx-grid-layout
-      #ngxGridLayout
-      [editMode]="gridSettings.editMode"
-      [options]="gridOptions"
-      (layoutChange)="onLayoutChange($event)">
-      @for (item of items; track $index) {
-        <ngx-grid-item [id]="item.id" [config]="item.config" [ngClass]="'item-' + item.type">
-          <div class="item-wrapper">
-            <div class="item-header">
-              <span class="item-icon">{{ item.icon }}</span>
-              <h4>{{ item.title }}</h4>
-            </div>
-            <div class="item-body">
-              {{ item.description }}
-            </div>
-          </div>
-        </ngx-grid-item>
-      }
-    </ngx-grid-layout>
   </div>
 </div>

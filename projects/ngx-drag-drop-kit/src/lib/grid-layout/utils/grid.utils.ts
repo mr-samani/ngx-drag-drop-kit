@@ -1,6 +1,5 @@
 import { NgxGridItemComponent } from '../grid-item/grid-item.component';
 import { FakeItem } from '../options/gride-item-config';
-import { CompactType } from '../options/options';
 
 /**
  * Convert screen X position to grid X coordinate
@@ -85,12 +84,52 @@ export function getAllCollisions(gridItems: NgxGridItemComponent[], item: FakeIt
 export function getFirstCollision(gridItems: NgxGridItemComponent[], item: FakeItem): NgxGridItemComponent | null {
   for (let i = 0; i < gridItems.length; i++) {
     const gridItem = gridItems[i];
-    
+
     if (collides(gridItem, item) && !gridItem.isDraggingOrResizing) {
       return gridItem;
     }
   }
   return null;
+}
+
+export function getFirstCollisionOnAbove(
+  gridItems: NgxGridItemComponent[],
+  item: FakeItem
+): NgxGridItemComponent | null {
+  let closestItem: NgxGridItemComponent | null = null;
+  let closestBottom = -1;
+
+  for (let i = 0; i < gridItems.length; i++) {
+    const gridItem = gridItems[i];
+
+    // رد کردن آیتم‌های در حال drag/resize
+    if (gridItem.isDraggingOrResizing) continue;
+
+    // رد کردن خودش
+    if (gridItem.id === item.id) continue;
+
+    // چک collision افقی (X axis)
+    const hasHorizontalOverlap = !(
+      gridItem.config.x + gridItem.config.w <= item.x || // gridItem در سمت چپ item
+      gridItem.config.x >= item.x + item.w // gridItem در سمت راست item
+    );
+
+    // اگه collision افقی نداره، رد کن
+    if (!hasHorizontalOverlap) continue;
+
+    // چک کن که آیتم زیر item قرار داره
+    const gridItemBottom = gridItem.config.y + gridItem.config.h;
+
+    if (gridItemBottom <= item.y) {
+      // این آیتم زیر item هست، نزدیک‌ترین رو پیدا کن
+      if (gridItemBottom > closestBottom) {
+        closestBottom = gridItemBottom;
+        closestItem = gridItem;
+      }
+    }
+  }
+
+  return closestItem;
 }
 
 /**
@@ -101,27 +140,27 @@ export function collides(l1: NgxGridItemComponent, l2: FakeItem): boolean {
   if (l1.id === l2.id) {
     return false;
   }
-  
+
   // l1 is left of l2
   if (l1.config.x + l1.config.w <= l2.x) {
     return false;
   }
-  
+
   // l1 is right of l2
   if (l1.config.x >= l2.x + l2.w) {
     return false;
   }
-  
+
   // l1 is above l2
   if (l1.config.y + l1.config.h <= l2.y) {
     return false;
   }
-  
+
   // l1 is below l2
   if (l1.config.y >= l2.y + l2.h) {
     return false;
   }
-  
+
   // Boxes overlap
   return true;
 }
@@ -129,12 +168,12 @@ export function collides(l1: NgxGridItemComponent, l2: FakeItem): boolean {
 /**
  * Sort grid items based on compact type
  */
-export function sortGridItems(grid: NgxGridItemComponent[], compactType: CompactType): NgxGridItemComponent[] {
-  if (compactType === 'horizontal') {
-    return sortGridItemsByColRow(grid);
-  } else {
-    return sortGridItemsByRowCol(grid);
-  }
+export function sortGridItems(grid: NgxGridItemComponent[]): NgxGridItemComponent[] {
+  // if (compactType === 'horizontal') {
+  return sortGridItemsByColRow(grid);
+  // } else {
+  //   return sortGridItemsByRowCol(grid);
+  // }
 }
 
 /**

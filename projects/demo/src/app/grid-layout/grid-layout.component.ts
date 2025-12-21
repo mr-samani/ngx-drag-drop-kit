@@ -1,8 +1,21 @@
 import { Component, OnInit, viewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { GridItemConfig, IGridLayoutOptions, NgxGridLayoutComponent, NgxGridLayoutModule } from '@ngx-drag-drop-kit';
-
+import {
+  GridItemConfig,
+  IGridLayoutOptions,
+  LayoutOutput,
+  NgxGridLayoutComponent,
+  NgxGridLayoutModule,
+} from '@ngx-drag-drop-kit';
+export interface SampleLayout {
+  id: string;
+  type: string;
+  icon?: string;
+  title: string;
+  description: string;
+  config: GridItemConfig;
+}
 @Component({
   selector: 'app-grid-layout',
   imports: [CommonModule, FormsModule, NgxGridLayoutModule],
@@ -20,8 +33,6 @@ export class DemoNgxGridLayoutComponent implements OnInit {
     cols: 12,
     rowHeight: 80,
     gap: 10,
-    compactType: 'vertical',
-    pushOnDrag: true,
     gridBackgroundConfig: {
       borderWidth: 1,
       borderColor: '#e0e0e0',
@@ -31,7 +42,9 @@ export class DemoNgxGridLayoutComponent implements OnInit {
     },
   };
 
-  items = [
+  items: SampleLayout[] = [];
+
+  DEFAULT_ITEMS: SampleLayout[] = [
     {
       id: 'chart-1',
       type: 'chart',
@@ -83,25 +96,32 @@ export class DemoNgxGridLayoutComponent implements OnInit {
   ];
 
   ngOnInit(): void {
+    this.items = JSON.parse(JSON.stringify(this.DEFAULT_ITEMS));
     this.loadLayout();
   }
 
-  onLayoutChange(layout: any[]): void {
+  onLayoutChange(layout: LayoutOutput[]): void {
     console.log('📐 Layout changed:', layout);
-
+    // اعمال layout به items
+    layout.forEach(layoutItem => {
+      const item = this.items.find(i => i.id === layoutItem.id);
+      if (item) {
+        item.config = new GridItemConfig(layoutItem.x, layoutItem.y, layoutItem.w, layoutItem.h);
+      }
+    });
     // ذخیره‌سازی خودکار
-    this.saveLayout(layout);
+    this.saveLayout();
   }
 
   /**
    * ذخیره Layout
    */
-  private saveLayout(layout: any[]): void {
+  private saveLayout(): void {
     try {
       localStorage.setItem(
         'advanced-grid-layout',
         JSON.stringify({
-          layout,
+          items: this.items,
           options: this.gridOptions,
           timestamp: new Date().toISOString(),
         })
@@ -120,14 +140,7 @@ export class DemoNgxGridLayoutComponent implements OnInit {
       if (saved) {
         const data = JSON.parse(saved);
         this.gridOptions = data.options;
-
-        // اعمال layout به items
-        data.layout.forEach((layoutItem: any) => {
-          const item = this.items.find(i => i.id === layoutItem.id);
-          if (item) {
-            item.config = new GridItemConfig(layoutItem.x, layoutItem.y, layoutItem.w, layoutItem.h);
-          }
-        });
+        this.items = data.items;
       }
     } catch (e) {
       console.error('Error on Load:', e);
@@ -136,5 +149,37 @@ export class DemoNgxGridLayoutComponent implements OnInit {
 
   update() {
     this.ngxGridLayout()?.update(this.gridOptions);
+  }
+
+  addRandomItem(): void {
+    const newNumber = this.items.length + 1;
+    const randomW = Math.floor(Math.random() * 3) + 2; // 2-4
+    const randomH = Math.floor(Math.random() * 2) + 2; // 2-3
+
+    const newItem: SampleLayout = {
+      id: `test-${Date.now()}`,
+      icon: newNumber.toString(),
+      title: `آیتم ${newNumber}`,
+      description: '',
+      type: '',
+      config: new GridItemConfig(0, 0, randomW, randomH),
+    };
+
+    this.items.push(newItem);
+  }
+
+  removeItem(id: string): void {
+    const index = this.items.findIndex(item => item.id === id);
+    if (index > -1) {
+      this.items.splice(index, 1);
+    }
+  }
+
+  resetToDefault(): void {
+    this.items = JSON.parse(JSON.stringify(this.DEFAULT_ITEMS));
+    this.saveLayout();
+    setTimeout(() => {
+      this.update();
+    });
   }
 }

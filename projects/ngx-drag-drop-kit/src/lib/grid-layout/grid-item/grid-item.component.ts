@@ -22,8 +22,9 @@ import 'reflect-metadata';
 
 @Component({
   selector: 'ngx-grid-item',
-  templateUrl: './grid-item.component.html',
-  styleUrl: './grid-item.component.scss',
+  template: `
+    <ng-content></ng-content>
+  `,
   host: {
     '[style.position]': '"absolute !important"',
     '[style.display]': '"block"',

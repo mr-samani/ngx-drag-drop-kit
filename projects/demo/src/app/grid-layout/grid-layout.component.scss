@@ -143,10 +143,10 @@
 :host ::ng-deep .grid-item-placeholder-default {
   background: linear-gradient(
     45deg,
-    rgba(76, 175, 80, 0.1) 25%,
+    rgba(39, 119, 210, 0.315) 25%,
     transparent 25%,
     transparent 75%,
-    rgba(76, 175, 80, 0.1) 75%
+    rgba(39, 119, 210, 0.315) 75%
   );
   background-size: 20px 20px;
   border: 3px dashed #4caf50;
@@ -160,5 +160,33 @@
   }
   to {
     background-position: 20px 20px;
+  }
+}
+
+.remove-btn {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  background: #ff4444;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.2s;
+}
+
+.remove-btn:hover {
+  background: #cc0000;
+  transform: scale(1.1);
+}
+
+@media (max-width: 992px) {
+  .advanced-demo {
+    flex-direction: column;
+  }
+  .settings-panel {
+    width: 100%;
   }
 }

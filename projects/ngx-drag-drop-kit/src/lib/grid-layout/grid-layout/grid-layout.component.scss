@@ -40,7 +40,7 @@ ngx-grid-layout {
 
 .grid-item-placeholder {
   position: absolute;
-  z-index: 0;
+  z-index: 9999;
   transition-property: transform;
   transition: all 150ms ease !important;
   pointer-events: none;

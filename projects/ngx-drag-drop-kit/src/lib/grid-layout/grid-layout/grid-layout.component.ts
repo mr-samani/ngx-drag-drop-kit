@@ -25,7 +25,10 @@ import { LayoutOutput } from '../options/layout-output';
 
 @Component({
   selector: 'ngx-grid-layout',
-  templateUrl: './grid-layout.component.html',
+  template: `
+    <ng-content #childItem></ng-content>
+    <ng-template #placeholder></ng-template>
+  `,
   styleUrls: ['./grid-layout.component.scss'],
   host: {
     '[style.position]': '"relative !important"',

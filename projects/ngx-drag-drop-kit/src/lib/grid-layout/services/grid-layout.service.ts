@@ -7,6 +7,7 @@ import {
   collides,
   getAllCollisions,
   getFirstCollision,
+  getFirstCollisionOnAbove,
   gridHToScreenHeight,
   gridWToScreenWidth,
   gridXToScreenX,
@@ -139,6 +140,7 @@ export class GridLayoutService {
     this.placeHolderRef?.destroy();
 
     if (this.placeHolder) {
+      // Apply placeholder position to the dragged item
       item.config.x = this.placeHolder.config.x;
       item.config.y = this.placeHolder.config.y;
       item.config.w = this.placeHolder.config.w;
@@ -148,9 +150,42 @@ export class GridLayoutService {
     this.updateGridItem(item);
     this.placeHolder = undefined;
 
-    this.checkCollisions({ ...item.config, id: item.id });
+    // Now resolve collisions and compact
+    this.resolveCollisionsAfterDrop(item);
     this.compactGridItems();
     this.calcLayout();
+  }
+
+  /**
+   * Resolve collisions after an item is dropped
+   * Only pushes items down that directly collide with the dropped item
+   */
+  private resolveCollisionsAfterDrop(droppedItem: NgxGridItemComponent): void {
+    const directCollisions = getAllCollisions(this._gridItems, {
+      x: droppedItem.config.x,
+      y: droppedItem.config.y,
+      w: droppedItem.config.w,
+      h: droppedItem.config.h,
+      id: droppedItem.id,
+    });
+
+    // Sort collisions by Y position (top to bottom)
+    const sortedCollisions = directCollisions.sort((a, b) => a.config.y - b.config.y);
+
+    // Push each colliding item down
+    for (const collision of sortedCollisions) {
+      if (collision.id === droppedItem.id) continue;
+
+      // Move the colliding item just below the dropped item
+      const newY = droppedItem.config.y + droppedItem.config.h;
+      if (collision.config.y < newY) {
+        collision.config.y = newY;
+        this.updateGridItem(collision);
+
+        // Recursively resolve any new collisions this created
+        this.resolveCollisionsAfterDrop(collision);
+      }
+    }
   }
 
   convertPointToCell(x: number, y: number, width: number, height: number) {
@@ -176,7 +211,7 @@ export class GridLayoutService {
   }
 
   /**
-   * Update placeholder position and handle collisions
+   * Update placeholder position - only moves placeholder, doesn't push other items
    */
   private updatePlaceholderPosition(fakeItem: FakeItem): void {
     if (!this.placeHolderRef || !this.placeHolder) {
@@ -186,73 +221,47 @@ export class GridLayoutService {
       this.placeHolder.id = 'PLACEHOLDER_GRID_ITEM';
     }
 
-    // Move placeholder up until it hits a collision or reaches top
+    // Find the highest valid position for the placeholder
     let targetY = fakeItem.y;
-    while (targetY > 0) {
-      const testItem = { ...fakeItem, y: targetY - 1 };
-      const collision = getFirstCollision(this._gridItems, testItem);
 
-      if (collision) {
-        // If there's a collision, stay above it
+    // Move placeholder up until it hits a collision or reaches top
+    while (targetY > 0) {
+      const testItem: FakeItem = {
+        ...fakeItem,
+        y: targetY - 1,
+        id: this.placeHolder.id,
+      };
+
+      // چک کن آیتمی که زیر placeholder هست و باهاش collision افقی داره
+      const itemBelow = getFirstCollisionOnAbove(this._gridItems, testItem);
+
+      if (itemBelow) {
+        // آیتمی پیدا شد، placeholder باید درست بالای اون باشه
+        targetY = itemBelow.config.y + itemBelow.config.h;
         break;
       }
+
       targetY--;
     }
 
+    // Update placeholder without triggering item movements
     this.placeHolder.config = new GridItemConfig(fakeItem.x, targetY, fakeItem.w, fakeItem.h);
     this.updateGridItem(this.placeHolder);
 
-    // Push down items that collide with placeholder
-    if (this._options.pushOnDrag) {
-      this.checkCollisions(fakeItem);
-    }
-
-   // this.compactGridItems();
+    this.compactGridItems();
   }
+  
 
-  /**
-   * Check and resolve collisions recursively
-   */
-  private checkCollisions(fakeItem: FakeItem): void {
-    const collisions = getAllCollisions(this._gridItems, fakeItem);
-    const movedItems = new Set<string>();
-
-    for (const collision of collisions) {
-      if (movedItems.has(collision.id!)) continue;
-
-      const moved = this.moveGridItem(collision, fakeItem.y + fakeItem.h);
-      movedItems.add(moved.id!);
-
-      const movedFakeItem: FakeItem = {
-        x: moved.config.x,
-        y: moved.config.y,
-        w: moved.config.w,
-        h: moved.config.h,
-        id: moved.id,
-      };
-
-      this.checkCollisions(movedFakeItem);
-    }
-  }
-
-  /**
-   * Move grid item to avoid collision
-   */
-  private moveGridItem(gridItem: NgxGridItemComponent, targetY: number): NgxGridItemComponent {
-    if (!gridItem.isDraggingOrResizing) {
-      gridItem.config.y = targetY;
-      this.updateGridItem(gridItem);
-    }
-    return gridItem;
-  }
 
   /**
    * Compact grid items - move items up when there's space
+   * Respects the placeholder position during drag
    */
   compactGridItems(): void {
-    this._gridItems = sortGridItems(this._gridItems, 'vertical');
+    this._gridItems = sortGridItems(this._gridItems);
 
     for (const gridItem of this._gridItems) {
+      // Skip invalid items
       if (gridItem.config.y <= 0 || gridItem.config.h <= 0) {
         continue;
       }
@@ -262,8 +271,9 @@ export class GridLayoutService {
         continue;
       }
 
-      // Try to move item up
+      // Try to move item up as much as possible
       let targetY = gridItem.config.y;
+
       while (targetY > 0) {
         const testItem: FakeItem = {
           x: gridItem.config.x,
@@ -273,27 +283,38 @@ export class GridLayoutService {
           id: gridItem.id,
         };
 
+        // Check collision with other items
         const collision = getFirstCollision(this._gridItems, testItem);
-
-        // Check collision with placeholder
-        if (
-          this.placeHolder &&
-          collides(gridItem, {
-            ...this.placeHolder.config,
-            y: this.placeHolder.config.y,
-            id: this.placeHolder.id,
-          })
-        ) {
+        if (collision) {
           break;
         }
 
-        if (collision) {
-          break;
+        // Check collision with placeholder (if it exists)
+        if (this.placeHolder) {
+          const placeholderCollision = collides(
+            {
+              id: gridItem.id,
+              config: { ...testItem },
+              isDraggingOrResizing: false,
+            } as any,
+            {
+              x: this.placeHolder.config.x,
+              y: this.placeHolder.config.y,
+              w: this.placeHolder.config.w,
+              h: this.placeHolder.config.h,
+              id: this.placeHolder.id,
+            }
+          );
+
+          if (placeholderCollision) {
+            break;
+          }
         }
 
         targetY--;
       }
 
+      // Only update if position changed
       if (targetY !== gridItem.config.y) {
         gridItem.config.y = targetY;
         this.updateGridItem(gridItem);
