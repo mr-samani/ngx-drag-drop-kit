@@ -1,20 +1,13 @@
-import {
-  ComponentRef,
-  Inject,
-  Injectable,
-  Renderer2,
-  RendererFactory2,
-  ViewContainerRef,
-  DOCUMENT,
-} from '@angular/core';
+import { ComponentRef, Injectable, Renderer2, RendererFactory2, ViewContainerRef } from '@angular/core';
 import { GridLayoutOptions } from '../options/options';
-import { GridItemComponent } from '../grid-item/grid-item.component';
+import { NgxGridItemComponent } from '../grid-item/grid-item.component';
 import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
 
 import {
   collides,
   getAllCollisions,
   getFirstCollision,
+  getFirstCollisionOnAbove,
   gridHToScreenHeight,
   gridWToScreenWidth,
   gridXToScreenX,
@@ -28,7 +21,7 @@ import {
 import { FakeItem, GridItemConfig } from '../options/gride-item-config';
 import { LayoutOutput } from '../options/layout-output';
 import { mergeDeep } from '../../../utils/deep-merge';
-import { GridLayoutComponent } from '../grid-layout/grid-layout.component';
+import { NgxGridLayoutComponent } from '../grid-layout/grid-layout.component';
 
 export const DEFAULT_GRID_ITEM_CONFIG = new GridItemConfig();
 export const DEFAULT_GRID_LAYOUT_CONFIG = new GridLayoutOptions();
@@ -36,25 +29,23 @@ export const DEFAULT_GRID_LAYOUT_CONFIG = new GridLayoutOptions();
 @Injectable()
 export class GridLayoutService {
   public _options: GridLayoutOptions = DEFAULT_GRID_LAYOUT_CONFIG;
-  public gridLayout!: GridLayoutComponent;
-  public _gridItems: GridItemComponent[] = [];
+  public gridLayout!: NgxGridLayoutComponent;
+  public _gridItems: NgxGridItemComponent[] = [];
 
   public _placeholderContainerRef!: ViewContainerRef;
-  private placeHolder?: GridItemComponent;
-  private placeHolderRef?: ComponentRef<GridItemComponent>;
+  private placeHolder?: NgxGridItemComponent;
+  private placeHolderRef?: ComponentRef<NgxGridItemComponent>;
 
   private updatePlaceholderPosition$ = new Subject<FakeItem>();
   private renderer: Renderer2;
+  private _editMode: boolean = true;
 
   constructor(rendererFactory: RendererFactory2) {
     this.renderer = rendererFactory.createRenderer(null, null);
     this.updatePlaceholderPosition$
       .pipe(
         distinctUntilChanged((prev, curr) => {
-          return (
-            prev.x == curr.x && prev.y == curr.y && prev.w == curr.w && prev.h == curr.h
-            // && prev.gridItem == curr.gridItem
-          );
+          return prev.x === curr.x && prev.y === curr.y && prev.w === curr.w && prev.h === curr.h;
         }),
         debounceTime(10)
       )
@@ -63,7 +54,27 @@ export class GridLayoutService {
       });
   }
 
-  public updateGridItem(item: GridItemComponent) {
+  public get editMode(): boolean {
+    return this._editMode;
+  }
+
+  public set editMode(value: boolean) {
+    if (this._editMode !== value) {
+      this._editMode = value;
+      this.updateGridItemsEditMode();
+    }
+  }
+
+  /**
+   * Update edit mode for all grid items
+   */
+  private updateGridItemsEditMode(): void {
+    this._gridItems.forEach(item => {
+      item.setEditMode(this._editMode);
+    });
+  }
+
+  public updateGridItem(item: NgxGridItemComponent): void {
     item.config = mergeDeep(DEFAULT_GRID_ITEM_CONFIG, item.config);
     item.width = gridWToScreenWidth(this.cellWidth, item.config.w, this._options.gap);
     item.height = gridHToScreenHeight(this.cellHeight, item.config.h, this._options.gap);
@@ -72,26 +83,26 @@ export class GridLayoutService {
     item.updateView();
   }
 
-  public get mainWidth() {
+  public get mainWidth(): number {
     const mainElRec = this.gridLayout.el.getBoundingClientRect();
     return mainElRec.width - (this._options.gap * 2 + this._options.gridBackgroundConfig.borderWidth * 2);
   }
-  public get mainHeight() {
+
+  public get mainHeight(): number {
     const mainElRec = this.gridLayout.el.getBoundingClientRect();
     return mainElRec.height;
   }
 
-  public get cellWidth() {
+  public get cellWidth(): number {
     const { cols, gap } = this._options;
     const widthExcludingGap = this.mainWidth - Math.max(gap * (cols - 1), 0);
     return widthExcludingGap / cols;
   }
 
-  public get cellHeight() {
-    if (typeof this._options.rowHeight == 'number') {
+  public get cellHeight(): number {
+    if (typeof this._options.rowHeight === 'number') {
       return this._options.rowHeight;
     }
-    //TODO: unknown
     return this.mainHeight;
   }
 
@@ -99,166 +110,230 @@ export class GridLayoutService {
     const rowHeight = this.cellHeight;
     const gap = this._options.gap;
     const border = this._options.gridBackgroundConfig.borderWidth;
-    const height = this._gridItems.reduce(
-      (acc, cur) =>
-        Math.max(
-          acc,
-          // rowHeight *
-          cur.config.y + cur.config.h // +
-          //  gap * (cur.config.y+1  + cur.config.h-1) //+
-          // Math.max(cur.config.y + cur.config.h, 0)
-        ),
-      0
-    );
+
+    const maxY = this._gridItems.reduce((acc, cur) => Math.max(acc, cur.config.y + cur.config.h), 0);
+
     return (
-      rowHeight * height +
-      gap * (height - 1) +
-      // main padding
-      gap * 2 +
-      // main border width
-      border * 2
+      rowHeight * maxY +
+      gap * Math.max(maxY - 1, 0) +
+      gap * 2 + // padding
+      border * 2 // border
     );
   }
 
-  onMoveOrResize(item: GridItemComponent) {
+  onMoveOrResize(item: NgxGridItemComponent): void {
     const gridItemRec = item.el.getBoundingClientRect();
-    let plcInfo = this.convertPointToCell(gridItemRec.left, gridItemRec.top, gridItemRec.width, gridItemRec.height);
+    const plcInfo = this.convertPointToCell(gridItemRec.left, gridItemRec.top, gridItemRec.width, gridItemRec.height);
+
     const fakeItem: FakeItem = {
       x: plcInfo.cellX,
       y: plcInfo.cellY,
       w: plcInfo.cellW,
       h: plcInfo.cellH,
-      id: item.id,
+      id: 'plc_' + item.id,
     };
+
     this.updatePlaceholderPosition$.next(fakeItem);
   }
 
-  onMoveOrResizeEnd(item: GridItemComponent) {
+  onMoveOrResizeEnd(item: NgxGridItemComponent): void {
     this.placeHolderRef?.destroy();
+
     if (this.placeHolder) {
-      item.config = this.placeHolder.config;
+      // Apply placeholder position to the dragged item
+      item.config.x = this.placeHolder.config.x;
+      item.config.y = this.placeHolder.config.y;
+      item.config.w = this.placeHolder.config.w;
+      item.config.h = this.placeHolder.config.h;
     }
+
     this.updateGridItem(item);
-    this.renderer.setStyle(item.el, 'transform', '');
     this.placeHolder = undefined;
-    // todo: if pushOnDrag config is on -> no need to checkCollisson in end drag
-    this.cehckCollesions({ ...item.config, id: item.id });
+
+    // Now resolve collisions and compact
+    this.resolveCollisionsAfterDrop(item);
     this.compactGridItems();
     this.calcLayout();
+  }
+
+  /**
+   * Resolve collisions after an item is dropped
+   * Only pushes items down that directly collide with the dropped item
+   */
+  private resolveCollisionsAfterDrop(droppedItem: NgxGridItemComponent): void {
+    const directCollisions = getAllCollisions(this._gridItems, {
+      x: droppedItem.config.x,
+      y: droppedItem.config.y,
+      w: droppedItem.config.w,
+      h: droppedItem.config.h,
+      id: droppedItem.id,
+    });
+
+    // Sort collisions by Y position (top to bottom)
+    const sortedCollisions = directCollisions.sort((a, b) => a.config.y - b.config.y);
+
+    // Push each colliding item down
+    for (const collision of sortedCollisions) {
+      if (collision.id === droppedItem.id) continue;
+
+      // Move the colliding item just below the dropped item
+      const newY = droppedItem.config.y + droppedItem.config.h;
+      if (collision.config.y < newY) {
+        collision.config.y = newY;
+        this.updateGridItem(collision);
+
+        // Recursively resolve any new collisions this created
+        this.resolveCollisionsAfterDrop(collision);
+      }
+    }
   }
 
   convertPointToCell(x: number, y: number, width: number, height: number) {
     const mainRec = this.gridLayout.el.getBoundingClientRect();
     const newX = x - mainRec.left;
     const newY = y - mainRec.top;
+
     let cellX = screenXToGridX(newX, this._options.cols, mainRec.width, this._options.gap);
     let cellY = screenYToGridY(newY, this.cellHeight, this._options.gap);
     let cellW = screenWidthToGridWidth(width, this._options.cols, mainRec.width, this._options.gap);
     let cellH = screenHeightToGridHeight(height, this.cellHeight, mainRec.height, this._options.gap);
+
+    // Boundary checks
     if (cellX + cellW > this._options.cols) {
-      cellX -= cellX + cellW - this._options.cols;
+      cellX = Math.max(0, this._options.cols - cellW);
     }
-    if (cellX < 0) cellX = 0;
-    if (cellY < 0) cellY = 0;
-    if (cellW <= 0) cellW = 1;
-    if (cellH <= 0) cellH = 1;
+    cellX = Math.max(0, cellX);
+    cellY = Math.max(0, cellY);
+    cellW = Math.max(1, cellW);
+    cellH = Math.max(1, cellH);
+
     return { cellX, cellY, cellW, cellH };
   }
 
   /**
-   * update place holder position
-   * @param input
+   * Update placeholder position - only moves placeholder, doesn't push other items
    */
-  private updatePlaceholderPosition(fakeItem: FakeItem) {
-    // console.log(input);
-    // if (this._options.pushOnDrag) {
-    // 	this.cehckCollesions(fakeItem);
-    // }
-
+  private updatePlaceholderPosition(fakeItem: FakeItem): void {
     if (!this.placeHolderRef || !this.placeHolder) {
-      this.placeHolderRef = this._placeholderContainerRef.createComponent(GridItemComponent);
+      this.placeHolderRef = this._placeholderContainerRef.createComponent(NgxGridItemComponent);
       this.placeHolder = this.placeHolderRef.instance;
       this.placeHolder.el.className = 'grid-item-placeholder grid-item-placeholder-default';
       this.placeHolder.id = 'PLACEHOLDER_GRID_ITEM';
     }
-    while (fakeItem.y > 0 && getFirstCollision(this._gridItems, { ...fakeItem, y: fakeItem.y - 1 }) == null) {
-      fakeItem.y--;
+
+    // Find the highest valid position for the placeholder
+    let targetY = fakeItem.y;
+
+    // Move placeholder up until it hits a collision or reaches top
+    while (targetY > 0) {
+      const testItem: FakeItem = {
+        ...fakeItem,
+        y: targetY - 1,
+        id: this.placeHolder.id,
+      };
+
+      // چک کن آیتمی که زیر placeholder هست و باهاش collision افقی داره
+      const itemBelow = getFirstCollisionOnAbove(this._gridItems, testItem);
+
+      if (itemBelow) {
+        // آیتمی پیدا شد، placeholder باید درست بالای اون باشه
+        targetY = itemBelow.config.y + itemBelow.config.h;
+        break;
+      }
+
+      targetY--;
     }
-    this.placeHolder.config = new GridItemConfig(fakeItem.x, fakeItem.y, fakeItem.w, fakeItem.h);
+
+    // Update placeholder without triggering item movements
+    this.placeHolder.config = new GridItemConfig(fakeItem.x, targetY, fakeItem.w, fakeItem.h);
     this.updateGridItem(this.placeHolder);
 
     this.compactGridItems();
   }
+  
 
-  cehckCollesions(fakeItem: FakeItem) {
-    const allCollisions = getAllCollisions(this._gridItems, fakeItem);
-    for (let c of allCollisions) {
-      let movedElement = this.moveGridItem(c, fakeItem.x + fakeItem.w, fakeItem.y + fakeItem.h);
-      // console.log('must move down :', movedElement.id);
-      let fakeItemMoved: FakeItem = {
-        x: movedElement.config.x,
-        y: movedElement.config.y,
-        w: movedElement.config.w,
-        h: movedElement.config.h,
-        id: movedElement.id,
-      };
-      this.cehckCollesions(fakeItemMoved);
-    }
-  }
 
-  private moveGridItem(gridItem: GridItemComponent, cellX: number, cellY: number) {
-    if (!gridItem.isDraggingOrResizing) {
-      gridItem.config.y = cellY;
-    }
-    this.updateGridItem(gridItem);
-    return gridItem;
-  }
+  /**
+   * Compact grid items - move items up when there's space
+   * Respects the placeholder position during drag
+   */
+  compactGridItems(): void {
+    this._gridItems = sortGridItems(this._gridItems);
 
-  compactGridItems() {
-    this._gridItems = sortGridItems(this._gridItems, 'vertical');
-    for (let gridItem of this._gridItems) {
+    for (const gridItem of this._gridItems) {
+      // Skip invalid items
       if (gridItem.config.y <= 0 || gridItem.config.h <= 0) {
         continue;
       }
-      let fakeItem: FakeItem = {
-        x: gridItem.config.x,
-        y: gridItem.config.y - 1,
-        w: gridItem.config.w,
-        h: gridItem.config.h,
-        id: gridItem.id,
-      };
-      while (gridItem.config.y > 0 && getFirstCollision(this._gridItems, fakeItem) == null) {
-        if (
-          gridItem.isDraggingOrResizing ||
-          (this.placeHolder &&
-            collides(gridItem, {
-              ...this.placeHolder.config,
-              y: this.placeHolder.config.y + 1,
-              id: this.placeHolder.id,
-            }))
-        ) {
-          // console.log('has collission with placehlder');
+
+      // Skip if currently being dragged/resized
+      if (gridItem.isDraggingOrResizing) {
+        continue;
+      }
+
+      // Try to move item up as much as possible
+      let targetY = gridItem.config.y;
+
+      while (targetY > 0) {
+        const testItem: FakeItem = {
+          x: gridItem.config.x,
+          y: targetY - 1,
+          w: gridItem.config.w,
+          h: gridItem.config.h,
+          id: gridItem.id,
+        };
+
+        // Check collision with other items
+        const collision = getFirstCollision(this._gridItems, testItem);
+        if (collision) {
           break;
         }
-        fakeItem.y--;
-        gridItem.config.y--;
+
+        // Check collision with placeholder (if it exists)
+        if (this.placeHolder) {
+          const placeholderCollision = collides(
+            {
+              id: gridItem.id,
+              config: { ...testItem },
+              isDraggingOrResizing: false,
+            } as any,
+            {
+              x: this.placeHolder.config.x,
+              y: this.placeHolder.config.y,
+              w: this.placeHolder.config.w,
+              h: this.placeHolder.config.h,
+              id: this.placeHolder.id,
+            }
+          );
+
+          if (placeholderCollision) {
+            break;
+          }
+        }
+
+        targetY--;
       }
-      this.updateGridItem(gridItem);
+
+      // Only update if position changed
+      if (targetY !== gridItem.config.y) {
+        gridItem.config.y = targetY;
+        this.updateGridItem(gridItem);
+      }
     }
-    // todo:perhaps  must sort after compact
   }
 
-  calcLayout() {
-    let layout: LayoutOutput[] = [];
-    for (let item of this._gridItems) {
-      layout.push({
-        id: item.id,
-        h: item.config.h,
-        w: item.config.w,
-        x: item.config.x,
-        y: item.config.y,
-      });
-    }
+  /**
+   * Calculate and emit layout changes
+   */
+  calcLayout(): void {
+    const layout: LayoutOutput[] = this._gridItems.map(item => ({
+      id: item.id,
+      h: item.config.h,
+      w: item.config.w,
+      x: item.config.x,
+      y: item.config.y,
+    }));
+
     this.gridLayout.emitChangeLayout(layout);
   }
 }

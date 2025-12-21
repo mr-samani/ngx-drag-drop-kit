@@ -140,6 +140,7 @@ export class NgxDraggableDirective extends DragItemRef implements OnDestroy, Aft
     this.startSubscriptions.forEach(sub => sub.unsubscribe());
     this.autoScroll.stop();
     this.dragRegister.removeDragItem(this);
+    this.el.classList.remove('ngx-draggable');
   }
 
   init() {

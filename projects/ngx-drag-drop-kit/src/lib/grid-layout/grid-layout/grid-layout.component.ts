@@ -1,5 +1,6 @@
 import {
   AfterViewInit,
+  booleanAttribute,
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
@@ -17,53 +18,72 @@ import {
 } from '@angular/core';
 import { IGridLayoutOptions } from '../options/options';
 import { DEFAULT_GRID_LAYOUT_CONFIG, GridLayoutService } from '../services/grid-layout.service';
-import { GridItemComponent } from '../grid-item/grid-item.component';
+import { NgxGridItemComponent } from '../grid-item/grid-item.component';
 import { mergeDeep } from '../../../utils/deep-merge';
 import { getFirstCollision } from '../utils/grid.utils';
 import { LayoutOutput } from '../options/layout-output';
 
 @Component({
-  selector: 'grid-layout',
-  templateUrl: './grid-layout.component.html',
+  selector: 'ngx-grid-layout',
+  template: `
+    <ng-content #childItem></ng-content>
+    <ng-template #placeholder></ng-template>
+  `,
   styleUrls: ['./grid-layout.component.scss'],
   host: {
     '[style.position]': '"relative !important"',
     '[style.boxSizing]': '"border-box"',
     '[style.height.px]': '_gridService.getGridHeight',
-    '[style.user-select]': '"none"',
+    '[style.user-select]': '_gridService.editMode ? "none" : "auto"',
+    '[class.edit-mode]': '_gridService.editMode',
   },
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: false,
 })
-export class GridLayoutComponent implements OnInit, AfterViewInit {
-  @Input() get options() {
+export class NgxGridLayoutComponent implements OnInit, AfterViewInit {
+  @Input({ alias: 'editMode', transform: booleanAttribute })
+  set setEditMode(val: boolean) {
+    this._gridService.editMode = val;
+    this._changeDetection.markForCheck();
+  }
+
+  get editMode(): boolean {
+    return this._gridService.editMode;
+  }
+
+  @Input()
+  get options(): IGridLayoutOptions {
     return this._gridService._options;
   }
   set options(val: IGridLayoutOptions) {
     if (val) {
       this._gridService._options = mergeDeep(DEFAULT_GRID_LAYOUT_CONFIG, val);
+      this.setBackgroundCssVariables();
     }
   }
 
   @Output() layoutChange = new EventEmitter<LayoutOutput[]>();
 
   el: HTMLElement;
-  @ContentChildren(GridItemComponent) set items(value: QueryList<GridItemComponent>) {
+
+  @ContentChildren(NgxGridItemComponent)
+  set items(value: QueryList<NgxGridItemComponent>) {
     if (value) {
-      value.changes.subscribe(_ => {
-        // log('Add new item to grid:', _);
+      value.changes.subscribe(() => {
+        this._gridService._gridItems = Array.from(value);
+        this.initGridItems();
       });
       this._gridService._gridItems = Array.from(value);
       this.initGridItems();
     }
   }
 
-  @ViewChild('placeholder', { read: ViewContainerRef, static: false }) private set placeholderRef(
-    val: ViewContainerRef
-  ) {
+  @ViewChild('placeholder', { read: ViewContainerRef, static: false })
+  private set placeholderRef(val: ViewContainerRef) {
     this._gridService._placeholderContainerRef = val;
   }
+
   constructor(
     public _gridService: GridLayoutService,
     private _elRef: ElementRef<HTMLElement>,
@@ -77,27 +97,42 @@ export class GridLayoutComponent implements OnInit, AfterViewInit {
     this._gridService.gridLayout = this;
   }
 
-  ngAfterViewInit(): void {}
+  ngAfterViewInit(): void {
+    // Trigger initial layout calculation
+    setTimeout(() => {
+      this._changeDetection.detectChanges();
+    }, 0);
+  }
 
-  private setBackgroundCssVariables() {
+  public update(val: IGridLayoutOptions) {
+    this.options = val;
+    this.initGridItems();
+  }
+
+  /**
+   * Set CSS variables for grid background
+   */
+  private setBackgroundCssVariables(): void {
     const style = this.el.style;
     const backgroundConfig = this._gridService._options.gridBackgroundConfig;
     const rowHeight = this._gridService._options.rowHeight;
     const cols = this._gridService._options.cols;
     const gap = this._gridService._options.gap;
+
     if (backgroundConfig) {
-      // structure
+      // Structure
       style.setProperty('--gap', gap + 'px');
       style.setProperty('--row-height', rowHeight + 'px');
       style.setProperty('--columns', `${cols}`);
       style.setProperty('--border-width', backgroundConfig.borderWidth + 'px');
 
-      // colors
+      // Colors
       style.setProperty('--border-color', backgroundConfig.borderColor);
       style.setProperty('--gap-color', backgroundConfig.gapColor);
       style.setProperty('--row-color', backgroundConfig.rowColor);
       style.setProperty('--column-color', backgroundConfig.columnColor);
     } else {
+      // Remove properties if no background config
       style.removeProperty('--gap');
       style.removeProperty('--row-height');
       style.removeProperty('--columns');
@@ -109,58 +144,87 @@ export class GridLayoutComponent implements OnInit, AfterViewInit {
     }
   }
 
-  private initGridItems() {
+  /**
+   * Initialize grid items - validate positions and resolve collisions
+   */
+  private initGridItems(): void {
+    if (!this._gridService._gridItems.length) {
+      return;
+    }
+
+    // Assign IDs to items without one
     for (let i = 0; i < this._gridService._gridItems.length; i++) {
-      let item = this._gridService._gridItems[i];
+      const item = this._gridService._gridItems[i];
       if (!item.id) {
         item.id = 'GRID_ITEM_' + (i + 1);
       }
-      //validate
+
+      // Validate and resolve collisions
       while (getFirstCollision(this._gridService._gridItems, { ...item.config, id: item.id })) {
         item.config.y++;
       }
+
       this._gridService.updateGridItem(item);
     }
-    this.checkDuplicatedId();
-    this._gridService.compactGridItems();
-    // this._gridService.calcLayout();
-    setTimeout(() => {
-      this._changeDetection.detectChanges();
-    }, 0);
 
-    // console.log(this._gridService._gridItems.map((x) => x.id));
+    // Check for duplicate IDs
+    this.checkDuplicatedIds();
+
+    // Compact items to remove gaps
+    this._gridService.compactGridItems();
+
+    // Trigger change detection
+    this._changeDetection.detectChanges();
   }
 
+  /**
+   * Handle window resize - recalculate grid layout
+   */
   @HostListener('window:resize')
-  public updateGridLayout() {
+  public updateGridLayout(): void {
     this.setBackgroundCssVariables();
     this.initGridItems();
   }
 
-  // todo : clone changed grid items
-  public emitChangeLayout(layout: LayoutOutput[]) {
+  /**
+   * Emit layout changes to parent component
+   */
+  public emitChangeLayout(layout: LayoutOutput[]): void {
     this.layoutChange.emit(layout);
   }
 
-  private checkDuplicatedId() {
-    let ids = this._gridService._gridItems.map(m => m.id);
+  /**
+   * Check for duplicate IDs and generate new ones if needed
+   */
+  private checkDuplicatedIds(): boolean {
+    const ids = this._gridService._gridItems.map(m => m.id);
     let hasDuplicated = false;
+
     for (let i = 0; i < ids.length; i++) {
-      if (this._gridService._gridItems.findIndex(x => x.id == ids[i]) > -1 && ids.indexOf(ids[i]) !== i) {
-        this._gridService._gridItems[i].id = this.generateRandomId();
+      const currentId = ids[i];
+      const firstIndex = ids.indexOf(currentId);
+
+      if (firstIndex !== i) {
+        // Duplicate found - generate new ID
+        this._gridService._gridItems[i].id = this.generateUniqueId();
         hasDuplicated = true;
       }
     }
+
     if (hasDuplicated) {
-      console.warn('GridLayout:', 'Grid items must be have unique ids', ids);
+      console.warn('GridLayout: Grid items must have unique IDs. Auto-generated IDs for duplicates.', ids);
     }
+
     return hasDuplicated;
   }
 
-  private generateRandomId() {
+  /**
+   * Generate a unique UUID v4
+   */
+  private generateUniqueId(): string {
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
-      const r = (Math.random() * 16) | 0,
-        v = c === 'x' ? r : (r & 0x3) | 0x8;
+      const r = (Math.random() * 16) | 0;
+      const v = c === 'x' ? r : (r & 0x3) | 0x8;
       return v.toString(16);
     });
   }

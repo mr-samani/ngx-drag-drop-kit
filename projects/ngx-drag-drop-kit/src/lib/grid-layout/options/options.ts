@@ -1,11 +1,8 @@
-export type CompactType = ('horizontal' | 'vertical' | 'both') | null | undefined;
-
 export interface IGridLayoutOptions {
   cols: number;
   rowHeight?: 'fit' | number;
   gap?: number;
   gridBackgroundConfig?: IGridBackgroundCfg;
-  compactType?: CompactType;
 
   //TODO : add responsive layout
   // breakpoints={{ lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 }}
@@ -28,7 +25,6 @@ export class GridLayoutOptions implements IGridLayoutOptions {
     rowColor: 'rgba(128, 128, 128, 0.10)',
     columnColor: 'rgba(128, 128, 128, 0.10)',
   };
-  compactType: CompactType = 'vertical';
 }
 
 export interface IGridBackgroundCfg {
