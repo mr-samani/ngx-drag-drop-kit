@@ -1,17 +1,81 @@
-<button (click)="addInFirst()">add in first</button>
-<button (click)="add()">add</button>
-<button (click)="add10()">add 10</button>
-<button (click)="clear()">clear</button>
-<label>
-  <input type="checkbox" [(ngModel)]="editMode" />
-  Edit mode
-</label>
-<ngx-grid-layout [options]="options" [editMode]="editMode" (layoutChange)="onLayoutChange($event)">
-  @for (item of layouts; track item) {
-    <ngx-grid-item [config]="item.config" class="grid-item" [id]="item.id">
-      {{ item.id }}
-    </ngx-grid-item>
-  }
-</ngx-grid-layout>
+<div class="advanced-demo">
+  <!-- پنل تنظیمات -->
+  <div class="settings-panel">
+    <h3>⚙️ Grid Setting</h3>
 
-<pre style="direction: ltr; text-align: start">config:{{ options | json }}</pre>
+    <div class="setting-group">
+      <label>
+        <input type="checkbox" [(ngModel)]="gridSettings.editMode" />
+        Edit Mode
+      </label>
+    </div>
+
+    <div class="setting-group">
+      <label>Columns Count:</label>
+      <input type="range" [(ngModel)]="gridOptions.cols" min="6" max="24" step="2" />
+      <span>{{ gridOptions.cols }}</span>
+    </div>
+
+    <div class="setting-group">
+      <label>Row Height(px):</label>
+      <input type="range" [(ngModel)]="gridOptions.rowHeight" min="40" max="120" step="10" />
+      <span>{{ gridOptions.rowHeight }}</span>
+    </div>
+
+    <div class="setting-group">
+      <label>Space (gap):</label>
+      <input type="range" [(ngModel)]="gridOptions.gap" min="0" max="30" step="5" />
+      <span>{{ gridOptions.gap }}px</span>
+    </div>
+
+    <div class="setting-group">
+      <label>Compact Type:</label>
+      <select [(ngModel)]="gridOptions.compactType">
+        <option value="vertical">Vertical</option>
+        <option value="horizontal">Horizontal</option>
+      </select>
+    </div>
+
+    @if (gridOptions.gridBackgroundConfig) {
+      <div class="setting-group">
+        <h4>🎨 Colors</h4>
+
+        <label>Border Color:</label>
+        <input type="color" [(ngModel)]="gridOptions.gridBackgroundConfig.borderColor" />
+
+        <label>Gap Color:</label>
+        <input type="color" [(ngModel)]="gridOptions.gridBackgroundConfig.gapColor" />
+
+        <label>Row Color:</label>
+        <input type="color" [(ngModel)]="gridOptions.gridBackgroundConfig.rowColor" />
+
+        <label>Column Color:</label>
+        <input type="color" [(ngModel)]="gridOptions.gridBackgroundConfig.columnColor" />
+      </div>
+    }
+    <button (click)="update()" class="preset-btn">Update</button>
+  </div>
+
+  <!-- Grid -->
+  <div class="grid-container">
+    <ngx-grid-layout
+      #ngxGridLayout
+      [editMode]="gridSettings.editMode"
+      [options]="gridOptions"
+      (layoutChange)="onLayoutChange($event)">
+      @for (item of items; track $index) {
+        <ngx-grid-item [id]="item.id" [config]="item.config" [ngClass]="'item-' + item.type">
+          <div class="item-wrapper">
+            <div class="item-header">
+              <span class="item-icon">{{ item.icon }}</span>
+              <h4>{{ item.title }}</h4>
+            </div>
+            <div class="item-body">
+              {{ item.description }}
+            </div>
+          </div>
+        </ngx-grid-item>
+      }
+    </ngx-grid-layout>
+  </div>
+</div>
