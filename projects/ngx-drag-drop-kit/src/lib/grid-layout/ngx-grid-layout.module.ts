@@ -11,3 +11,4 @@ import { GridLayoutService } from './services/grid-layout.service';
   providers: [GridLayoutService],
 })
 export class NgxGridLayoutModule {}
+

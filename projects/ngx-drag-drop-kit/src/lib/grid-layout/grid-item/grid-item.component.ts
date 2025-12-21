@@ -4,160 +4,229 @@ import {
   ChangeDetectorRef,
   Component,
   ElementRef,
-  inject,
-  Injector,
   Input,
   OnDestroy,
   OnInit,
   Renderer2,
-  runInInjectionContext,
+  ViewChild,
 } from '@angular/core';
 import { GridItemConfig } from '../options/gride-item-config';
 import { GridLayoutService } from '../services/grid-layout.service';
 import { NgxDraggableDirective } from '../../directives/ngx-draggable.directive';
 import { NgxResizableDirective } from '../../directives/ngx-resizable.directive';
-import { Subscription } from 'rxjs/internal/Subscription';
-import 'reflect-metadata';
+import { Subject, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'ngx-grid-item',
   templateUrl: './grid-item.component.html',
   styleUrl: './grid-item.component.scss',
   host: {
-    '[style.position]': '"absolute !important"',
+    '[style.position]': '"absolute"',
     '[style.display]': '"block"',
     '[style.overflow]': '"hidden"',
     '[style.boxSizing]': '"border-box"',
-    '[style.transition]': '"left 500ms , top 500ms"',
+    '[style.transition]': 'transitionStyle',
+    '[style.width.px]': 'width',
+    '[style.height.px]': 'height',
+    '[style.left.px]': 'left',
+    '[style.top.px]': 'top',
   },
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: false,
+  hostDirectives: [
+    {
+      directive: NgxDraggableDirective,
+      inputs: ['draggableDisabled'],
+    },
+    {
+      directive: NgxResizableDirective,
+      inputs: ['resizableDisabled'],
+    },
+  ],
 })
 export class NgxGridItemComponent implements OnInit, AfterViewInit, OnDestroy {
+  private readonly destroy$ = new Subject<void>();
+  private static readonly TRANSITION_DURATION = 'left 300ms ease, top 300ms ease, width 300ms ease, height 300ms ease';
+  
   @Input() config: GridItemConfig = new GridItemConfig();
   @Input() id?: string;
 
-  width?: number;
-  height?: number;
-  left?: number;
-  top?: number;
-  el: HTMLElement;
+  width = 0;
+  height = 0;
+  left = 0;
+  top = 0;
+  transitionStyle: string = NgxGridItemComponent.TRANSITION_DURATION;
 
-  isDragging = false;
-  isResizing = false;
+  private isDragging = false;
+  private isResizing = false;
+  private dragStartTime = 0;
+
+  @ViewChild(NgxDraggableDirective, { static: true })
   private draggable?: NgxDraggableDirective;
+
+  @ViewChild(NgxResizableDirective, { static: true })
   private resizable?: NgxResizableDirective;
-  hostDirectives = [];
-  private subscriptions: Subscription[] = [];
 
   constructor(
     private elRef: ElementRef<HTMLElement>,
-    private _gridService: GridLayoutService,
-    private _changeDetection: ChangeDetectorRef,
-    private renderer: Renderer2,
-    private injector: Injector
-  ) {
-    this.el = elRef.nativeElement;
-  }
+    private gridService: GridLayoutService,
+    private cdr: ChangeDetectorRef,
+    private renderer: Renderer2
+  ) {}
 
   ngOnInit(): void {
-    if (!this._gridService.editMode) return;
-    this.draggable = this.attachDirectives(NgxDraggableDirective, this.injector);
-    this.resizable = this.attachDirectives(NgxResizableDirective, this.injector);
-
-    if (!this.draggable || !this.resizable) return;
-
-    this.subscriptions = [
-      this.draggable.dragStart.subscribe(ev => {
-        this.isDragging = true;
-        this.startDragOrResize();
-      }),
-      this.draggable.dragMove.subscribe(ev => this._gridService.onMoveOrResize(this)),
-      this.draggable.dragEnd.subscribe(ev => {
-        this.isDragging = false;
-        this._gridService.onMoveOrResizeEnd(this);
-      }),
-      this.resizable.resizeStart.subscribe(ev => {
-        this.isResizing = true;
-        this.startDragOrResize();
-      }),
-      this.resizable.resize.subscribe(ev => this._gridService.onMoveOrResize(this)),
-      this.resizable.resizeEnd.subscribe(ev => {
-        this.isResizing = false;
-        this._gridService.onMoveOrResizeEnd(this);
-      }),
-    ];
-  }
-
-  startDragOrResize() {
-    this.renderer.setStyle(this.el, 'transition', 'left 500ms , top 500ms');
+    this.setupDragAndResize();
   }
 
   ngAfterViewInit(): void {
-    this._changeDetection.detectChanges();
+    this.cdr.detectChanges();
   }
 
   ngOnDestroy(): void {
-    this.subscriptions.forEach(sub => sub.unsubscribe());
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
-  updateView() {
-    this.renderer.setStyle(this.el, 'transition', 'none');
-    this.renderer.setStyle(this.el, 'transform', '');
-    this.renderer.setStyle(this.el, 'width', this.width + 'px');
-    this.renderer.setStyle(this.el, 'height', this.height + 'px');
-    this.renderer.setStyle(this.el, 'top', this.top + 'px');
-    this.renderer.setStyle(this.el, 'left', this.left + 'px');
-    this._changeDetection.detectChanges();
+  private setupDragAndResize(): void {
+    if (!this.gridService.editMode) {
+      this.disableDragAndResize();
+      return;
+    }
+
+    if (this.draggable) {
+      this.draggable.dragStart
+        .pipe(takeUntil(this.destroy$))
+        .subscribe(() => this.onDragStart());
+
+      this.draggable.dragMove
+        .pipe(takeUntil(this.destroy$))
+        .subscribe(() => this.onDragMove());
+
+      this.draggable.dragEnd
+        .pipe(takeUntil(this.destroy$))
+        .subscribe(() => this.onDragEnd());
+    }
+
+    if (this.resizable) {
+      this.resizable.resizeStart
+        .pipe(takeUntil(this.destroy$))
+        .subscribe(() => this.onResizeStart());
+
+      this.resizable.resize
+        .pipe(takeUntil(this.destroy$))
+        .subscribe(() => this.onResize());
+
+      this.resizable.resizeEnd
+        .pipe(takeUntil(this.destroy$))
+        .subscribe(() => this.onResizeEnd());
+    }
   }
 
-  public get isDraggingOrResizing() {
+  private onDragStart(): void {
+    this.isDragging = true;
+    this.dragStartTime = Date.now();
+    this.disableTransition();
+    this.gridService.onDragOrResizeStart(this);
+  }
+
+  private onDragMove(): void {
+    if (this.isDragging) {
+      this.gridService.onMoveOrResize(this);
+    }
+  }
+
+  private onDragEnd(): void {
+    this.isDragging = false;
+    this.enableTransition();
+    this.gridService.onMoveOrResizeEnd(this);
+  }
+
+  private onResizeStart(): void {
+    this.isResizing = true;
+    this.disableTransition();
+    this.gridService.onDragOrResizeStart(this);
+  }
+
+  private onResize(): void {
+    if (this.isResizing) {
+      this.gridService.onMoveOrResize(this);
+    }
+  }
+
+  private onResizeEnd(): void {
+    this.isResizing = false;
+    this.enableTransition();
+    this.gridService.onMoveOrResizeEnd(this);
+  }
+
+  private disableTransition(): void {
+    this.transitionStyle = 'none';
+    this.cdr.markForCheck();
+  }
+
+  private enableTransition(): void {
+    // Small delay to ensure the transition doesn't apply to the final position
+    requestAnimationFrame(() => {
+      this.transitionStyle = NgxGridItemComponent.TRANSITION_DURATION;
+      this.cdr.markForCheck();
+    });
+  }
+
+  public updatePosition(
+    left: number,
+    top: number,
+    width: number,
+    height: number,
+    animate: boolean = true
+  ): void {
+    if (!animate) {
+      this.disableTransition();
+    }
+
+    this.left = left;
+    this.top = top;
+    this.width = width;
+    this.height = height;
+
+    this.cdr.markForCheck();
+
+    if (!animate) {
+      // Re-enable transition after the next frame
+      requestAnimationFrame(() => this.enableTransition());
+    }
+  }
+
+  public get isDraggingOrResizing(): boolean {
     return this.isDragging || this.isResizing;
   }
 
-  attachDirectives(DirType: typeof NgxDraggableDirective | typeof NgxResizableDirective, dirInjector: Injector) {
-    // خواندن metadata پارامترهای سازنده
-    let paramTypes: any[] = [];
-    try {
-      paramTypes = Reflect.getMetadata('design:paramtypes', DirType) || [];
-    } catch {
-      paramTypes = [];
-    }
-    let dirInstance = runInInjectionContext(dirInjector, () => {
-      if (paramTypes && paramTypes.length) {
-        const deps = paramTypes.map((p: any) => {
-          try {
-            return dirInjector.get(p);
-          } catch (err) {
-            console.warn('Could not resolve dependency:', p, err);
-            return undefined;
-          }
-        });
-        return new (DirType as any)(...deps);
-      } else {
-        return new (DirType as any)(this.elRef);
-      }
-    });
-    if (typeof dirInstance.ngOnInit === 'function') {
-      try {
-        dirInstance.ngOnInit();
-      } catch (err) {
-        console.error('ngOnInit error:', err);
-      }
-    }
-
-    // ✅ فراخوانی ngAfterViewInit بعد از اضافه شدن به DOM
-    setTimeout(() => {
-      if (typeof dirInstance.ngAfterViewInit === 'function') {
-        try {
-          dirInstance.ngAfterViewInit();
-        } catch (err) {
-          console.error('ngAfterViewInit error:', err);
-        }
-      }
-    }, 0);
-    return dirInstance;
+  public get el(): HTMLElement {
+    return this.elRef.nativeElement;
   }
 
-  detachDirectives() {}
+  public enableDragAndResize(): void {
+    if (this.draggable) {
+      this.draggable.disable = false;
+    }
+    if (this.resizable) {
+      this.resizable.disable = false;
+    }
+  }
+
+  public disableDragAndResize(): void {
+    if (this.draggable) {
+      this.draggable.disable = true;
+    }
+    if (this.resizable) {
+      this.resizable.disable = true;
+    }
+  }
+
+  public setConfig(config: GridItemConfig): void {
+    this.config = { ...config };
+  }
+
+  public getConfig(): GridItemConfig {
+    return { ...this.config };
+  }
 }
