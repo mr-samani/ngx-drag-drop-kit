@@ -37,7 +37,6 @@ export const NGX_DROP_LIST = new InjectionToken<NgxDropListDirective>('NgxDropLi
   },
 })
 export class NgxDraggableDirective extends DragItemRef implements OnDestroy, AfterViewInit {
-  disable?: boolean;
   @Input() set boundary(value: HTMLElement | undefined) {
     this._boundary = value;
     this.updateDomRect();
@@ -141,6 +140,7 @@ export class NgxDraggableDirective extends DragItemRef implements OnDestroy, Aft
     this.startSubscriptions.forEach(sub => sub.unsubscribe());
     this.autoScroll.stop();
     this.dragRegister.removeDragItem(this);
+    this.el.classList.remove('ngx-draggable');
   }
 
   init() {

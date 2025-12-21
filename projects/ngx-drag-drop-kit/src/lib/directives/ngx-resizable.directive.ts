@@ -100,7 +100,6 @@ export class NgxResizableDirective implements OnInit, OnDestroy {
   private readonly renderer = inject(Renderer2);
   private readonly doc = inject(DOCUMENT);
   private readonly interaction = inject(InteractionLockService);
-  disable?: boolean;
 
   constructor() {
     this.el = this.elRef.nativeElement;
@@ -128,6 +127,7 @@ export class NgxResizableDirective implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.subscriptions.forEach(sub => sub.unsubscribe());
+    this.el.classList.remove('ngx-resizable');
   }
 
   get isRtl() {
