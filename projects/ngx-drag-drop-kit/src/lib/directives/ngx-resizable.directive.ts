@@ -34,8 +34,6 @@ export declare type Corner =
     '[style.touch-action]': '"none"', // CRITICAL: Always disable touch actions
     '[style.will-change]': 'resizing ? "width, height, top, left" : ""',
     '[class.resizing]': 'resizing',
-    '[attr.role]': '"img"',
-    '[attr.aria-label]': '"Resizable element"',
     '[attr.resizing]': 'resizing',
     '[style.--ngx-resize-handles]': 'handlerStyle',
   },
@@ -304,7 +302,9 @@ export class NgxResizableDirective implements OnInit, OnDestroy {
     const gradients = corners.map(
       corner => `radial-gradient(circle ${size}px at ${positions[corner]}, ${color} 100%, transparent 0)`
     );
+ 
 
+ 
     return gradients.join(', ');
   }
 

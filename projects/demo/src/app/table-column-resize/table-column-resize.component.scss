@@ -1,0 +1,23 @@
+.table-responsive {
+  overflow: auto;
+}
+table {
+  border-style: solid;
+  border-collapse: collapse;
+  border-radius: 5px;
+  table-layout: fixed;
+  width: 100%;
+  thead {
+    background-color: rgba(77, 86, 122, 0.316);
+  }
+  td,
+  th {
+    border: 2px rgb(105, 105, 105) solid;
+    padding: 4px 10px;
+    span {
+      display: block;
+      text-overflow: ellipsis;
+      overflow: hidden;
+    }
+  }
+}

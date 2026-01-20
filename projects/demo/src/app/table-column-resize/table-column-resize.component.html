@@ -1,0 +1,34 @@
+<div class="table-responsive">
+  <table>
+    <thead>
+      <tr>
+        <td [width]="10">#</td>
+        <td ngxResizable [corners]="resizeCorner" [minWidth]="minWidth"><span>Title</span></td>
+        <td ngxResizable [corners]="resizeCorner" [minWidth]="minWidth"><span>Description</span></td>
+        <td ngxResizable [corners]="resizeCorner" [minWidth]="minWidth"><span>type</span></td>
+        <td ngxResizable [corners]="resizeCorner" [minWidth]="minWidth"><span>Status</span></td>
+      </tr>
+    </thead>
+    <tbody>
+      @for (item of items; track $index) {
+        <tr>
+          <td>
+            <span>{{ $index + 1 }}</span>
+          </td>
+          <td>
+            <span>{{ item.title }}</span>
+          </td>
+          <td>
+            <span>{{ item.description }}</span>
+          </td>
+          <td>
+            <span>{{ item.type }}</span>
+          </td>
+          <td>
+            <span>{{ item.status }}</span>
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>

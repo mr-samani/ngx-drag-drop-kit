@@ -9,6 +9,7 @@ import { DemoNgxGridLayoutComponent } from './grid-layout/grid-layout.component'
 import { ResizableLayoutComponent } from './resizable-layout/resizable-layout.component';
 import { DynamicHtmlComponent } from './dynamic-html/dynamic-html.component';
 import { ResizableDemoComponent } from './resize/resize.component';
+import { TableColumnResizeComponent } from './table-column-resize/table-column-resize.component';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'kanban', pathMatch: 'full' },
@@ -26,4 +27,5 @@ export const routes: Routes = [
   { path: 'resizable-layout', component: ResizableLayoutComponent },
 
   { path: 'dynamic-html', component: DynamicHtmlComponent },
+  { path: 'table-column-resize', component: TableColumnResizeComponent },
 ];
