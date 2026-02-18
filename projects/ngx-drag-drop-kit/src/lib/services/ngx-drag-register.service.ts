@@ -169,9 +169,9 @@ export class NgxDragRegisterService {
   _getItemIndexFromPointerPosition(
     dragItem: DragItemRef,
     dropList: IDropList,
-    pointer: IPosition,
-    currentPlaceholderIndex: number
+    pointer: IPosition
   ): { index: number; dragItem?: DragItemRef; before: boolean } {
+    
     const items = dropList.dragItems.filter(x => !x.isPlaceholder);
     if (items.length === 0) {
       return { index: 0, dragItem: undefined, before: false };
@@ -202,7 +202,7 @@ export class NgxDragRegisterService {
       }
     }
     if (!closestItem) {
-      return { index: currentPlaceholderIndex, dragItem: undefined, before: false };
+      return { index: -1, dragItem: undefined, before: false };
     }
 
     // ─────────────────────────────────────────────────────

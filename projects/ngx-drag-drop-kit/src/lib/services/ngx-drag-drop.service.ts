@@ -159,14 +159,12 @@ export class NgxDragDropService {
     if (desDropList.checkAllowedConnections(this._activeDragInstances[0].dropList) == false) {
       return;
     }
-    const dragOverData = this.dragRegister._getItemIndexFromPointerPosition(
-      drag,
-      desDropList,
-      viewportPointer,
-      this._newIndex
-    );
+    
+    const dragOverData = this.dragRegister._getItemIndexFromPointerPosition(drag, desDropList, viewportPointer);
     if (dragOverData.index > -1) {
       this._newIndex = dragOverData.index;
+    } else {
+      this._newIndex = desDropList.dragItems.length;
     }
     const dragOverItem = dragOverData.dragItem;
 
