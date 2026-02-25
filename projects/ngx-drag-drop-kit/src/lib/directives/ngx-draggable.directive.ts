@@ -47,6 +47,8 @@ export class NgxDraggableDirective extends DragItemRef implements OnDestroy, Aft
 
   @Input() dragRootElement = '';
 
+  @Input() disabled = false;
+
   @Output() dragStart = new EventEmitter<IPosition>();
   @Output() dragMove = new EventEmitter<IPosition>();
   @Output() dragEnd = new EventEmitter<IPosition>();
@@ -169,7 +171,7 @@ export class NgxDraggableDirective extends DragItemRef implements OnDestroy, Aft
   }
 
   onPointerDown(ev: PointerEvent) {
-    if (ev.button !== 0) return;
+    if (ev.button !== 0 || this.disabled) return;
     if (this.interaction.isResizing()) return;
     ev.preventDefault();
     // stopPropagation required for nested tree elements
