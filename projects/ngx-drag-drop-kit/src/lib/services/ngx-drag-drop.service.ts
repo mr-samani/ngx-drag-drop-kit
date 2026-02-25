@@ -7,6 +7,7 @@ import {
   RendererStyleFlags2,
   DOCUMENT,
   signal,
+  inject,
 } from '@angular/core';
 import { IDropEvent } from '../../interfaces/IDropEvent';
 
@@ -53,9 +54,10 @@ export class NgxDragDropService {
   private initialScrollOffset: IScrollOffset = { x: 0, y: 0, containerX: 0, containerY: 0 };
 
   gridOverlay?: IGridOverlayOutput;
+
+  doc = inject(DOCUMENT);
   constructor(
     rendererFactory: RendererFactory2,
-    @Inject(DOCUMENT) private _document: Document,
     private placeholderService: NgxDragPlaceholderService,
     private dragRegister: NgxDragRegisterService
   ) {
@@ -82,7 +84,7 @@ export class NgxDragDropService {
     //  console.log('_dropEvent in drag start', this._dropEvent);
     drag.el.classList.add('dragging');
     this.dragElementInBody = cloneDragElementInBody(drag.el, currDomRect);
-    this._document.body.appendChild(this.dragElementInBody);
+    this.doc.body.appendChild(this.dragElementInBody);
     if (drag.dropList.disableSort == false) {
       this.currentDragPreviousStyles = {
         display: drag.el.style.display,
@@ -154,12 +156,17 @@ export class NgxDragDropService {
     const desDropList = this.dragRegister._getDropListFromPointerPosition(viewportPointer, drag);
     // console.log('Active Drop List:', desDropList?.el?.id);
     if (!desDropList) {
+      this.placeholderService.hide();
+      this._newIndex = this._previousDragIndex;
+      this.activeDropList.setInter(false);
+      this.activeDropList = this._dropEvent?.previousContainer;
+
       return;
     }
     if (desDropList.checkAllowedConnections(this._activeDragInstances[0].dropList) == false) {
       return;
     }
-    
+
     const dragOverData = this.dragRegister._getItemIndexFromPointerPosition(drag, desDropList, viewportPointer);
     if (dragOverData.index > -1) {
       this._newIndex = dragOverData.index;
@@ -258,7 +265,7 @@ export class NgxDragDropService {
   private setupScrollListeners(): void {
     // ۱️⃣ همه والدهای قابل اسکرول را پیدا کن
     this.scrollableParents = findScrollableToParents(
-      this._document,
+      this.doc,
       this.dragRegister.dropListItems.map(item => item.el)
     );
     // console.log(
@@ -272,7 +279,7 @@ export class NgxDragDropService {
     // ۳️⃣ ساخت آرایه واقعی از منابع event
     const scrollTargets: (HTMLElement | Window)[] = this.scrollableParents
       .map(el => {
-        const doc = this._document;
+        const doc = this.doc;
         const isRoot = el === doc.documentElement || el === doc.body || el === doc.scrollingElement;
         return isRoot ? doc.defaultView! : el; // ✅ window درست
       })

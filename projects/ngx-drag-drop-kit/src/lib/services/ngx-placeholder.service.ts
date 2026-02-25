@@ -1,4 +1,4 @@
-import { Injectable, Renderer2, RendererFactory2, Inject, DOCUMENT } from '@angular/core';
+import { Injectable, Renderer2, RendererFactory2, Inject, DOCUMENT, inject } from '@angular/core';
 import { Subject, distinctUntilChanged, throttleTime } from 'rxjs';
 import { IDropList } from '../../interfaces/IDropList';
 import { NgxDragRegisterService } from './ngx-drag-register.service';
@@ -44,9 +44,9 @@ export class NgxDragPlaceholderService {
     return this.state.isShown;
   }
 
+  doc = inject(DOCUMENT);
   constructor(
     rendererFactory: RendererFactory2,
-    @Inject(DOCUMENT) private document: Document,
     private dragRegister: NgxDragRegisterService
   ) {
     this.renderer = rendererFactory.createRenderer(null, null);
@@ -259,7 +259,7 @@ export class NgxDragPlaceholderService {
   }
 
   private clearTransforms(): void {
-    this.document
+    this.doc
       .querySelectorAll('.ngx-draggable:not(.dragging):not(.ngx-drag-in-body)')
       .forEach(el => this.renderer.removeStyle(el, 'transform'));
   }
