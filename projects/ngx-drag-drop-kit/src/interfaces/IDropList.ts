@@ -11,7 +11,7 @@ export interface IDropList<T = any> {
   disableSort: boolean;
   connectedTo: HTMLElement[];
   updateDomRect(): void;
-  registerDragItem(item: DragItemRef): void;
+  registerDragItem(item: DragItemRef, indexInDropList: number): void;
   removeDragItem(item: DragItemRef): void;
   checkAllowedConnections(sourceDropList?: IDropList): boolean;
 

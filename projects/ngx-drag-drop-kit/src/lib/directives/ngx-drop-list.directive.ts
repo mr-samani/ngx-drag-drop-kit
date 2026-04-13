@@ -56,9 +56,7 @@ export class NgxDropListDirective<T = any> implements IDropList, OnInit, AfterVi
   initCursor = '';
   private subscriptions: Subscription[] = [];
 
-  /**
-   * NOTE: index of drag items is not valid
-   */
+
   dragItems: DragItemRef[] = [];
   public domRect!: DOMRect;
 
@@ -117,11 +115,12 @@ export class NgxDropListDirective<T = any> implements IDropList, OnInit, AfterVi
     this.disposePlaceholder();
   }
 
-  registerDragItem(drag: DragItemRef) {
+  registerDragItem(drag: DragItemRef, indexInDropList: number) {
     const finded = this.dragItems.findIndex(x => x == drag);
-    if (finded === -1) {
-      this.dragItems.push(drag);
+    if (finded > -1) {
+      this.dragItems.splice(finded, 1);
     }
+    this.dragItems.splice(indexInDropList, 0, drag);
   }
   removeDragItem(drag: DragItemRef) {
     let indx = this.dragItems.findIndex(x => x == drag);

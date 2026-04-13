@@ -57,7 +57,13 @@ export class NgxDragRegisterService {
     const dropList = this.findParentDropList(dragItem.el);
     if (dropList) {
       dragItem.dropList = dropList;
-      dropList.registerDragItem(dragItem);
+      let indexInDropList = 0;
+      const allDragItemsInCurrentDropList = dragItem.dropList?.el?.querySelectorAll('[ngxDraggable]');
+      if (allDragItemsInCurrentDropList) {
+        indexInDropList = Array.from(allDragItemsInCurrentDropList).indexOf(dragItem.el);
+      }
+
+      dropList.registerDragItem(dragItem, indexInDropList);
     }
     this.dragItemMap.set(dragItem.el, dragItem);
   }
