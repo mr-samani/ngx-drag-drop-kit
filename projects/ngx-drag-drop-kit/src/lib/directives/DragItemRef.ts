@@ -1,4 +1,5 @@
 import { IDropList } from '../../interfaces/IDropList';
+import { generateSequentialGuid } from '../../utils/sequential-guid';
 
 export class DragItemRef {
   boundaryDomRect?: DOMRect;
@@ -11,9 +12,11 @@ export class DragItemRef {
   isDragging: boolean = false;
 
   isFullRow: boolean = false;
+  dragId: string;
 
   constructor(el: HTMLElement) {
     this.el = el;
+    this.dragId = generateSequentialGuid();
   }
   public get domRect(): DOMRect {
     return new DOMRect(this._domRect.x, this._domRect.y, this._domRect.width, this._domRect.height);

@@ -2,6 +2,7 @@ import { DragItemRef } from '../lib/directives/DragItemRef';
 import { IDropEvent } from './IDropEvent';
 
 export interface IDropList<T = any> {
+  dropId: string;
   el: HTMLElement;
   domRect: DOMRect;
   dragItems: DragItemRef[];

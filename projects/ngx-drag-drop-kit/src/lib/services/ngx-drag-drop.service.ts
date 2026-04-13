@@ -218,7 +218,7 @@ export class NgxDragDropService {
       }
       this.renderer.setStyle(this.dragElementInBody, 'transform', `translate3d(${nx}px, ${ny}px, 0)`);
     }
-    const index = this._activeDragInstances.indexOf(drag);
+    const index = this._activeDragInstances.findIndex(x => x.dragId == drag.dragId);
     if (index > -1) {
       this._activeDragInstances?.forEach(el => {
         this.renderer.removeStyle(el.el, 'transform');

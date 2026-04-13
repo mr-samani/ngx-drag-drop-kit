@@ -47,7 +47,7 @@ export class NgxDragRegisterService {
 
   removeDropList(dropList: IDropList): void {
     this.dropListMap.delete(dropList.el);
-    const index = this.dropListArray.indexOf(dropList);
+    const index = this.dropListArray.findIndex(x => x.dropId == dropList.dropId);
     if (index > -1) {
       this.dropListArray.splice(index, 1);
     }
@@ -73,10 +73,10 @@ export class NgxDragRegisterService {
     if (!dragItem.dropList) return -1;
 
     if (filterDraggingItem) {
-      return dragItem.dropList.dragItems.filter(x => !x.isDragging).indexOf(dragItem);
+      return dragItem.dropList.dragItems.filter(x => !x.isDragging).findIndex(x => x.dragId == dragItem.dragId);
     }
 
-    return dragItem.dropList.dragItems.indexOf(dragItem);
+    return dragItem.dropList.dragItems.findIndex(x => x.dragId == dragItem.dragId);
   }
 
   updateAllDragItemsRect(dropList: IDropList[] = this.dropListArray): Promise<void> {
@@ -171,7 +171,6 @@ export class NgxDragRegisterService {
     dropList: IDropList,
     pointer: IPosition
   ): { index: number; dragItem?: DragItemRef; before: boolean } {
-    
     const items = dropList.dragItems.filter(x => !x.isPlaceholder);
     if (items.length === 0) {
       return { index: 0, dragItem: undefined, before: false };

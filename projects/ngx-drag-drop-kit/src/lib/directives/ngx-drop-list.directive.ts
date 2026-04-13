@@ -23,6 +23,7 @@ import { NgxDragRegisterService } from '../services/ngx-drag-register.service';
 import { IDropList } from '../../interfaces/IDropList';
 import { DragItemRef } from './DragItemRef';
 import { NgxDragDropService } from '../services/ngx-drag-drop.service';
+import { generateSequentialGuid } from '../../utils/sequential-guid';
 @Directive({
   selector: '[ngxDropList]',
   host: {
@@ -66,10 +67,13 @@ export class NgxDropListDirective<T = any> implements IDropList, OnInit, AfterVi
   private readonly appRef = inject(ApplicationRef);
   private readonly renderer = inject(Renderer2);
   private readonly dragDropService = inject(NgxDragDropService);
+
+  dropId: string;
   constructor() {
     this.el = this.elRef.nativeElement;
     this.initCursor = this.el.style.cursor;
     this.el.classList.add('ngx-drop-list');
+    this.dropId = generateSequentialGuid();
 
     effect(() => {
       let isDragging = this.dragDropService.isDragging();
