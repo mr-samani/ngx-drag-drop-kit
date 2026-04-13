@@ -58,10 +58,13 @@ export class NgxDragRegisterService {
     if (dropList) {
       dragItem.dropList = dropList;
       let indexInDropList = 0;
-      const allDragItemsInCurrentDropList = dragItem.dropList?.el?.querySelectorAll('[ngxDraggable]');
-      if (allDragItemsInCurrentDropList) {
-        indexInDropList = Array.from(allDragItemsInCurrentDropList).indexOf(dragItem.el);
-      }
+
+      const dropListEl = dragItem.dropList.el;
+      const directDraggables = Array.from(dropListEl.querySelectorAll<HTMLElement>('[ngxDraggable]')).filter(el => {
+        const parentDropList = el.parentElement?.closest('[ngxDropList]');
+        return parentDropList === dropListEl;
+      });
+      indexInDropList = directDraggables.indexOf(dragItem.el);
 
       dropList.registerDragItem(dragItem, indexInDropList);
     }
@@ -99,23 +102,24 @@ export class NgxDragRegisterService {
           item.updateDomRect();
         }
 
-        lst.dragItems = lst.dragItems.sort((a, b) => {
-          const ay = a.domRect.top;
-          const by = b.domRect.top;
+        //TODO: احتمالا:  چون بر اساس دام وارد شده اند دیگر نباید سورت بشوند
+        // // // lst.dragItems = lst.dragItems.sort((a, b) => {
+        // // //   const ay = a.domRect.top;
+        // // //   const by = b.domRect.top;
 
-          // اگر یکی بالاتر از دیگریه، بر اساس top مرتب کن
-          if (Math.abs(ay - by) > 1) return ay - by;
+        // // //   // اگر یکی بالاتر از دیگریه، بر اساس top مرتب کن
+        // // //   if (Math.abs(ay - by) > 1) return ay - by;
 
-          // در یک ردیف هستند → بر اساس left مرتب کن (با توجه به RTL)
-          const ax = a.domRect.left;
-          const bx = b.domRect.left;
+        // // //   // در یک ردیف هستند → بر اساس left مرتب کن (با توجه به RTL)
+        // // //   const ax = a.domRect.left;
+        // // //   const bx = b.domRect.left;
 
-          if (lst.isRtl) {
-            return bx - ax; // راست به چپ
-          } else {
-            return ax - bx; // چپ به راست
-          }
-        });
+        // // //   if (lst.isRtl) {
+        // // //     return bx - ax; // راست به چپ
+        // // //   } else {
+        // // //     return ax - bx; // چپ به راست
+        // // //   }
+        // // // });
       }
       // console.log(
       //   dropList.map((m) => {
