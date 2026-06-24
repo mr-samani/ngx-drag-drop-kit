@@ -77,14 +77,15 @@ export class NgxDragPlaceholderService {
   }
 
   private update(input: IUpdatePlaceholder): void {
-    const { destinationDropList } = input;
+    const { destinationDropList, dragItem, dragOverItem, before } = input;
     // if (destinationDropList?.isFlexWrap) {
     //   this.showFlexWrap(input);
     //   return;
     // }
 
     if (!this.state.element) {
-      return;
+      //return;
+      this.createPlaceholder(destinationDropList, dragItem, dragOverItem, !before);
     }
     this.applyTransforms(input);
   }

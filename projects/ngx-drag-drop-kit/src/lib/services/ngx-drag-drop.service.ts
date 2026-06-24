@@ -177,7 +177,7 @@ export class NgxDragDropService {
 
     if (desDropList.disableSort) return;
     desDropList.setInter(true);
-    if (this.activeDropList !== desDropList) {
+    if (this.activeDropList.el !== desDropList.el) {
       this.activeDropList?.setInter(false);
       let overDragItem = dragOverData.dragItem;
       this.activeDropList = desDropList;
